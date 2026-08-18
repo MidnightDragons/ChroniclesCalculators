@@ -959,7 +959,7 @@ function initCraftCalc() {
 		if (includeItems) {
 			const byCat = {};
 			const catOrder = [];
-			ITEM_NAMES.filter(n  =>  !itemFilter || itemFilter(ITEMS[n])).forEach(n => {
+			ITEM_NAMES.filter(n => !itemFilter || itemFilter(ITEMS[n])).forEach(n => {
 				const it = ITEMS[n];
 				if (!byCat[it.category]) {
 					byCat[it.category] = [];
@@ -1299,7 +1299,7 @@ function initCraftCalc() {
 		const prevValue = repairSelect.value;
 		buildSelect(repairSelect, {
 			includeMaterials:false, includeItems:true,
-			itemFilter: it  =>  it.repairIngredients.length > 0 && (state.inventory[it.name] || 0) > 0
+			itemFilter: it => it.repairIngredients.length > 0 && (state.inventory[it.name] || 0) > 0
 		});
 
 		if ([...repairSelect.options].some(o => o.value===prevValue)) repairSelect.value = prevValue;
@@ -1843,7 +1843,7 @@ function initCraftCalc() {
 		const validModNames = new Set(applicableEntries(MODIFICATIONS, item).map(m => m.name));
 		const validEnchantNames = new Set(applicableEntries(ENCHANTMENTS, item).map(m => m.name));
 		const validLegendaryNames = isMasterwork(item) ? new Set(applicableEntries(LEGENDARY_EFFECTS, item).map(m => m.name)) : new Set();
-		const mods = Array.isArray(raw.mods) ? raw.mods.filter(m  => typeof m === 'string' && validModNames.has(m)).slice(0, slots) : [];
+		const mods = Array.isArray(raw.mods) ? raw.mods.filter(m => typeof m === 'string' && validModNames.has(m)).slice(0, slots) : [];
 		const enchant = (typeof raw.enchant === 'string' && validEnchantNames.has(raw.enchant)) ? raw.enchant : null;
 		const legendary = (typeof raw.legendary === 'string' && validLegendaryNames.has(raw.legendary)) ? raw.legendary : null;
 		return {mods, enchant, legendary};
@@ -1911,7 +1911,7 @@ function initCraftCalc() {
 		if(!file) return;
 
 		const reader = new FileReader();
-		reader.onload = ()  =>  {
+		reader.onload = () => {
 			let parsed;
 			try {
 				parsed = JSON.parse(reader.result);
