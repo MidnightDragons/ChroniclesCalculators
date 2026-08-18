@@ -1822,7 +1822,7 @@ function initCraftCalc() {
 			});
 
 			const grandNames = Object.keys(grandTotal).sort();
-			const grandRows = grandNames.map(n => 
+			const grandRows	= grandNames.map(n => 
 				`<tr><td class="row-name">${escapeHtml(n)}</td><td>${grandTotal[n]}</td></tr>`
 			).join('') || '<tr><td colspan="2" class="list-empty">Nothing needed!</td></tr>';
 
@@ -1839,13 +1839,13 @@ function initCraftCalc() {
 	/* ---------- Export / Import EVERYTHING (inventory, craft list, repair list, desired gear) ---------- */
 	function cleanCustomForItem(item, raw) {
 		if (!raw || typeof raw !== 'object') return {mods: [], enchant: null, legendary: null};
-		const slots = modSlotsForItem(item);
-		const validModNames = new Set(applicableEntries(MODIFICATIONS, item).map(m => m.name));
-		const validEnchantNames = new Set(applicableEntries(ENCHANTMENTS, item).map(m => m.name));
-		const validLegendaryNames = isMasterwork(item) ? new Set(applicableEntries(LEGENDARY_EFFECTS, item).map(m => m.name)) : new Set();
-		const mods = Array.isArray(raw.mods) ? raw.mods.filter(m => typeof m === 'string' && validModNames.has(m)).slice(0, slots) : [];
-		const enchant = (typeof raw.enchant === 'string' && validEnchantNames.has(raw.enchant)) ? raw.enchant : null;
-		const legendary = (typeof raw.legendary === 'string' && validLegendaryNames.has(raw.legendary)) ? raw.legendary : null;
+		const slots					= modSlotsForItem(item);
+		const validModNames			= new Set(applicableEntries(MODIFICATIONS,	item).map(m => m.name));
+		const validEnchantNames		= new Set(applicableEntries(ENCHANTMENTS,	item).map(m => m.name));
+		const validLegendaryNames	= isMasterwork(item) ? new Set(applicableEntries(LEGENDARY_EFFECTS, item).map(m => m.name)) : new Set();
+		const mods					= Array.isArray(raw.mods) ? raw.mods.filter(m => typeof m === 'string' && validModNames.has(m)).slice(0, slots) : [];
+		const enchant				= (typeof raw.enchant	=== 'string' && validEnchantNames.has(raw.enchant))		? raw.enchant	: null;
+		const legendary				= (typeof raw.legendary	=== 'string' && validLegendaryNames.has(raw.legendary))	? raw.legendary	: null;
 		return {mods, enchant, legendary};
 	}
 
