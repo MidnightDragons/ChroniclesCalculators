@@ -1,0 +1,2056 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Crafting Cost Calculator</title>
+<style>
+	:root {
+		--bg:		#14181fff;
+		--panel:	#1c222cff;
+		--panel2:	#232a36ff;
+		--border:	#2e3644ff;
+		--text:		#e8ecf3ff;
+		--muted:	#8b95a7ff;
+		--accent:	#d4a24cff;
+		--accent2:	#5ba3d0ff;
+		--good:		#5fb87aff;
+		--bad:		#e2695fff;
+		--black:	#000000ff;
+	}
+
+	* { box-sizing: border-box; }
+
+	body {
+		margin: 0;
+		font-family: 'Segoe UI', 'Tahoma', 'sans-serif';
+		background: var(--bg);
+		color: var(--text);
+		min-height: 100vh;
+		padding: 24px;
+	}
+
+	h1 {
+		text-align: center;
+		font-size: 1.5rem;
+		margin: 0 0 4px;
+		margin-bottom: 30px;
+		letter-spacing: .5px;
+	}
+
+	.sub {
+		color: var(--muted);
+		margin-bottom: 20px;
+		font-size: .9rem;
+	}
+
+	.grid {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 18px;
+		max-width: 1300px;
+		margin: 0 auto;
+	}
+
+	@media(max-width:900px) { .grid { grid-template-columns: 1fr; } }
+	.panel {
+		background: var(--panel);
+		border: 1px solid var(--border);
+		border-radius: 4px;
+		padding: 16px 18px;
+		box-shadow: 0 4px 14px rgba(0, 0, 0, .25);
+	}
+	.panel h2 {
+		font-size: 1.05rem;
+		margin: 0 0 12px;
+		color: var(--accent);
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		font-weight: 700;
+	}
+
+	.full { grid-column: 1/-1; }
+	.center {
+		grid-column: 1/-1;
+		max-width: 1300px;
+		margin: 0 auto 18px;
+		justify-content: space-between;
+		align-items: center;
+		flex-wrap: wrap;
+		gap: 10px;
+		width: 25%;
+	}
+
+	.search-row {
+		display: flex;
+		gap: 8px;
+		margin-bottom: 10px;
+	}
+
+	input[type=text], input[type=number], select {
+		background: var(--panel2);
+		border: 1px solid var(--border);
+		color: var(--text);
+		padding: 7px 9px;
+		border-radius: 4px;
+		font-size: .9rem;
+	}
+	input[type=text] { flex: 1; }
+	input[type=number] { width: 70px; }
+	select {
+		flex: 1;
+		max-width: 100%;
+	}
+
+	button {
+		background: var(--accent2);
+		color: #0d1117;
+		border: none;
+		padding: 7px 12px;
+		border-radius: 4px;
+		font-weight: 600;
+		font-size: .85rem;
+		cursor: pointer;
+	}
+	button:hover { filter: brightness(1.15); }
+	button.secondary {
+		background: var(--panel2);
+		color: var(--text);
+		border: 1px solid var(--border);
+	}
+	button.danger {
+		background: var(--bad);
+		color: #1a0f0d;
+	}
+	button.small {
+		padding: 3px 8px;
+		font-size: .75rem;
+	}
+	#calcBtn {
+		display: none;
+	}
+
+	.autocomplete { position:relative; }
+	.ac-list {
+		position: absolute;
+		top: 100%;
+		left: 0;
+		right: 0;
+		background: var(--panel2);
+		border: 1px solid var(--border);
+		border-radius: 4px;
+		max-height: 220px;
+		overflow-y: auto;
+		z-index: 20;
+		margin-top: 2px;
+	}
+	.ac-item {
+		padding: 7px 10px;
+		cursor: pointer;
+		font-size: .85rem;
+		border-bottom: 1px solid var(--border);
+	}
+	.ac-item:last-child { border-bottom: none; }
+	.ac-item:hover { background: #2a3242; }
+	.ac-item small {
+		color: var(--muted);
+		display: block;
+	}
+
+	table {
+		width: 100%;
+		border-collapse: collapse;
+		font-size: .85rem;
+	}
+
+	th {
+		text-align: left;
+		color: var(--muted);
+		font-weight: 600;
+		padding: 6px 8px;
+		border-bottom: 1px solid var(--border);
+	}
+	td {
+		padding: 6px 8px;
+		border-bottom: 1px solid #232a36;
+	}
+	tr:last-child td { border-bottom: none; }
+
+	.row-name { font-weight: 600; }
+
+	.qty-input { width: 60px; }
+
+	.list-empty {
+		color: var(--muted);
+		font-style: italic;
+		font-size: .85rem;
+		padding: 10px 0;
+	}
+
+	.tag {
+		display: inline-block;
+		font-size: .7rem;
+		padding: 1px 6px;
+		border-radius: 4px;
+		background: #2a3242;
+		color: var(--muted);
+		margin-left: 6px;
+	}
+
+	.result-section h3 {
+		margin: 14px 0 6px;
+		color: var(--accent2);
+		font-size: .95rem;
+	}
+	.result-section h3:first-child { margin-top: 0; }
+
+	.need-more {
+		color: var(--bad);
+		font-weight: 700;
+	}
+	.have-enough { color: var(--good); }
+
+	.actions-top {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		margin-bottom: 10px;
+	}
+
+	.pill-btns {
+		display: flex;
+		gap: 6px;
+	}
+
+	.scrollbox {
+		max-height: 280px;
+		overflow-y: auto;
+	}
+
+	::-webkit-scrollbar { width: 8px; }
+	::-webkit-scrollbar-thumb {
+		background: #333c4a;
+		border-radius: 4px;
+	}
+
+	.customize-row td {
+		background: var(--panel2);
+		padding: 10px 12px;
+	}
+	.customize-panel {
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+	}
+
+	.cz-title {
+		font-weight: 600;
+		color: var(--accent2);
+		font-size: .85rem;
+		display: flex;
+		align-items: center;
+		gap: 6px;
+	}
+	.cz-row {
+		display: flex;
+		align-items: center;
+		font-size: .82rem;
+		gap: 8px;
+	}
+	.cz-row label {
+		color: var(--muted);
+		min-width: 90px;
+	}
+	.cz-row select {
+		flex: 1;
+		max-width: 420px;
+	}
+
+	footer {
+		text-align: center;
+		color: var(--muted);
+		font-size: .75rem;
+		margin-top: 26px;
+		text-shadow: 1px 1px 15px var(--black);
+	}
+	footer .block-line > span {
+		display: inline-block;
+	}
+
+	span.block-line {
+		-webkit-background-clip: text;
+		background-clip: text;
+		color: transparent;
+		display: inline-block;
+		background-image: linear-gradient(90deg,
+			#c63939ff,
+			#c66839ff,
+			#c69739ff,
+			#c6c639ff,
+			#97c639ff,
+			#68c639ff,
+			#39c639ff,
+			#39c668ff,
+			#39c697ff,
+			#39c6c6ff,
+			#3997c6ff,
+			#3968c6ff,
+			#3939c6ff,
+			#6839c6ff,
+			#9739c6ff,
+			#c639c6ff,
+			#c63997ff,
+			#c63968ff,
+			#c63939ff
+		);
+	}
+
+	.sidenav {
+		position: fixed;
+		top: 37%;
+		width: 13%;
+		left: 0;
+		overflow-x: hidden;
+	}
+</style>
+</head>
+
+<body>
+
+<!-- OPTIONS -->
+<div class="panel sidenav">
+	<h2>Options</h2>
+	<div class="cz-title" style="margin-bottom: 5px;">Backup</div>
+	<div class="pill-btns">
+		<button class="secondary small" id="importAllBtn">Import</button>
+		<button class="secondary small" id="exportAllBtn">Export</button>
+		<input type="file" id="importAllFile" accept="application/json" style="display: none;">
+	</div>
+	<div id="quickStats" style="font-size: .9rem; line-height: 1.9;"></div>
+	<div class="cz-title" style="margin-top: 6px;">Include in cost totals:</div>
+	<div style="display: flex; flex-direction: column; gap: 4px; font-size: .85rem; margin: 6px 0 10px;">
+		<label style="display: flex; align-items: center; gap: 6px; cursor: pointer;"><input type="checkbox" id="toggleMods" checked> Modifications</label>
+		<label style="display: flex; align-items: center; gap: 6px; cursor: pointer;"><input type="checkbox" id="toggleEnchant" checked> Enchantments</label>
+		<label style="display: flex; align-items: center; gap: 6px; cursor: pointer;"><input type="checkbox" id="toggleLegendary" checked> Legendary Effects</label>
+	</div>
+	<button id="calcBtn" style="width: 100%; margin-top: 10px; padding: 10px;">Recalculate (Debug)</button>
+</div>
+
+<h1>Elder Scrolls: Chronicles - Crafting Cost Calculator</h1>
+
+<div class="grid">
+	<!-- INVENTORY -->
+	<div class="panel">
+		<h2>Inventory</h2>
+		<div class="search-row" id="invSearchWrap">
+			<select id="invSelect"></select>
+			<input type="number" id="invQty" value="1" min="0">
+			<button id="invAddBtn">Add</button>
+		</div>
+		<div class="scrollbox">
+			<table id="invTable">
+				<thead><tr><th>Item</th><th>Quantity</th><th></th></tr></thead>
+				<tbody></tbody>
+			</table>
+			<div class="list-empty" id="invEmpty">EMPTY</div>
+		</div>
+	</div>
+
+	<!-- DESIRED GEAR -->
+	<div class="panel">
+		<h2>Desired Gear</h2>
+		<div class="search-row" id="desiredSearchWrap">
+			<select id="desiredSelect"></select>
+			<button id="desiredAddBtn">Add</button>
+		</div>
+		<div class="scrollbox" id="favBox">
+			<div class="list-empty" id="favEmpty">EMPTY</div>
+			<table id="favTable" style="display: none;">
+				<thead><tr><th>Item</th><th></th></tr></thead>
+				<tbody></tbody>
+			</table>
+		</div>
+	</div>
+
+	<!-- REPAIR LIST -->
+	<div class="panel">
+		<h2>To Repair</h2>
+		<div class="search-row" id="repairSearchWrap">
+			<select id="repairSelect"></select>
+			<input type="number" id="repairQty" value="1" min="1">
+			<button id="repairAddBtn">Add</button>
+		</div>
+		<div class="scrollbox">
+			<table id="repairTable">
+				<thead><tr><th>Item</th><th>Count</th><th></th></tr></thead>
+				<tbody></tbody>
+			</table>
+			<div class="list-empty" id="repairEmpty">EMPTY</div>
+		</div>
+		<div style="margin-top: 10px;">
+			<button class="secondary small" id="clearRepairBtn">Clear</button>
+		</div>
+	</div>
+
+	<!-- CRAFT LIST -->
+	<div class="panel">
+		<h2>To Craft</h2>
+		<div class="scrollbox">
+			<table id="craftTable">
+				<thead><tr><th>Item</th><th>Quantity</th><th></th></tr></thead>
+				<tbody></tbody>
+			</table>
+			<div class="list-empty" id="craftEmpty">EMPTY</div>
+		</div>
+		<div style="margin-top: 10px; display: flex; gap: 8px;">
+			<button class="secondary small" id="loadFavsBtn">Import Desired Gear</button>
+			<button class="secondary small" id="clearCraftBtn">Clear</button>
+		</div>
+	</div>
+
+	<!-- RESULTS -->
+	<div class="panel full result-section">
+		<h2>Results</h2>
+		<div id="results"><div class="list-empty">Not calculated yet!</div></div>
+	</div>
+
+</div>
+
+<footer>
+	<span class="block-line">Meow :3</span>
+</footer>
+
+<script>
+// Raw data: Name \t Category \t Craft Recipe (ingredients string) \t Modification/Upgrade Cost (ingredients string) \t Upgrades To
+const RAW_ITEMS = `
+Hide Armor|Light Armor|10 Jute|Leather Armor|5 Jute|1|2 Jute
+Fur Armor|Light Armor|10 Flax|Hardscale Armor|5 Flax|1|2 Flax
+Leather Armor|Light Armor|Hide Armor, 4 Kreshfibre, 6 Jute|Chitin Armor|3 Kreshfibre, 5 Jute|2|2 Kreshfibre, 1 Jute
+Hardscale Armor|Light Armor|Fur Armor, 4 Ebonthread, 6 Flax|Moonscale Armor|3 Ebonthread, 5 Flax|2|2 Ebonthread, 1 Flax
+Chitin Armor|Light Armor|Leather Armor, 4 Silverlinen, 6 Kreshfibre, 6 Jute|Glass Armor|3 Silverlinen, 4 Kreshfibre, 4 Jute|3|2 Silverlinen, 1 Kreshfibre
+Moonscale Armor|Light Armor|Hardscale Armor, 4 Ironthread, 6 Ebonthread, 6 Flax|Ebonscale Armor|3 Ironthread, 4 Ebonthread, 4 Flax|3|2 Ironthread, 1 Ebonthread
+Glass Armor|Light Armor|Chitin Armor, 5 Ancestor-Moth Silk, 10 Silverlinen, 10 Kreshfibre|N/A|5 Ancestor-Moth Silk, 5 Silverlinen, 5 Kreshfibre|Masterwork|2 Ancestor-Moth Silk, 1 Silverlinen
+Ebonscale Armor|Light Armor|Moonscale Armor, 5 Void Velvet, 10 Ironthread, 10 Ebonthread|N/A|5 Void Velvet, 5 Ironthread, 5 Ebonthread|Masterwork|2 Void Velvet, 1 Ironthread
+Padded Hide Cuirass|Medium Armor|10 Jute|Thick Leather Cuirass|5 Jute|1|2 Jute
+Padded Fur Cuirass|Medium Armor|10 Flax|Thick Hardscale Cuirass|5 Flax|1|2 Flax
+Thick Leather Cuirass|Medium Armor|Padded Hide Cuirass, 4 Kreshfibre, 6 Jute|Padded Chitin Armor|3 Kreshfibre, 5 Jute|2|2 Kreshfibre, 1 Jute
+Thick Hardscale Cuirass|Medium Armor|Padded Fur Cuirass, 4 Ebonthread, 6 Flax|Padded Moonscale Armor|3 Ebonthread, 5 Flax|2|2 Ebonthread, 1 Flax
+Padded Chitin Armor|Medium Armor|Thick Leather Cuirass, 4 Silverlinen, 6 Kreshfibre, 6 Jute|Reinforced Glass Armor|3 Silverlinen, 4 Kreshfibre, 4 Jute|3|2 Silverlinen, 1 Kreshfibre
+Padded Moonscale Armor|Medium Armor|Thick Hardscale Cuirass, 4 Ironthread, 6 Ebonthread, 6 Flax|Reinforced Ebonscale Armor|3 Ironthread, 4 Ebonthread, 4 Flax|3|2 Ironthread, 1 Ebonthread
+Reinforced Glass Armor|Medium Armor|Padded Chitin Armor, 5 Ancestor-Moth Silk, 10 Silverlinen, 10 Kreshfibre|N/A|5 Ancestor-Moth Silk, 5 Silverlinen, 5 Kreshfibre|Masterwork|2 Ancestor-Moth Silk, 1 Silverlinen
+Reinforced Ebonscale Armor|Medium Armor|Padded Moonscale Armor, 5 Void Velvet, 10 Ironthread, 10 Ebonthread|N/A|5 Void Velvet, 5 Ironthread, 5 Ebonthread|Masterwork|2 Void Velvet, 1 Ironthread
+Banded Iron Armor|Heavy Armor|10 Iron|Moonstone Armor|5 Iron|1|2 Iron
+Steel Armor|Heavy Armor|10 Corundum|Orichalc Armor|5 Corundum|1|2 Corundum
+Moonstone Armor|Heavy Armor|Banded Iron Armor, 4 Moonstone, 6 Iron|Malachite Armor|3 Moonstone, 5 Iron|2|2 Moonstone, 1 Iron
+Orichalc Armor|Heavy Armor|Steel Armor, 4 Orichalcum, 6 Corundum|Ebony Armor|3 Orichalcum, 5 Corundum|2|2 Orichalcum, 1 Corundum
+Malachite Armor|Heavy Armor|Moonstone Armor, 4 Malachite, 6 Moonstone, 6 Iron|Mithril Armor|3 Malachite, 4 Moonstone, 4 Iron|3|2 Malachite, 1 Moonstone
+Ebony Armor|Heavy Armor|Orichalc Armor, 4 Ebony, 6 Orichalcum, 6 Corundum|Adamantium Armor|3 Ebony, 4 Orichalcum, 4 Corundum|3|2 Ebony, 1 Orichalcum
+Mithril Armor|Heavy Armor|Malachite Armor, 5 Mithril, 10 Malachite, 10 Moonstone|N/A|5 Mithril, 5 Malachite, 5 Moonstone|Masterwork|2 Mithril, 1 Malachite
+Adamantium Armor|Heavy Armor|Ebony Armor, 5 Adamantium, 10 Ebony, 10 Orichalcum|N/A|5 Adamantium, 5 Ebony, 5 Orichalcum|Masterwork|2 Adamantium, 1 Ebony
+Cotton Robes|Robes|10 Jute|Silken Robes|5 Jute|1|2 Jute
+Linen Robes|Robes|10 Flax|Woolen Robes|5 Flax|1|2 Flax
+Silken Robes|Robes|Cotton Robes, 4 Kreshfibre, 6 Jute|Gossamer Robes|3 Kreshfibre, 5 Jute|2|2 Kreshfibre, 1 Jute
+Woolen Robes|Robes|Linen Robes, 4 Ebonthread, 6 Flax|Thick Woolen Robes|3 Ebonthread, 5 Flax|2|2 Ebonthread, 1 Flax
+Gossamer Robes|Robes|Silken Robes, 4 Silverlinen, 6 Kreshfibre, 6 Jute|Exquisite Velvet Robes|3 Silverlinen, 4 Kreshfibre, 4 Jute|3|2 Silverlinen, 1 Kreshfibre
+Thick Woolen Robes|Robes|Woolen Robes, 4 Ironthread, 6 Ebonthread, 6 Flax|Exquisite Silk Robes|3 Ironthread, 4 Ebonthread, 4 Flax|3|2 Ironthread, 1 Ebonthread
+Exquisite Silk Robes|Robes|Gossamer Robes, 5 Ancestor-Moth Silk, 10 Silverlinen, 10 Kreshfibre|N/A|5 Ancestor-Moth Silk, 5 Silverlinen, 5 Kreshfibre|Masterwork|2 Ancestor-Moth Silk, 1 Silverlinen
+Exquisite Velvet Robes|Robes|Thick Woolen Robes, 5 Void Velvet, 10 Ironthread, 10 Ebonthread|N/A|5 Void Velvet, 5 Ironthread, 5 Ebonthread|Masterwork|2 Void Velvet, 1 Ironthread
+Cotton Clothes|Clothes|10 Jute|Silken Clothes|5 Jute|1|2 Jute
+Linen Clothes|Clothes|10 Flax|Woolen Clothes|5 Flax|1|2 Flax
+Silken Finery|Clothes|Cotton Clothes, 4 Kreshfibre, 6 Jute|Gossamer Clothes|3 Kreshfibre, 5 Jute|2|2 Kreshfibre, 1 Jute
+Woolen Finery|Clothes|Linen Clothes, 4 Ebonthread, 6 Flax|Thick Woolen Clothes|3 Ebonthread, 5 Flax|2|2 Ebonthread, 1 Flax
+Gossamer Finery|Clothes|Silken Finery, 4 Silverlinen, 6 Kreshfibre, 6 Jute|Exquisite Silk Regalia|3 Silverlinen, 4 Kreshfibre, 4 Jute|3|2 Silverlinen, 1 Kreshfibre
+Thick Woolen Finery|Clothes|Woolen Finery, 4 Ironthread, 6 Ebonthread, 6 Flax|Exquisite Velvet Regalia|3 Ironthread, 4 Ebonthread, 4 Flax|3|2 Ironthread, 1 Ebonthread
+Exquisite Silk Regalia|Clothes|Gossamer Finery, 5 Ancestor-Moth Silk, 10 Silverlinen, 10 Kreshfibre|N/A|5 Ancestor-Moth Silk, 5 Silverlinen, 5 Kreshfibre|Masterwork|2 Ancestor-Moth Silk, 1 Silverlinen
+Exquisite Velvet Regalia|Clothes|Thick Woolen Finery, 5 Void Velvet, 10 Ironthread, 10 Ebonthread|N/A|5 Void Velvet, 5 Ironthread, 5 Ebonthread|Masterwork|2 Void Velvet, 1 Ironthread
+Maple Staff of Fire|Staves|10 Maple|Beech Staff of Fire|5 Maple|1|2 Maple
+Maple Staff of Frost|Staves|10 Maple|Beech Staff of Frost|5 Maple|1|2 Maple
+Maple Staff of Shock|Staves|10 Maple|Beech Staff of Shock|5 Maple|1|2 Maple
+Hickory Staff of Fire|Staves|10 Hickory|Oak Staff of Fire|5 Hickory|1|2 Hickory
+Hickory Staff of Frost|Staves|10 Hickory|Oak Staff of Frost|5 Hickory|1|2 Hickory
+Hickory Staff of Shock|Staves|10 Hickory|Oak Staff of Shock|5 Hickory|1|2 Hickory
+Beech Staff of Fire|Staves|Maple Staff of Fire, 4 Beech, 6 Maple|Ash Staff of Fire|3 Beech, 5 Maple|2|2 Beech, 1 Maple
+Beech Staff of Frost|Staves|Maple Staff of Frost, 4 Beech, 6 Maple|Ash Staff of Frost|3 Beech, 5 Maple|2|2 Beech, 1 Maple
+Beech Staff of Shock|Staves|Maple Staff of Shock, 4 Beech, 6 Maple|Ash Staff of Shock|3 Beech, 5 Maple|2|2 Beech, 1 Maple
+Oak Staff of Fire|Staves|Hickory Staff of Fire, 4 Oak, 6 Hickory|Yew Staff of Fire|3 Oak, 5 Hickory|2|2 Oak, 1 Hickory
+Oak Staff of Frost|Staves|Hickory Staff of Frost, 4 Oak, 6 Hickory|Yew Staff of Frost|3 Oak, 5 Hickory|2|2 Oak, 1 Hickory
+Oak Staff of Shock|Staves|Hickory Staff of Shock, 4 Oak, 6 Hickory|Yew Staff of Shock|3 Oak, 5 Hickory|2|2 Oak, 1 Hickory
+Ash Staff of Fire|Staves|Beech Staff of Fire, 4 Ash, 6 Beech, 6 Maple|Ruby Ash Staff of Fire|3 Ash, 4 Beech, 4 Maple|3|2 Ash, 1 Beech
+Ash Staff of Frost|Staves|Beech Staff of Frost, 4 Ash, 6 Beech, 6 Maple|Ruby Ash Staff of Frost|3 Ash, 4 Beech, 4 Maple|3|2 Ash, 1 Beech
+Ash Staff of Shock|Staves|Beech Staff of Shock, 4 Ash, 6 Beech, 6 Maple|Ruby Ash Staff of Shock|3 Ash, 4 Beech, 4 Maple|3|2 Ash, 1 Beech
+Yew Staff of Fire|Staves|Oak Staff of Fire, 4 Yew, 6 Oak, 6 Hickory|Nightwood Staff of Fire|3 Yew, 4 Oak, 4 Hickory|3|2 Yew, 1 Oak
+Yew Staff of Frost|Staves|Oak Staff of Frost, 4 Yew, 6 Oak, 6 Hickory|Nightwood Staff of Frost|3 Yew, 4 Oak, 4 Hickory|3|2 Yew, 1 Oak
+Yew Staff of Shock|Staves|Oak Staff of Shock, 4 Yew, 6 Oak, 6 Hickory|Nightwood Staff of Shock|3 Yew, 4 Oak, 4 Hickory|3|2 Yew, 1 Oak
+Ruby Ash Staff of Fire|Staves|Ash Staff of Fire, 5 Ruby Ash, 10 Ash, 10 Beech|N/A|5 Ruby Ash, 5 Ash, 5 Beech|Masterwork|2 Ruby Ash, 1 Ash
+Ruby Ash Staff of Frost|Staves|Ash Staff of Frost, 5 Ruby Ash, 10 Ash, 10 Beech|N/A|5 Ruby Ash, 5 Ash, 5 Beech|Masterwork|2 Ruby Ash, 1 Ash
+Ruby Ash Staff of Shock|Staves|Ash Staff of Shock, 5 Ruby Ash, 10 Ash, 10 Beech|N/A|5 Ruby Ash, 5 Ash, 5 Beech|Masterwork|2 Ruby Ash, 1 Ash
+Nightwood Staff of Fire|Staves|Yew Staff of Fire, 5 Nightwood, 10 Yew, 10 Oak|N/A|5 Nightwood, 5 Yew, 5 Oak|Masterwork|2 Nightwood, 1 Yew
+Nightwood Staff of Frost|Staves|Yew Staff of Frost, 5 Nightwood, 10 Yew, 10 Oak|N/A|5 Nightwood, 5 Yew, 5 Oak|Masterwork|2 Nightwood, 1 Yew
+Nightwood Staff of Shock|Staves|Yew Staff of Shock, 5 Nightwood, 10 Yew, 10 Oak|N/A|5 Nightwood, 5 Yew, 5 Oak|Masterwork|2 Nightwood, 1 Yew
+Banded Iron Shield|Shields|5 Iron, 5 Maple|Moonstone Shield|2 Iron, 2 Maple|1|1 Iron, 1 Maple
+Steel Shield|Shields|5 Corundum, 5 Hickory|Orichalc Shield|2 Corundum, 2 Hickory|1|1 Corundum, 1 Hickory
+Moonstone Shield|Shields|Banded Iron Shield, 2 Moonstone, 2 Beech, 3 Iron, 3 Maple|Glass Shield|1 Moonstone, 1 Beech, 2 Iron, 2 Maple|2|1 Moonstone, 1 Beech, 1 Iron
+Orichalc Shield|Shields|Steel Shield, 2 Orichalcum, 2 Oak, 3 Corundum, 3 Hickory|Ebony Shield|1 Orichalcum, 1 Oak, 2 Corundum, 2 Hickory|2|1 Orichalcum, 1 Oak, 1 Corundum
+Glass Shield|Shields|Moonstone Shield, 2 Malachite, 2 Ash, 3 Moonstone, 3 Beech, 3 Iron, 3 Maple|Mithril Shield|1 Malachite, 1 Ash, 2 Moonstone, 2 Beech, 2 Iron, 2 Maple|3|1 Malachite, 1 Ash, 1 Moonstone
+Ebony Shield|Shields|Orichalc Shield, 2 Ebony, 2 Yew, 3 Orichalcum, 3 Oak, 3 Corundum, 3 Hickory|Adamantium Shield|1 Ebony, 1 Yew, 2 Orichalcum, 2 Oak, 2 Corundum, 2 Hickory|3|1 Ebony, 1 Yew, 1 Orichalcum
+Mithril Shield|Shields|Glass Shield, 3 Mithril, 2 Ruby Ash, 5 Malachite, 5 Ash, 5 Moonstone, 5 Beech|N/A|2 Mithril, 2 Ruby Ash, 2 Malachite, 2 Ash, 2 Moonstone, 2 Beech|Masterwork|1 Mithril, 1 Ruby Ash, 1 Malachite
+Adamantium Shield|Shields|Ebony Shield, 3 Adamantium, 2 Nightwood, 5 Ebony, 5 Yew, 5 Orichalcum, 5 Oak|N/A|2 Adamantium, 2 Nightwood, 2 Ebony, 2 Yew, 2 Orichalcum, 2 Oak|Masterwork|1 Adamantium, 1 Nightwood, 1 Ebony
+Iron 1H Slashing Weapon|1H Weapons|10 Iron|Moonstone 1H Slashing Weapon|5 Iron|1|2 Iron
+Iron 1H Blunt Weapon|1H Weapons|10 Iron|Moonstone 1H Blunt Weapon|5 Iron|1|2 Iron
+Iron 1H Piercing Weapon|1H Weapons|10 Iron|Moonstone 1H Piercing Weapon|5 Iron|1|2 Iron
+Steel 1H Slashing Weapon|1H Weapons|10 Corundum|Orichalc 1H Slashing Weapon|5 Corundum|1|2 Corundum
+Steel 1H Blunt Weapon|1H Weapons|10 Corundum|Orichalc 1H Blunt Weapon|5 Corundum|1|2 Corundum
+Steel 1H Piercing Weapon|1H Weapons|10 Corundum|Orichalc 1H Piercing Weapon|5 Corundum|1|2 Corundum
+Moonstone 1H Slashing Weapon|1H Weapons|Iron 1H Slashing Weapon, 4 Moonstone, 6 Iron|Glass 1H Slashing Weapon|3 Moonstone, 5 Iron|2|2 Moonstone, 1 Iron
+Moonstone 1H Blunt Weapon|1H Weapons|Iron 1H Blunt Weapon, 4 Moonstone, 6 Iron|Glass 1H Blunt Weapon|3 Moonstone, 5 Iron|2|2 Moonstone, 1 Iron
+Moonstone 1H Piercing Weapon|1H Weapons|Iron 1H Piercing Weapon, 4 Moonstone, 6 Iron|Glass 1H Piercing Weapon|3 Moonstone, 5 Iron|2|2 Moonstone, 1 Iron
+Orichalc 1H Slashing Weapon|1H Weapons|Steel 1H Slashing Weapon, 4 Orichalcum, 6 Corundum|Ebony 1H Slashing Weapon|3 Orichalcum, 5 Corundum|2|2 Orichalcum, 1 Corundum
+Orichalc 1H Blunt Weapon|1H Weapons|Steel 1H Blunt Weapon, 4 Orichalcum, 6 Corundum|Ebony 1H Blunt Weapon|3 Orichalcum, 5 Corundum|2|2 Orichalcum, 1 Corundum
+Orichalc 1H Piercing Weapon|1H Weapons|Steel 1H Piercing Weapon, 4 Orichalcum, 6 Corundum|Ebony 1H Piercing Weapon|3 Orichalcum, 5 Corundum|2|2 Orichalcum, 1 Corundum
+Glass 1H Slashing Weapon|1H Weapons|Moonstone 1H Slashing Weapon, 4 Malachite, 6 Moonstone, 6 Iron|Mithril 1H Slashing Weapon|3 Malachite, 4 Moonstone, 4 Iron|3|2 Malachite, 1 Moonstone
+Glass 1H Blunt Weapon|1H Weapons|Moonstone 1H Blunt Weapon, 4 Malachite, 6 Moonstone, 6 Iron|Mithril 1H Blunt Weapon|3 Malachite, 4 Moonstone, 4 Iron|3|2 Malachite, 1 Moonstone
+Glass 1H Piercing Weapon|1H Weapons|Moonstone 1H Piercing Weapon, 4 Malachite, 6 Moonstone, 6 Iron|Mithril 1H Piercing Weapon|3 Malachite, 4 Moonstone, 4 Iron|3|2 Malachite, 1 Moonstone
+Ebony 1H Slashing Weapon|1H Weapons|Orichalc 1H Slashing Weapon, 4 Ebony, 6 Orichalcum, 6 Corundum|Adamantium 1H Slashing Weapon|3 Ebony, 4 Orichalcum, 4 Corundum|3|2 Ebony, 1 Orichalcum
+Ebony 1H Blunt Weapon|1H Weapons|Orichalc 1H Blunt Weapon, 4 Ebony, 6 Orichalcum, 6 Corundum|Adamantium 1H Blunt Weapon|3 Ebony, 4 Orichalcum, 4 Corundum|3|2 Ebony, 1 Orichalcum
+Ebony 1H Piercing Weapon|1H Weapons|Orichalc 1H Piercing Weapon, 4 Ebony, 6 Orichalcum, 6 Corundum|Adamantium 1H Piercing Weapon|3 Ebony, 4 Orichalcum, 4 Corundum|3|2 Ebony, 1 Orichalcum
+Mithril 1H Slashing Weapon|1H Weapons|Glass 1H Slashing Weapon, 5 Mithril, 10 Malachite, 10 Moonstone|N/A|5 Mithril, 5 Malachite, 5 Moonstone|Masterwork|2 Mithril, 1 Malachite
+Mithril 1H Blunt Weapon|1H Weapons|Glass 1H Blunt Weapon, 5 Mithril, 10 Malachite, 10 Moonstone|N/A|5 Mithril, 5 Malachite, 5 Moonstone|Masterwork|2 Mithril, 1 Malachite
+Mithril 1H Piercing Weapon|1H Weapons|Glass 1H Piercing Weapon, 5 Mithril, 10 Malachite, 10 Moonstone|N/A|5 Mithril, 5 Malachite, 5 Moonstone|Masterwork|2 Mithril, 1 Malachite
+Adamantium 1H Slashing Weapon|1H Weapons|Ebony 1H Slashing Weapon, 5 Adamantium, 10 Ebony, 10 Orichalcum|N/A|5 Adamantium, 5 Ebony, 5 Orichalcum|Masterwork|2 Adamantium, 1 Ebony
+Adamantium 1H Blunt Weapon|1H Weapons|Ebony 1H Blunt Weapon, 5 Adamantium, 10 Ebony, 10 Orichalcum|N/A|5 Adamantium, 5 Ebony, 5 Orichalcum|Masterwork|2 Adamantium, 1 Ebony
+Adamantium 1H Piercing Weapon|1H Weapons|Ebony 1H Piercing Weapon, 5 Adamantium, 10 Ebony, 10 Orichalcum|N/A|5 Adamantium, 5 Ebony, 5 Orichalcum|Masterwork|2 Adamantium, 1 Ebony
+Iron 2H Slashing Weapon|2H Weapons|10 Iron|Moonstone 2H Slashing Weapon|5 Iron|1|2 Iron
+Iron 2H Blunt Weapon|2H Weapons|10 Iron|Moonstone 2H Blunt Weapon|5 Iron|1|2 Iron
+Iron 2H Piercing Weapon|2H Weapons|10 Iron|Moonstone 2H Piercing Weapon|5 Iron|1|2 Iron
+Steel 2H Slashing Weapon|2H Weapons|10 Corundum|Orichalc 2H Slashing Weapon|5 Corundum|1|2 Corundum
+Steel 2H Blunt Weapon|2H Weapons|10 Corundum|Orichalc 2H Blunt Weapon|5 Corundum|1|2 Corundum
+Steel 2H Piercing Weapon|2H Weapons|10 Corundum|Orichalc 2H Piercing Weapon|5 Corundum|1|2 Corundum
+Moonstone 2H Slashing Weapon|2H Weapons|Iron 2H Slashing Weapon, 4 Moonstone, 6 Iron|Glass 2H Slashing Weapon|3 Moonstone, 5 Iron|2|2 Moonstone, 1 Iron
+Moonstone 2H Blunt Weapon|2H Weapons|Iron 2H Blunt Weapon, 4 Moonstone, 6 Iron|Glass 2H Blunt Weapon|3 Moonstone, 5 Iron|2|2 Moonstone, 1 Iron
+Moonstone 2H Piercing Weapon|2H Weapons|Iron 2H Piercing Weapon, 4 Moonstone, 6 Iron|Glass 2H Piercing Weapon|3 Moonstone, 5 Iron|2|2 Moonstone, 1 Iron
+Orichalc 2H Slashing Weapon|2H Weapons|Steel 2H Slashing Weapon, 4 Orichalcum, 6 Corundum|Ebony 2H Slashing Weapon|3 Orichalcum, 5 Corundum|2|2 Orichalcum, 1 Corundum
+Orichalc 2H Blunt Weapon|2H Weapons|Steel 2H Blunt Weapon, 4 Orichalcum, 6 Corundum|Ebony 2H Blunt Weapon|3 Orichalcum, 5 Corundum|2|2 Orichalcum, 1 Corundum
+Orichalc 2H Piercing Weapon|2H Weapons|Steel 2H Piercing Weapon, 4 Orichalcum, 6 Corundum|Ebony 2H Piercing Weapon|3 Orichalcum, 5 Corundum|2|2 Orichalcum, 1 Corundum
+Glass 2H Slashing Weapon|2H Weapons|Moonstone 2H Slashing Weapon, 4 Malachite, 6 Moonstone, 6 Iron|Mithril 2H Slashing Weapon|3 Malachite, 4 Moonstone, 4 Iron|3|2 Malachite, 1 Moonstone
+Glass 2H Blunt Weapon|2H Weapons|Moonstone 2H Blunt Weapon, 4 Malachite, 6 Moonstone, 6 Iron|Mithril 2H Blunt Weapon|3 Malachite, 4 Moonstone, 4 Iron|3|2 Malachite, 1 Moonstone
+Glass 2H Piercing Weapon|2H Weapons|Moonstone 2H Piercing Weapon, 4 Malachite, 6 Moonstone, 6 Iron|Mithril 2H Piercing Weapon|3 Malachite, 4 Moonstone, 4 Iron|3|2 Malachite, 1 Moonstone
+Ebony 2H Slashing Weapon|2H Weapons|Orichalc 2H Slashing Weapon, 4 Ebony, 6 Orichalcum, 6 Corundum|Adamantium 2H Slashing Weapon|3 Ebony, 4 Orichalcum, 4 Corundum|3|2 Ebony, 1 Orichalcum
+Ebony 2H Blunt Weapon|2H Weapons|Orichalc 2H Blunt Weapon, 4 Ebony, 6 Orichalcum, 6 Corundum|Adamantium 2H Blunt Weapon|3 Ebony, 4 Orichalcum, 4 Corundum|3|2 Ebony, 1 Orichalcum
+Ebony 2H Piercing Weapon|2H Weapons|Orichalc 2H Piercing Weapon, 4 Ebony, 6 Orichalcum, 6 Corundum|Adamantium 2H Piercing Weapon|3 Ebony, 4 Orichalcum, 4 Corundum|3|2 Ebony, 1 Orichalcum
+Mithril 2H Slashing Weapon|2H Weapons|Glass 2H Slashing Weapon, 5 Mithril, 10 Malachite, 10 Moonstone|N/A|5 Mithril, 5 Malachite, 5 Moonstone|Masterwork|2 Mithril, 1 Malachite
+Mithril 2H Blunt Weapon|2H Weapons|Glass 2H Blunt Weapon, 5 Mithril, 10 Malachite, 10 Moonstone|N/A|5 Mithril, 5 Malachite, 5 Moonstone|Masterwork|2 Mithril, 1 Malachite
+Mithril 2H Piercing Weapon|2H Weapons|Glass 2H Piercing Weapon, 5 Mithril, 10 Malachite, 10 Moonstone|N/A|5 Mithril, 5 Malachite, 5 Moonstone|Masterwork|2 Mithril, 1 Malachite
+Adamantium 2H Slashing Weapon|2H Weapons|Ebony 2H Slashing Weapon, 5 Adamantium, 10 Ebony, 10 Orichalcum|N/A|5 Adamantium, 5 Ebony, 5 Orichalcum|Masterwork|2 Adamantium, 1 Ebony
+Adamantium 2H Blunt Weapon|2H Weapons|Ebony 2H Blunt Weapon, 5 Adamantium, 10 Ebony, 10 Orichalcum|N/A|5 Adamantium, 5 Ebony, 5 Orichalcum|Masterwork|2 Adamantium, 1 Ebony
+Adamantium 2H Piercing Weapon|2H Weapons|Ebony 2H Piercing Weapon, 5 Adamantium, 10 Ebony, 10 Orichalcum|N/A|5 Adamantium, 5 Ebony, 5 Orichalcum|Masterwork|2 Adamantium, 1 Ebony
+Iron Bow|Bows|5 Iron, 5 Maple|Moonstone Bow|2 Iron, 2 Maple|1|1 Iron, 1 Maple
+Steel Bow|Bows|5 Corundum, 5 Hickory|Orichalc Bow|2 Corundum, 2 Hickory|1|1 Corundum, 1 Hickory
+Moonstone Bow|Bows|Iron Bow, 2 Moonstone, 2 Beech, 3 Iron, 3 Maple|Glass Bow|1 Moonstone, 1 Beech, 2 Iron, 2 Maple|2|1 Moonstone, 1 Beech, 1 Iron
+Orichalc Bow|Bows|Steel Bow, 2 Orichalcum, 2 Oak, 3 Corundum, 3 Hickory|Ebony Bow|1 Orichalcum, 1 Oak, 2 Corundum, 2 Hickory|2|1 Orichalcum, 1 Oak, 1 Corundum
+Glass Bow|Bows|Moonstone Bow, 2 Malachite, 2 Ash, 3 Moonstone, 3 Beech, 3 Iron, 3 Maple|Mithril Bow|1 Malachite, 1 Ash, 2 Moonstone, 2 Beech, 2 Iron, 2 Maple|3|1 Malachite, 1 Ash, 1 Moonstone
+Ebony Bow|Bows|Orichalc Bow, 2 Ebony, 2 Yew, 3 Orichalcum, 3 Oak, 3 Corundum, 3 Hickory|Adamantium Bow|1 Ebony, 1 Yew, 2 Orichalcum, 2 Oak, 2 Corundum, 2 Hickory|3|1 Ebony, 1 Yew, 1 Orichalcum
+Mithril Bow|Bows|Glass Bow, 3 Mithril, 2 Ruby Ash, 5 Malachite, 5 Ash, 5 Moonstone, 5 Beech|N/A|2 Mithril, 2 Ruby Ash, 2 Malachite, 2 Ash, 2 Moonstone, 2 Beech|Masterwork|1 Mithril, 1 Ruby Ash, 1 Malachite
+Adamantium Bow|Bows|Ebony Bow, 3 Adamantium, 2 Nightwood, 5 Ebony, 5 Yew, 5 Orichalcum, 5 Oak|N/A|2 Adamantium, 2 Nightwood, 2 Ebony, 2 Yew, 2 Orichalcum, 2 Oak|Masterwork|1 Adamantium, 1 Nightwood, 1 Ebony
+Maple Talisman|Talismans|10 Maple|Beech Talisman|5 Maple|1|2 Maple
+Hickory Talisman|Talismans|10 Hickory|Oak Talisman|5 Hickory|1|2 Hickory
+Beech Talisman|Talismans|Maple Talisman, 4 Beech, 6 Maple|Ash Talisman|3 Beech, 5 Maple|2|2 Beech, 1 Maple
+Oak Talisman|Talismans|Hickory Talisman, 4 Oak, 6 Hickory|Yew Talisman|3 Oak, 5 Hickory|2|2 Oak, 1 Hickory
+Ash Talisman|Talismans|Beech Talisman, 4 Ash, 6 Beech, 6 Maple|Ruby Ash Talisman|3 Ash, 4 Beech, 4 Maple|3|2 Ash, 1 Beech
+Yew Talisman|Talismans|Oak Talisman, 4 Yew, 6 Oak, 6 Hickory|Nightwood Talisman|3 Yew, 4 Oak, 4 Hickory|3|2 Yew, 1 Oak
+Ruby Ash Talisman|Talismans|Ash Talisman, 5 Ruby Ash, 10 Ash, 10 Beech|N/A|5 Ruby Ash, 5 Ash, 5 Beech|Masterwork|2 Ruby Ash, 1 Ash
+Nightwood Talisman|Talismans|Yew Talisman, 5 Nightwood, 10 Yew, 10 Oak|N/A|5 Nightwood, 5 Yew, 5 Oak|Masterwork|2 Nightwood, 1 Yew
+Pewter Sapphire Ring|Rings|5 Pewter, 5 Sapphire|Silver Sapphire Ring|2 Pewter, 2 Sapphire|1|1 Pewter, 1 Sapphire
+Pewter Emerald Ring|Rings|5 Pewter, 5 Emerald|Silver Emerald Ring|2 Pewter, 2 Emerald|1|1 Pewter, 1 Emerald
+Pewter Ruby Ring|Rings|5 Pewter, 5 Ruby|Silver Ruby Ring|2 Pewter, 2 Ruby|1|1 Pewter, 1 Ruby
+Pewter Diamond Ring|Rings|5 Pewter, 5 Diamond|Silver Diamond Ring|2 Pewter, 2 Diamond|1|1 Pewter, 1 Diamond
+Silver Sapphire Ring|Rings|Pewter Sapphire Ring, 2 Silver, 3 Pewter, 4 Sapphire|Gold Sapphire Ring|1 Silver, 2 Pewter, 4 Sapphire|2|1 Silver, 1 Pewter, 1 Sapphire
+Silver Emerald Ring|Rings|Pewter Emerald Ring, 2 Silver, 3 Pewter, 4 Emerald|Gold Emerald Ring|1 Silver, 2 Pewter, 4 Emerald|2|1 Silver, 1 Pewter, 1 Emerald
+Silver Ruby Ring|Rings|Pewter Ruby Ring, 2 Silver, 3 Pewter, 4 Ruby|Gold Ruby Ring|1 Silver, 2 Pewter, 4 Ruby|2|1 Silver, 1 Pewter, 1 Ruby
+Silver Diamond Ring|Rings|Pewter Diamond Ring, 2 Silver, 3 Pewter, 4 Diamond|Gold Diamond Ring|1 Silver, 2 Pewter, 4 Diamond|2|1 Silver, 1 Pewter, 1 Diamond
+Gold Sapphire Ring|Rings|Silver Sapphire Ring, 2 Gold, 3 Silver, 3 Pewter, 8 Sapphire|Platinum Sapphire Ring|1 Gold, 2 Silver, 2 Pewter, 5 Sapphire|3|1 Gold, 1 Silver, 2 Sapphire
+Gold Emerald Ring|Rings|Silver Emerald Ring, 2 Gold, 3 Silver, 3 Pewter, 8 Emerald|Platinum Emerald Ring|1 Gold, 2 Silver, 2 Pewter, 5 Emerald|3|1 Gold, 1 Silver, 2 Emerald
+Gold Ruby Ring|Rings|Silver Ruby Ring, 2 Gold, 3 Silver, 3 Pewter, 8 Ruby|Platinum Ruby Ring|1 Gold, 2 Silver, 2 Pewter, 5 Ruby|3|1 Gold, 1 Silver, 2 Ruby
+Gold Diamond Ring|Rings|Silver Diamond Ring, 2 Gold, 3 Silver, 3 Pewter, 8 Diamond|Platinum Diamond Ring|1 Gold, 2 Silver, 2 Pewter, 5 Diamond|3|1 Gold, 1 Silver, 2 Diamond
+Platinum Sapphire Ring|Rings|Gold Sapphire Ring, 3 Platinum, 5 Gold, 5 Silver, 12 Sapphire|N/A|2 Platinum, 2 Gold, 2 Silver, 7 Sapphire|Masterwork|1 Platinum, 1 Gold, 3 Sapphire
+Platinum Emerald Ring|Rings|Gold Emerald Ring, 3 Platinum, 5 Gold, 5 Silver, 12 Emerald|N/A|2 Platinum, 2 Gold, 2 Silver, 7 Emerald|Masterwork|1 Platinum, 1 Gold, 3 Emerald
+Platinum Ruby Ring|Rings|Gold Ruby Ring, 3 Platinum, 5 Gold, 5 Silver, 12 Ruby|N/A|2 Platinum, 2 Gold, 2 Silver, 7 Ruby|Masterwork|1 Platinum, 1 Gold, 3 Ruby
+Platinum Diamond Ring|Rings|Gold Diamond Ring, 3 Platinum, 5 Gold, 5 Silver, 12 Diamond|N/A|2 Platinum, 2 Gold, 2 Silver, 7 Diamond|Masterwork|1 Platinum, 1 Gold, 3 Diamond
+Pewter Sapphire Amulet|Amulets|5 Pewter, 5 Sapphire|Silver Sapphire Amulet|2 Pewter, 2 Sapphire|1|1 Pewter, 1 Sapphire
+Pewter Emerald Amulet|Amulets|5 Pewter, 5 Emerald|Silver Emerald Amulet|2 Pewter, 2 Emerald|1|1 Pewter, 1 Emerald
+Pewter Ruby Amulet|Amulets|5 Pewter, 5 Ruby|Silver Ruby Amulet|2 Pewter, 2 Ruby|1|1 Pewter, 1 Ruby
+Pewter Diamond Amulet|Amulets|5 Pewter, 5 Diamond|Silver Diamond Amulet|2 Pewter, 2 Diamond|1|1 Pewter, 1 Diamond
+Silver Sapphire Amulet|Amulets|Pewter Sapphire Amulet, 2 Silver, 3 Pewter, 4 Sapphire|Gold Sapphire Amulet|1 Silver, 2 Pewter, 4 Sapphire|2|1 Silver, 1 Pewter, 1 Sapphire
+Silver Emerald Amulet|Amulets|Pewter Emerald Amulet, 2 Silver, 3 Pewter, 4 Emerald|Gold Emerald Amulet|1 Silver, 2 Pewter, 4 Emerald|2|1 Silver, 1 Pewter, 1 Emerald
+Silver Ruby Amulet|Amulets|Pewter Ruby Amulet, 2 Silver, 3 Pewter, 4 Ruby|Gold Ruby Amulet|1 Silver, 2 Pewter, 4 Ruby|2|1 Silver, 1 Pewter, 1 Ruby
+Silver Diamond Amulet|Amulets|Pewter Diamond Amulet, 2 Silver, 3 Pewter, 4 Diamond|Gold Diamond Amulet|1 Silver, 2 Pewter, 4 Diamond|2|1 Silver, 1 Pewter, 1 Diamond
+Gold Sapphire Amulet|Amulets|Silver Sapphire Amulet, 2 Gold, 3 Silver, 3 Pewter, 8 Sapphire|Platinum Sapphire Amulet|1 Gold, 2 Silver, 2 Pewter, 5 Sapphire|3|1 Gold, 1 Silver, 2 Sapphire
+Gold Emerald Amulet|Amulets|Silver Emerald Amulet, 2 Gold, 3 Silver, 3 Pewter, 8 Emerald|Platinum Emerald Amulet|1 Gold, 2 Silver, 2 Pewter, 5 Emerald|3|1 Gold, 1 Silver, 2 Emerald
+Gold Ruby Amulet|Amulets|Silver Ruby Amulet, 2 Gold, 3 Silver, 3 Pewter, 8 Ruby|Platinum Ruby Amulet|1 Gold, 2 Silver, 2 Pewter, 5 Ruby|3|1 Gold, 1 Silver, 2 Ruby
+Gold Diamond Amulet|Amulets|Silver Diamond Amulet, 2 Gold, 3 Silver, 3 Pewter, 8 Diamond|Platinum Diamond Amulet|1 Gold, 2 Silver, 2 Pewter, 5 Diamond|3|1 Gold, 1 Silver, 2 Diamond
+Platinum Sapphire Amulet|Amulets|Gold Sapphire Amulet, 3 Platinum, 5 Gold, 5 Silver, 12 Sapphire|N/A|2 Platinum, 2 Gold, 2 Silver, 7 Sapphire|Masterwork|1 Platinum, 1 Gold, 3 Sapphire
+Platinum Emerald Amulet|Amulets|Gold Emerald Amulet, 3 Platinum, 5 Gold, 5 Silver, 12 Emerald|N/A|2 Platinum, 2 Gold, 2 Silver, 7 Emerald|Masterwork|1 Platinum, 1 Gold, 3 Emerald
+Platinum Ruby Amulet|Amulets|Gold Ruby Amulet, 3 Platinum, 5 Gold, 5 Silver, 12 Ruby|N/A|2 Platinum, 2 Gold, 2 Silver, 7 Ruby|Masterwork|1 Platinum, 1 Gold, 3 Ruby
+Platinum Diamond Amulet|Amulets|Gold Diamond Amulet, 3 Platinum, 5 Gold, 5 Silver, 12 Diamond|N/A|2 Platinum, 2 Gold, 2 Silver, 7 Diamond|Masterwork|1 Platinum, 1 Gold, 3 Diamond
+Pewter Potion Flask|Potion Flasks|10 Pewter|Silver Potion Flask|5 Pewter|1|N/A
+Silver Potion Flask|Potion Flasks|Pewter Potion Flask, 4 Silver, 6 Pewter|Gold Potion Flask|3 Silver, 5 Pewter|2|N/A
+Gold Potion Flask|Potion Flasks|Silver Potion Flask, 4 Gold, 6 Silver, 6 Pewter|Platinum Potion Flask|3 Gold, 4 Silver, 4 Pewter|3|N/A
+Platinum Potion Flask|Potion Flasks|Gold Potion Flask, 5 Platinum, 10 Gold, 10 Silver|N/A|5 Platinum, 5 Gold, 5 Silver|Masterwork|N/A
+`.trim();
+
+</script>
+<script>
+/* ---------- Parse raw data into item DB ---------- */
+function parseIngredients(str) {
+	str = str.trim();
+
+	if (!str || str.toUpperCase() === 'N/A') return [];
+	return str.split(',').map(tok => {
+		tok = tok.trim();
+		const m = tok.match(/^(\d+)\s+(.+)$/);
+		if (m) return { name:m[2].trim(), qty:parseInt(m[1],10) };
+		return {name:tok, qty:1};
+	});
+}
+
+function mergeIngredientLists(...lists) {
+	const byName = {};
+	const order = [];
+
+	lists.forEach(list => (list||[]).forEach(ing => {
+		if (!(ing.name in byName)) {
+			byName[ing.name] = 0;
+			order.push(ing.name);
+		}
+
+		byName[ing.name] += ing.qty;
+	}));
+
+	return order.map(name => ({name, qty:byName[name]}));
+}
+
+// Raw materials: Name | Crafting Categories | Gathering Node | Tier
+const RAW_MATERIALS_DATA = `
+Iron|Armorer, Weaponsmith|Light Metals|1
+Moonstone|Armorer, Weaponsmith|Light Metals|2
+Malachite|Armorer, Weaponsmith|Light Metals|3
+Mithril|Armorer, Weaponsmith|Light Metals|Masterwork
+Corundum|Armorer, Weaponsmith|Heavy Metals|1
+Orichalcum|Armorer, Weaponsmith|Heavy Metals|2
+Ebony|Armorer, Weaponsmith|Heavy Metals|3
+Adamantium|Armorer, Weaponsmith|Heavy Metals|Masterwork
+Jute|Armorer, Clothier|Thin-Weave Cloth|1
+Kreshfibre|Armorer, Clothier|Thin-Weave Cloth|2
+Silverlinen|Armorer, Clothier|Thin-Weave Cloth|3
+Ancestor-Moth Silk|Armorer, Clothier|Thin-Weave Cloth|Masterwork
+Flax|Armorer, Clothier|Dense-Weave Cloth|1
+Ebonthread|Armorer, Clothier|Dense-Weave Cloth|2
+Ironthread|Armorer, Clothier|Dense-Weave Cloth|3
+Void Velvet|Armorer, Clothier|Dense-Weave Cloth|Masterwork
+Maple|Arcanist, Weaponsmith|Light Wood|1
+Beech|Arcanist, Weaponsmith|Light Wood|2
+Ash|Arcanist, Weaponsmith|Light Wood|3
+Ruby Ash|Arcanist, Weaponsmith|Light Wood|Masterwork
+Hickory|Arcanist, Weaponsmith|Heavy Wood|1
+Oak|Arcanist, Weaponsmith|Heavy Wood|2
+Yew|Arcanist, Weaponsmith|Heavy Wood|3
+Nightwood|Arcanist, Weaponsmith|Heavy Wood|Masterwork
+Pewter|Clothier, Steward|Precious Alloys|1
+Silver|Clothier, Steward|Precious Alloys|2
+Gold|Clothier, Steward|Precious Alloys|3
+Platinum|Clothier, Steward|Precious Alloys|Masterwork
+Sapphire|Arcanist, Clothier, Steward|Precious Gems|1
+Emerald|Arcanist, Clothier, Steward|Precious Gems|2
+Ruby|Arcanist, Clothier, Steward|Precious Gems|3
+Diamond|Arcanist, Clothier, Steward|Precious Gems|Masterwork
+Empty Soul Gem|Arcanist|N/A|N/A
+Filled Soul Gem|Arcanist|N/A|N/A
+`.trim();
+
+const MATERIALS = {};
+RAW_MATERIALS_DATA.split('\n').forEach(line => {
+	const [name, cats, node, tier] = line.split('|');
+	MATERIALS[name.trim()] = {
+		name:name.trim(),
+		node:node.trim(),
+		tier:tier.trim()
+	};
+});
+
+/* ---------- Modifications / Enchantments / Legendary Effects ---------- */
+// Category aliasing: the source tables use some category names that don't exactly match
+// the item categories used above (e.g. weapon subtypes, "Flasks" vs "Potion Flasks").
+const ALL_ITEM_CATEGORIES = [
+	'Light Armor',
+	'Medium Armor',
+	'Heavy Armor',
+	'Robes',
+	'Clothes',
+	'Staves',
+	'Shields',
+	'1H Weapons',
+	'2H Weapons',
+	'Bows',
+	'Rings',
+	'Amulets',
+	'Talismans',
+	'Potion Flasks'
+];
+
+function expandCategories(str) {
+	const out = new Set();
+
+	str.split(',').map(s => s.trim()).filter(Boolean).forEach(cat => {
+		if (cat === 'All Items Except Flasks') ALL_ITEM_CATEGORIES.filter(c => c!=='Potion Flasks').forEach(c => out.add(c));
+		else if (cat === 'Flasks') out.add('Potion Flasks');
+		else if (/^1H .*Weapons$/.test(cat)) out.add('1H Weapons');
+		else if (/^2H .*Weapons$/.test(cat)) out.add('2H Weapons');
+		else out.add(cat);
+	});
+
+	return out;
+}
+
+function parseUpgradeTable(raw) {
+	const db = {};
+
+	raw.trim().split('\n').forEach(line => {
+		const parts = line.split('|');
+		const [name, cats, effect, cost] = parts;
+		db[name.trim()] = {
+			name: name.trim(),
+			categories: expandCategories(cats||''),
+			effect: (effect||'').trim(),
+			cost: parseIngredients(cost||'')
+		};
+	});
+
+	return db;
+}
+
+const MODIFICATIONS_DATA = `
+Keen|1H Weapons, 2H Weapons|+1 Melee Accuracy|N/A
+Seeking|Bows|+1 Ranged Accuracy|N/A
+Lightweight|Bows|+2 Initiative|N/A
+Razor Sharp|1H Weapons, 2H Weapons, Bows|+2 Piercing Damage|N/A
+Brutally Weighted|1H Weapons, 2H Weapons|+2 Blunt Damage|N/A
+Serrated Edge|1H Weapons, 2H Weapons|+2 Slashing Damage|N/A
+Amorphous|Staves|+1 Melee Accuracy, +1 Ranged Accuracy|N/A
+Finely Weighted|1H Weapons, 2H Weapons, Bows, Staves|+1 Physical Resistance, -1 Piercing/Blunt/Slashing Damage|N/A
+Versatile Design: Flurry|1H Slashing Weapons, 2H Slashing Weapons|Grants the Flurry technique without training|N/A
+Versatile Design: Shield Rush|1H Blunt Weapons, 2H Blunt Weapons, Staves|Grants the Shield Rush technique without training (usable without a shield)|N/A
+Versatile Design: Lunge|1H Piercing Weapons, 1H Blunt Weapons, 2H Piercing Weapons, 2H Blunt Weapons|Grants the Lunge technique without training|N/A
+Versatile Design: Gash|1H Piercing Weapons, 2H Piercing Weapons|Grants the Gash technique without training|N/A
+Versatile Design: Bludgeon|1H Piercing Weapons, 1H Slashing Weapons, 2H Piercing Weapons, 2H Slashing Weapons, Staves|Grants the Bludgeon technique without training|N/A
+Precisely Forged|1H Weapons, 2H Weapons, Bows|+1 Security|N/A
+Double Plated|Medium Armor, Heavy Armor, Shields|+1 Block|N/A
+Vitalguard|Light Armor, Medium Armor, Heavy Armor, Shields, Talismans|+1 Piercing Resistance|N/A
+Jarring|Light Armor, Medium Armor, Heavy Armor, Shields, Talismans|+1 Blunt Resistance|N/A
+Deflecting|Light Armor, Medium Armor, Heavy Armor, Shields, Talismans|+1 Slashing Resistance|N/A
+Furred|Light Armor, Medium Armor, Heavy Armor, Robes|+1 Frost Resistance, -1 Fire Resistance|N/A
+Nonflammable|Light Armor, Medium Armor, Heavy Armor, Robes|+1 Fire Resistance, -1 Frost Resistance|N/A
+Alloy|Heavy Armor|+2 Shock Resistance, -1 Physical Resistance|N/A
+Nimble|Light Armor, Medium Armor, Robes|+1 Dodge, +1 Initiative|N/A
+Muffled|Light Armor, Medium Armor, Heavy Armor, Robes, Bows|+1 Sneak|N/A
+Flexible|Light Armor, Medium Armor, Heavy Armor, Robes|+1 Athletics, +1 Acrobatics|N/A
+Fearsome|Rings, Amulets|+1 Intimidation|1 Sapphire, 1 Emerald, 1 Ruby, 1 Diamond
+Regal|Rings, Amulets|+1 Speechcraft|1 Sapphire, 1 Emerald, 1 Ruby, 1 Diamond
+Hardy|Shields, Talismans|+1 Resilience|N/A
+Deflective Wards|Talismans|+1 Block|N/A
+Cold-Weather Stitching|Clothes|+1 Frost Resistance|N/A
+Warm-Weather Stitching|Clothes|+1 Fire Resistance|N/A
+Enduring|All Items Except Flasks|Multiplies Degradation Modifier by an additional 0.5|3 Diamond
+Secret Labels|Amulets, Flasks|+1 Lore|N/A
+Vigorous Lining|Flasks|+1 Health anytime a flask is used on self|1 Ruby
+Refreshing Lining|Flasks|+2 Stamina anytime a flask is used on self|1 Emerald
+Magical Lining|Flasks|+2 Magicka anytime a flask is used on self|1 Sapphire
+`;
+
+const ENCHANTMENTS_DATA = `
+Searing|1H Weapons, 2H Weapons, Bows, Staves|+2 Fire Damage on hit (basic attacks)|2 Filled Soul Gems, 1 Ruby
+Chilling|1H Weapons, 2H Weapons, Bows, Staves|+2 Frost Damage on hit (basic attacks)|2 Filled Soul Gems, 1 Sapphire
+Surging|1H Weapons, 2H Weapons, Bows, Staves|+2 Shock Damage on hit (basic attacks)|2 Filled Soul Gems, 1 Emerald
+Damage Magicka|1H Weapons, 2H Weapons, Bows, Staves|-1d4 Magicka on hit (basic attacks, min 1)|4 Filled Soul Gems, 2 Sapphire
+Damage Stamina|1H Weapons, 2H Weapons, Bows, Staves|-1d4 Stamina on hit (basic attacks, min 1)|4 Filled Soul Gems, 2 Emerald
+Corrosion|1H Weapons, 2H Weapons, Bows, Staves|-1d4 Durability of target's items on hit (basic attacks, min 1)|6 Filled Soul Gems, 1 Ruby, 1 Sapphire, 1 Emerald
+Dragon Shot|Bows|Grants Dragon Shot technique (Storm Shot, Fire instead of Shock)|6 Filled Soul Gems, 1 Ruby, 1 Sapphire, 1 Emerald
+Blizzard Shot|Bows|Grants Blizzard Shot technique (Storm Shot, Frost instead of Shock)|6 Filled Soul Gems, 1 Ruby, 1 Sapphire, 1 Emerald
+Storm Strike|1H Slashing Weapons, 2H Slashing Weapons|Grants Storm Strike technique (Dragon Strike, Shock instead of Fire)|6 Filled Soul Gems, 1 Ruby, 1 Sapphire, 1 Emerald
+Blizzard Strike|1H Slashing Weapons, 2H Slashing Weapons|Grants Blizzard Strike technique (Dragon Strike, Frost instead of Fire)|6 Filled Soul Gems, 1 Ruby, 1 Sapphire, 1 Emerald
+Dragon Thrust|1H Piercing Weapons, 2H Piercing Weapons|Grants Dragon Thrust technique (Storm Thrust, Fire instead of Shock)|6 Filled Soul Gems, 1 Ruby, 1 Sapphire, 1 Emerald
+Blizzard Thrust|1H Piercing Weapons, 2H Piercing Weapons|Grants Blizzard Thrust technique (Storm Thrust, Frost instead of Shock)|6 Filled Soul Gems, 1 Ruby, 1 Sapphire, 1 Emerald
+Dragon Crush|1H Blunt Weapons, 2H Blunt Weapons|Grants Dragon Crush technique (Blizzard Crush, Fire instead of Frost)|6 Filled Soul Gems, 1 Ruby, 1 Sapphire, 1 Emerald
+Storm Crush|1H Blunt Weapons, 2H Blunt Weapons|Grants Storm Crush technique (Blizzard Crush, Shock instead of Frost)|6 Filled Soul Gems, 1 Ruby, 1 Sapphire, 1 Emerald
+Attunement|Staves, Talismans|+1 All Spell Schools|2 Filled Soul Gems, 1 Emerald
+Empowerment|Staves, Talismans|+1 Spell Potency|2 Filled Soul Gems, 1 Ruby
+Aegis|Light Armor, Medium Armor, Heavy Armor, Robes|+1 Magic Resistance, -1 Physical Resistance|6 Filled Soul Gems, 1 Ruby, 1 Sapphire, 1 Emerald
+Fireshield|Light Armor, Medium Armor, Heavy Armor, Robes, Rings, Amulets|+2 Fire Resistance|6 Filled Soul Gems, 1 Ruby, 1 Sapphire, 1 Emerald
+Frostshield|Light Armor, Medium Armor, Heavy Armor, Robes, Rings, Amulets|+2 Frost Resistance|6 Filled Soul Gems, 1 Ruby, 1 Sapphire, 1 Emerald
+Shockshield|Light Armor, Medium Armor, Heavy Armor, Robes, Rings, Amulets|+2 Shock Resistance|6 Filled Soul Gems, 1 Ruby, 1 Sapphire, 1 Emerald
+Fortify Health|Rings, Amulets|+3 Health|6 Filled Soul Gems, 1 Ruby, 1 Sapphire, 1 Emerald
+Fortify Stamina|Rings, Amulets|+5 Stamina|6 Filled Soul Gems, 1 Ruby, 1 Sapphire, 1 Emerald
+Fortify Magicka|Rings, Amulets|+5 Magicka|6 Filled Soul Gems, 1 Ruby, 1 Sapphire, 1 Emerald
+Magicka Regeneration|Light Armor, Medium Armor, Heavy Armor, Robes, Clothes, Rings, Amulets|Once/turn: restore 2d4 Magicka, no action cost (combat only, 2x/combat)|10 Filled Soul Gems, 2 Ruby, 2 Sapphire, 2 Emerald
+Stamina Regeneration|Light Armor, Medium Armor, Heavy Armor, Robes, Clothes, Rings, Amulets|Once/turn: restore 2d4 Stamina, no action cost (combat only, 2x/combat)|10 Filled Soul Gems, 2 Ruby, 2 Sapphire, 2 Emerald
+Warding|Shields, Talismans|+1 Magic Resistance|2 Filled Soul Gems, 1 Sapphire
+Persistency|Shields, Talismans|+1 Resilience|2 Filled Soul Gems, 1 Sapphire
+Slowing Wards|Talismans|+1 Physical Resistance|2 Filled Soul Gems, 1 Sapphire
+Fire Attunement|Talismans|+2 Fire Damage|2 Filled Soul Gems, 1 Ruby
+Frost Attunement|Talismans|+2 Frost Damage|2 Filled Soul Gems, 1 Sapphire
+Shock Attunement|Talismans|+2 Shock Damage|2 Filled Soul Gems, 1 Emerald
+Waterbreathing|Rings, Amulets, Staves, Clothes, Flasks|1/day Amphibious spell (in/out of combat)|10 Filled Soul Gems, 1 Diamond, 2 Ruby, 2 Sapphire, 2 Emerald
+Feather|Rings, Amulets, Staves, Clothes, Flasks|1/day Feather spell (combat only)|8 Filled Soul Gems, 1 Diamond, 1 Ruby, 1 Sapphire, 1 Emerald
+Anchoring|Rings, Amulets, Staves, Clothes, Flasks|1/day Anchor spell (combat only)|8 Filled Soul Gems, 1 Diamond, 1 Ruby, 1 Sapphire, 1 Emerald
+Knock|Rings, Amulets, Staves, Clothes, Flasks|1/day Knock spell (in/out of combat)|8 Filled Soul Gems, 1 Diamond, 1 Ruby, 1 Sapphire, 1 Emerald
+Voidgaze|Rings, Amulets, Staves, Clothes, Flasks|1/day Voidgaze spell (in/out of combat)|8 Filled Soul Gems, 1 Diamond, 1 Ruby, 1 Sapphire, 1 Emerald
+Midnight Gaze|Rings, Amulets, Staves, Clothes, Flasks|1/day Eyes of Midnight spell (in/out of combat)|10 Filled Soul Gems, 1 Diamond, 2 Ruby, 2 Sapphire, 2 Emerald
+Chameleon|Rings, Amulets, Staves, Clothes, Flasks|1/day Chameleon spell (in/out of combat)|8 Filled Soul Gems, 1 Diamond, 1 Ruby, 1 Sapphire, 1 Emerald
+Torchlight|Rings, Amulets, Staves, Clothes, Flasks|1/day Torchlight spell (in/out of combat)|8 Filled Soul Gems, 1 Diamond, 1 Ruby, 1 Sapphire, 1 Emerald
+Shroud|Rings, Amulets, Staves, Clothes, Flasks|1/day Shroud spell (combat only)|8 Filled Soul Gems, 1 Diamond, 1 Ruby, 1 Sapphire, 1 Emerald
+Detect Life|Rings, Amulets, Staves, Clothes, Flasks|1/day Detect Life spell (in/out of combat)|8 Filled Soul Gems, 1 Diamond, 1 Ruby, 1 Sapphire, 1 Emerald
+Fortify Strength|Rings, Amulets, Staves, Clothes, Flasks|1/day Fortify Strength spell (out of combat only)|8 Filled Soul Gems, 1 Diamond, 1 Ruby, 1 Sapphire, 1 Emerald
+Fortify Agility|Rings, Amulets, Staves, Clothes, Flasks|1/day Fortify Agility spell (out of combat only)|10 Filled Soul Gems, 1 Diamond, 2 Ruby, 2 Sapphire, 2 Emerald
+Fortify Endurance|Rings, Amulets, Staves, Clothes, Flasks|1/day Fortify Endurance spell (out of combat only)|8 Filled Soul Gems, 1 Diamond, 1 Ruby, 1 Sapphire, 1 Emerald
+Fortify Intelligence|Rings, Amulets, Staves, Clothes, Flasks|1/day Fortify Intelligence spell (out of combat only)|10 Filled Soul Gems, 1 Diamond, 2 Ruby, 2 Sapphire, 2 Emerald
+Fortify Willpower|Rings, Amulets, Staves, Clothes, Flasks|1/day Fortify Willpower spell (out of combat only)|8 Filled Soul Gems, 1 Diamond, 1 Ruby, 1 Sapphire, 1 Emerald
+Fortify Personality|Rings, Amulets, Staves, Clothes, Flasks|1/day Fortify Personality spell (out of combat only)|10 Filled Soul Gems, 1 Diamond, 2 Ruby, 2 Sapphire, 2 Emerald
+Fortify Luck|Rings, Amulets, Staves, Clothes, Flasks|1/day Fortify Luck spell (out of combat only)|8 Filled Soul Gems, 1 Diamond, 1 Ruby, 1 Sapphire, 1 Emerald
+Blazing Spear|Rings, Amulets, Staves, Clothes, Flasks|1/day Blazing Spear spell (combat only)|8 Filled Soul Gems, 1 Diamond, 1 Ruby, 1 Sapphire, 1 Emerald
+Hail Storm|Rings, Amulets, Staves, Clothes, Flasks|1/day Hail Storm spell (combat only)|8 Filled Soul Gems, 1 Diamond, 1 Ruby, 1 Sapphire, 1 Emerald
+Lightning Bolt|Rings, Amulets, Staves, Clothes, Flasks|1/day Lightning Bolt spell (combat only)|8 Filled Soul Gems, 1 Diamond, 1 Ruby, 1 Sapphire, 1 Emerald
+Fear|Rings, Amulets, Staves, Clothes, Flasks|1/day Fear spell (combat only)|8 Filled Soul Gems, 1 Diamond, 1 Ruby, 1 Sapphire, 1 Emerald
+Hush|Rings, Amulets, Staves, Clothes, Flasks|1/day Hush spell (combat only)|8 Filled Soul Gems, 1 Diamond, 1 Ruby, 1 Sapphire, 1 Emerald
+Beguiling Touch|Rings, Amulets, Staves, Clothes, Flasks|1/day Beguiling Touch spell (in/out of combat)|8 Filled Soul Gems, 1 Diamond, 1 Ruby, 1 Sapphire, 1 Emerald
+Enthralling|Rings, Amulets, Staves, Clothes, Flasks|1/day Enthrall spell (in/out of combat)|10 Filled Soul Gems, 1 Diamond, 2 Ruby, 2 Sapphire, 2 Emerald
+`;
+
+const LEGENDARY_DATA = `
+Absorb Health|Staves, 1H Weapons, 2H Weapons, Bows|Absorb 2d4 health (true damage) once/turn, targets Defense, min 2|10 Filled Soul Gems, 10 Diamond, 3 Ruby, 3 Sapphire, 3 Emerald
+Absorb Stamina|Staves, 1H Weapons, 2H Weapons, Bows|Absorb 4d4 stamina (true damage) once/turn, targets Defense, min 4|10 Filled Soul Gems, 10 Diamond, 3 Ruby, 3 Sapphire, 3 Emerald
+Absorb Magicka|Staves, 1H Weapons, 2H Weapons, Bows|Absorb 4d4 magicka (true damage) once/turn, targets Defense, min 4|10 Filled Soul Gems, 10 Diamond, 3 Ruby, 3 Sapphire, 3 Emerald
+Vampiric|Staves, 1H Weapons, 2H Weapons, Bows|Chance to inflict Bleeding once/turn, targets Defense|10 Filled Soul Gems, 10 Diamond, 3 Ruby, 3 Sapphire, 3 Emerald
+Crippling|Staves, 1H Weapons, 2H Weapons, Bows|Chance to inflict Crippled once/turn, targets Defense|10 Filled Soul Gems, 10 Diamond, 3 Ruby, 3 Sapphire, 3 Emerald
+Dazing|Staves, 1H Weapons, 2H Weapons, Bows|Chance to inflict Dazed once/turn, targets Defense|10 Filled Soul Gems, 10 Diamond, 3 Ruby, 3 Sapphire, 3 Emerald
+Staggering|Staves, 1H Weapons, 2H Weapons, Bows|Chance to inflict Staggered once/turn, targets Defense|10 Filled Soul Gems, 10 Diamond, 3 Ruby, 3 Sapphire, 3 Emerald
+Burning|Staves, 1H Weapons, 2H Weapons, Bows|Chance to inflict Burning once/turn, targets Defense|10 Filled Soul Gems, 10 Diamond, 3 Ruby, 3 Sapphire, 3 Emerald
+Freezing|Staves, 1H Weapons, 2H Weapons, Bows|Chance to inflict Freezing once/turn, targets Defense|10 Filled Soul Gems, 10 Diamond, 3 Ruby, 3 Sapphire, 3 Emerald
+Shocking|Staves, 1H Weapons, 2H Weapons, Bows|Chance to inflict Shocked once/turn, targets Defense|10 Filled Soul Gems, 10 Diamond, 3 Ruby, 3 Sapphire, 3 Emerald
+Menacing|Staves, 1H Weapons, 2H Weapons, Bows|Chance to inflict Afraid once/turn, targets Resolve|10 Filled Soul Gems, 10 Diamond, 3 Ruby, 3 Sapphire, 3 Emerald
+Burdening|Staves, 1H Weapons, 2H Weapons, Bows|Chance to inflict Burden once/turn, targets Defense|10 Filled Soul Gems, 10 Diamond, 3 Ruby, 3 Sapphire, 3 Emerald
+Sundering|Staves, 1H Weapons, 2H Weapons, Bows|Chance to inflict Sundered once/turn, targets Defense|10 Filled Soul Gems, 10 Diamond, 3 Ruby, 3 Sapphire, 3 Emerald
+Corroding|Staves, 1H Weapons, 2H Weapons, Bows|Chance to inflict Corroded once/turn, targets Defense|10 Filled Soul Gems, 10 Diamond, 3 Ruby, 3 Sapphire, 3 Emerald
+Beguiling|Staves, 1H Weapons, 2H Weapons, Bows|Very low chance to inflict Charmed once/turn, targets Resolve|10 Filled Soul Gems, 10 Diamond, 3 Ruby, 3 Sapphire, 3 Emerald
+Paralyzing|Staves, 1H Weapons, 2H Weapons, Bows|Very low chance to inflict Paralyzed once/turn, targets Defense|10 Filled Soul Gems, 10 Diamond, 3 Ruby, 3 Sapphire, 3 Emerald
+Terrifying|Staves, 1H Weapons, 2H Weapons, Bows|Very low chance to inflict Terrified once/turn, targets Resolve|10 Filled Soul Gems, 10 Diamond, 3 Ruby, 3 Sapphire, 3 Emerald
+Silencing|Staves, 1H Weapons, 2H Weapons, Bows|Very low chance to inflict Silenced once/turn, targets Resolve|10 Filled Soul Gems, 10 Diamond, 3 Ruby, 3 Sapphire, 3 Emerald
+Feather|Light Armor, Medium Armor, Heavy Armor, Robes, Clothes, Rings, Amulets, Shields, Talismans, Flasks|Apply Feather to self once/turn; may remove Burden and Staggered from self once/turn|10 Filled Soul Gems, 10 Diamond, 3 Ruby, 3 Sapphire, 3 Emerald
+Immovable|Light Armor, Medium Armor, Heavy Armor, Robes, Clothes, Rings, Amulets, Shields, Talismans, Flasks|Apply Anchored to self once/turn; may remove Burden and Staggered from self once/turn|10 Filled Soul Gems, 10 Diamond, 3 Ruby, 3 Sapphire, 3 Emerald
+Mindward|Light Armor, Medium Armor, Heavy Armor, Robes, Clothes, Rings, Amulets, Shields, Talismans, Flasks|+5 Psychic Resistance; may remove Charmed and Rage from self once/turn|10 Filled Soul Gems, 10 Diamond, 3 Ruby, 3 Sapphire, 3 Emerald
+Inspiring|Light Armor, Medium Armor, Heavy Armor, Robes, Clothes, Rings, Amulets, Shields, Talismans, Flasks|+5 Psychic Resistance; may remove Afraid and Terrified from self once/turn|10 Filled Soul Gems, 10 Diamond, 3 Ruby, 3 Sapphire, 3 Emerald
+Regenerating|Light Armor, Medium Armor, Heavy Armor, Robes, Clothes, Rings, Amulets, Shields, Talismans, Flasks|Recover 2d4 health once/turn, min 2 (combat only)|10 Filled Soul Gems, 10 Diamond, 3 Ruby, 3 Sapphire, 3 Emerald
+Rejuvenating|Light Armor, Medium Armor, Heavy Armor, Robes, Clothes, Rings, Amulets, Shields, Talismans, Flasks|Recover 4d4 stamina or magicka once/turn, min 4 (combat only)|10 Filled Soul Gems, 10 Diamond, 3 Ruby, 3 Sapphire, 3 Emerald
+Fireforged|Light Armor, Medium Armor, Heavy Armor, Robes, Clothes, Rings, Amulets, Shields, Talismans, Flasks|+5 Fire Resistance; may remove Burned from self once/turn|10 Filled Soul Gems, 10 Diamond, 3 Ruby, 3 Sapphire, 3 Emerald
+Frostforged|Light Armor, Medium Armor, Heavy Armor, Robes, Clothes, Rings, Amulets, Shields, Talismans, Flasks|+5 Frost Resistance; may remove Freezing from self once/turn|10 Filled Soul Gems, 10 Diamond, 3 Ruby, 3 Sapphire, 3 Emerald
+Stormforged|Light Armor, Medium Armor, Heavy Armor, Robes, Clothes, Rings, Amulets, Shields, Talismans, Flasks|+5 Shock Resistance; may remove Shocked from self once/turn|10 Filled Soul Gems, 10 Diamond, 3 Ruby, 3 Sapphire, 3 Emerald
+Arrowbane|Light Armor, Medium Armor, Heavy Armor, Robes, Clothes, Rings, Amulets, Shields, Talismans, Flasks|+5 Piercing Resistance; may remove Crippled from self once/turn|10 Filled Soul Gems, 10 Diamond, 3 Ruby, 3 Sapphire, 3 Emerald
+Swordbane|Light Armor, Medium Armor, Heavy Armor, Robes, Clothes, Rings, Amulets, Shields, Talismans, Flasks|+5 Slashing Resistance; may remove Bleeding from self once/turn|10 Filled Soul Gems, 10 Diamond, 3 Ruby, 3 Sapphire, 3 Emerald
+Hammerbane|Light Armor, Medium Armor, Heavy Armor, Robes, Clothes, Rings, Amulets, Shields, Talismans, Flasks|+5 Blunt Resistance; may remove Dazed from self once/turn|10 Filled Soul Gems, 10 Diamond, 3 Ruby, 3 Sapphire, 3 Emerald
+Strange Lining|Flasks|1 random effect (positive or negative) on each elixir flask use|10 Filled Soul Gems, 10 Diamond, 3 Ruby, 3 Sapphire, 3 Emerald
+`;
+
+const MODIFICATIONS		= parseUpgradeTable(MODIFICATIONS_DATA);
+const ENCHANTMENTS		= parseUpgradeTable(ENCHANTMENTS_DATA);
+const LEGENDARY_EFFECTS	= parseUpgradeTable(LEGENDARY_DATA);
+
+function modSlotsForItem(item) {
+	if (!item) return 1;
+	return (item.category === 'Bows' || item.category === '2H Weapons') ? 2 : 1;
+}
+
+function applicableEntries(db, item) {
+	if (!item) return [];
+	return Object.values(db).filter(e => e.categories.has(item.category));
+}
+
+function isMasterwork(item) {
+	return item && item.tier === 'Masterwork';
+}
+
+const ITEMS = {};
+RAW_ITEMS.split('\n').forEach(line => {
+	const parts = line.split('|');
+	if (parts.length < 3) return;
+	const [name, category, craftCost, upgradesTo, modCost, tier, repairCost] = parts;
+	ITEMS[name.trim()] = {
+		name: name.trim(),
+		category: category.trim(),
+		tier: (tier||'').trim(),
+		ingredients: parseIngredients(craftCost || ''),
+		upgradesTo: (upgradesTo||'').trim(),
+		modIngredients: parseIngredients(modCost || ''),
+		repairIngredients: parseIngredients(repairCost || '')
+	};
+});
+
+// preserves CSV order
+const ITEM_NAMES = Object.keys(ITEMS);
+
+/* ---------- Persistent state ---------- */
+const STORE_KEY = 'craftCalcState_v1';
+let state = {
+	inventory: {},
+	craftList: {},
+	repairList: {},
+	favorites: [],
+	customizations: {},
+	invCustomizations: {},
+	favCustomizations: {}
+};
+
+function loadState() {
+	try {
+		const raw = localStorage.getItem(STORE_KEY);
+		if(raw) state = Object.assign(state, JSON.parse(raw));
+	} catch(e) {}
+}
+
+function saveState() {
+	try {
+		localStorage.setItem(STORE_KEY, JSON.stringify(state));
+	} catch(e) {}
+}
+
+loadState();
+if (!state.favCustomizations || typeof state.favCustomizations !== 'object') state.favCustomizations = {};
+if (!state.invCustomizations || typeof state.invCustomizations !== 'object') state.invCustomizations = {};
+
+function genId() {
+	return 'f_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2,9);
+}
+
+if (Array.isArray(state.favorites) && state.favorites.length && typeof state.favorites[0] === 'string') {
+	state.favorites = state.favorites.map(n => {
+		const id = genId();
+		const c = state.customizations[n];
+		if (c && ((c.mods||[]).filter(Boolean).length || c.enchant || c.legendary)) {
+			state.favCustomizations[id] = {mods:(c.mods||[]).filter(Boolean), enchant:c.enchant||null, legendary:c.legendary||null};
+		}
+
+		return {id, name:n};
+	});
+
+	saveState();
+}
+
+function escapeHtml(s) {
+	return s.replace(/[&<>"']/g, c => ({
+		'&': '&amp;',
+		'<': '&lt;',
+		'>': '&gt;',
+		'"': '&quot;',
+		"'": '&#39;'
+	}[c]));
+}
+
+/* Build the full pool of names for inventory: all raw materials (grouped by gathering node)
+	 + all crafted items (grouped by crafting category) */
+function buildSelect(selectEl, {includeMaterials, includeItems, itemFilter}) {
+	selectEl.innerHTML = '';
+
+	if (includeMaterials) {
+		// group materials by gathering node, in tier order within each node
+		const nodeOrder = [
+			'Light Metals',
+			'Heavy Metals',
+			'Thin-Weave Cloth',
+			'Dense-Weave Cloth',
+			'Light Wood',
+			'Heavy Wood',
+			'Precious Alloys',
+			'Precious Gems',
+			'N/A'
+		];
+
+		const byNode = {};
+		Object.values(MATERIALS).forEach(m => {
+			(byNode[m.node] = byNode[m.node] || []).push(m);
+		});
+
+		const tierRank = {
+			'1': 1,
+			'2': 2,
+			'3': 3,
+			'Masterwork': 4,
+			'N/A': 5
+		};
+
+		nodeOrder.forEach(node => {
+			if (!byNode[node]) return;
+			const group = document.createElement('optgroup');
+			group.label = 'Resource - ' + node;
+			byNode[node].sort((a,b) => (tierRank[a.tier]||9) - (tierRank[b.tier]||9)).forEach(m => {
+				const opt = document.createElement('option');
+				opt.value = m.name;
+				opt.textContent = m.tier && m.tier!=='N/A' ? `${m.name} (Tier ${m.tier})` : m.name;
+				group.appendChild(opt);
+			});
+
+			selectEl.appendChild(group);
+		});
+	}
+
+	if (includeItems) {
+		const byCat = {};
+		const catOrder = [];
+		ITEM_NAMES.filter(n  =>  !itemFilter || itemFilter(ITEMS[n])).forEach(n => {
+			const it = ITEMS[n];
+			if (!byCat[it.category]) {
+				byCat[it.category] = [];
+				catOrder.push(it.category);
+			}
+
+			byCat[it.category].push(n);
+		});
+
+		catOrder.forEach(cat => {
+			const group = document.createElement('optgroup');
+			group.label = 'Gear - ' + cat;
+			byCat[cat].forEach(n => {
+				const it = ITEMS[n];
+				const opt = document.createElement('option');
+				opt.value = n;
+				opt.textContent = it.tier ? `${n} (Tier ${it.tier})` : n;
+				group.appendChild(opt);
+			});
+
+			selectEl.appendChild(group);
+		});
+	}
+}
+
+/* ---------- Inventory UI ---------- */
+const invSelect = document.getElementById('invSelect');
+const invQty = document.getElementById('invQty');
+buildSelect(invSelect, {
+	includeMaterials:true,
+	includeItems:true
+});
+
+document.getElementById('invAddBtn').addEventListener('click', () => {
+	const name = invSelect.value;
+	if (!name) return;
+	const qty = Math.max(0, parseInt(invQty.value,10) || 0);
+	state.inventory[name] = (state.inventory[name] || 0) + qty;
+	invQty.value=1;
+	saveState();
+	renderInventory();
+	renderQuickStats();
+	refreshRepairSelect();
+});
+
+function renderInventory() {
+	const tbody = document.querySelector('#invTable tbody');
+	const names = Object.keys(state.inventory).filter(n => state.inventory[n] > 0).sort();
+	document.getElementById('invEmpty').style.display = names.length ? 'none' : 'block';
+	document.getElementById('invTable').style.display = names.length ? 'table' : 'none';
+	tbody.innerHTML = names.map(n => {
+		const item = ITEMS[n];
+		const expanded = expandedInvItems.has(n);
+		const mainRow = `
+		<tr>
+			<td class="row-name">${escapeHtml(n)}${item?customSummary(state.invCustomizations[n]):''}</td>
+			<td><input type="number" class="qty-input inv-qty" data-name="${escapeHtml(n)}" value="${state.inventory[n]}" min="0"></td>
+			<td>
+				${item ? `<button class="secondary small customize-toggle-inv" data-name="${escapeHtml(n)}" title="Modifications / Enchantments / Legendary">${expanded?'^':'*'}</button>` : ''}
+				<button class="danger small inv-remove" data-name="${escapeHtml(n)}">X</button>
+			</td>
+		</tr>`;
+		const detailRow = (item && expanded) ? `
+		<tr class="customize-row">
+			<td colspan="3">${renderCustomizePanel(n, item, getInvCustom(n))}</td>
+		</tr>` : '';
+		return mainRow + detailRow;
+	}).join('');
+
+	tbody.querySelectorAll('.inv-qty').forEach(inp => {
+		inp.addEventListener('change', () => {
+			const v = Math.max(0, parseInt(inp.value,10) || 0);
+			state.inventory[inp.dataset.name] = v;
+			saveState();
+			renderQuickStats();
+			refreshRepairSelect();
+			renderResults();
+		});
+	});
+
+	tbody.querySelectorAll('.inv-remove').forEach(btn => {
+		btn.addEventListener('click', () => {
+			delete state.inventory[btn.dataset.name];
+			delete state.invCustomizations[btn.dataset.name];
+			expandedInvItems.delete(btn.dataset.name);
+			saveState();
+			renderInventory();
+			renderQuickStats();
+			refreshRepairSelect();
+			renderResults();
+		});
+	});
+
+	tbody.querySelectorAll('.customize-toggle-inv').forEach(btn => {
+		btn.addEventListener('click', () => {
+			const n = btn.dataset.name;
+			if (expandedInvItems.has(n)) expandedInvItems.delete(n);
+			else expandedInvItems.add(n);
+			renderInventory();
+		});
+	});
+
+	bindCustomizePanelEvents(tbody, getInvCustom);
+}
+
+/* ---------- Craft list UI ---------- */
+document.getElementById('clearCraftBtn').addEventListener('click', () => {
+	state.craftList = {};
+	saveState();
+	renderCraftList();
+	renderQuickStats();
+});
+
+document.getElementById('loadFavsBtn').addEventListener('click', () => {
+	state.favorites.forEach(entry => {
+		state.craftList[entry.name] = (state.craftList[entry.name] || 0) + 1;
+		const fc = state.favCustomizations[entry.id];
+		if (fc && ((fc.mods||[]).filter(Boolean).length || fc.enchant || fc.legendary)) {
+			state.customizations[entry.name] = {mods:(fc.mods||[]).filter(Boolean).slice(), enchant:fc.enchant||null, legendary:fc.legendary||null};
+		}
+	});
+
+	saveState();
+	renderCraftList();
+	renderQuickStats();
+});
+
+const expandedCraftItems	= new Set();
+const expandedInvItems		= new Set();
+const expandedFavItems		= new Set();
+
+function getCustom(name) {
+	if (!state.customizations[name]) state.customizations[name] = {mods:[], enchant:null, legendary:null};
+	const c = state.customizations[name];
+	if (!Array.isArray(c.mods)) c.mods = [];
+	return c;
+}
+
+function getInvCustom(name) {
+	if (!state.invCustomizations[name]) state.invCustomizations[name] = {mods:[], enchant:null, legendary:null};
+	const c = state.invCustomizations[name];
+	if (!Array.isArray(c.mods)) c.mods = [];
+	return c;
+}
+
+function getFavCustom(id) {
+	if (!state.favCustomizations[id]) state.favCustomizations[id] = {mods:[], enchant:null, legendary:null};
+	const c = state.favCustomizations[id];
+	if (!Array.isArray(c.mods)) c.mods = [];
+	return c;
+}
+
+function customSummary(custom) {
+	if (!custom) return '';
+	const bits = [];
+	const modCount = (custom.mods||[]).filter(Boolean).length;
+	if (modCount)			bits.push(`${modCount} mod${modCount>1?'s':''}`);
+	if (custom.enchant)		bits.push('enchanted');
+	if (custom.legendary)	bits.push('legendary');
+	return bits.length ? ` <span class="tag">${bits.join(', ')}</span>` : '';
+}
+
+function renderCraftList() {
+	const tbody = document.querySelector('#craftTable tbody');
+	const names = Object.keys(state.craftList).filter(n => state.craftList[n] > 0).sort();
+	document.getElementById('craftEmpty').style.display = names.length ? 'none' : 'block';
+	document.getElementById('craftTable').style.display = names.length ? 'table' : 'none';
+	tbody.innerHTML = names.map(n => {
+		const item = ITEMS[n];
+		const expanded = expandedCraftItems.has(n);
+		const mainRow = `
+		<tr>
+			<td class="row-name">${escapeHtml(n)}<span class="tag">${escapeHtml(item.category)}${item.tier ? ' · T'+escapeHtml(item.tier) : ''}</span>${customSummary(state.customizations[n])}</td>
+			<td><input type="number" class="qty-input craft-qty" data-name="${escapeHtml(n)}" value="${state.craftList[n]}" min="1"></td>
+			<td>
+				<button class="secondary small customize-toggle" data-name="${escapeHtml(n)}" title="Modifications / Enchantments / Legendary">${expanded?'^':'*'}</button>
+				<button class="danger small craft-remove" data-name="${escapeHtml(n)}">X</button>
+			</td>
+		</tr>`;
+
+		const detailRow = expanded ? `
+		<tr class="customize-row">
+			<td colspan="3">${renderCustomizePanel(n, item, getCustom(n))}</td>
+		</tr>` : '';
+		return mainRow + detailRow;
+	}).join('');
+
+	tbody.querySelectorAll('.craft-qty').forEach(inp => {
+		inp.addEventListener('change', () => {
+			const v = Math.max(1, parseInt(inp.value,10)||1);
+			state.craftList[inp.dataset.name] = v;
+			saveState();
+			renderQuickStats();
+			renderResults();
+		});
+	});
+
+	tbody.querySelectorAll('.craft-remove').forEach(btn => {
+		btn.addEventListener('click', () => {
+			delete state.craftList[btn.dataset.name];
+			delete state.customizations[btn.dataset.name];
+			expandedCraftItems.delete(btn.dataset.name);
+			saveState();
+			renderCraftList();
+			renderQuickStats();
+		});
+	});
+
+	tbody.querySelectorAll('.customize-toggle').forEach(btn => {
+		btn.addEventListener('click', () => {
+			const n = btn.dataset.name;
+			if(expandedCraftItems.has(n)) expandedCraftItems.delete(n);
+			else expandedCraftItems.add(n);
+			renderCraftList();
+		});
+	});
+
+	bindCustomizePanelEvents(tbody);
+	renderResults();
+}
+
+/* ---------- Customizations (modifications / enchantment / legendary) ---------- */
+function renderCustomizePanel(key, item, custom) {
+	const slots = modSlotsForItem(item);
+	const mods = applicableEntries(MODIFICATIONS, item).sort((a, b) => a.name.localeCompare(b.name));
+	const enchants = applicableEntries(ENCHANTMENTS, item).sort((a, b) => a.name.localeCompare(b.name));
+	const legendaries = isMasterwork(item) ? applicableEntries(LEGENDARY_EFFECTS, item).sort((a,b) => a.name.localeCompare(b.name)) : [];
+
+	const modRows = [];
+	for (let i = 0; i < slots; i++) {
+		const current = custom.mods[i] || '';
+		const options = mods.filter(m => {
+			const selectedElsewhere = custom.mods.some((v, idx) => v === m.name && idx !== i);
+			return !selectedElsewhere;
+		});
+
+		modRows.push(`
+			<div class="cz-row">
+				<label>Mod slot ${i + 1}:</label>
+				<select class="cz-mod-select" data-key="${escapeHtml(key)}" data-slot="${i}">
+					<option value="">- none -</option>
+					${options.map(m => `<option value="${escapeHtml(m.name)}" ${m.name===current?'selected':''}>${escapeHtml(m.name)} - ${escapeHtml(m.effect)}</option>`).join('')}
+				</select>
+			</div>`
+		);
+	}
+
+	const enchantRow = enchants.length ? `
+		<div class="cz-row">
+			<label>Enchantment:</label>
+			<select class="cz-enchant-select" data-key="${escapeHtml(key)}">
+				<option value="">- none -</option>
+				${enchants.map(en => `<option value="${escapeHtml(en.name)}" ${custom.enchant===en.name?'selected':''}>${escapeHtml(en.name)} - ${escapeHtml(en.effect)}</option>`).join('')}
+			</select>
+		</div>` : `<div class="cz-row"><span class="tag">No enchantments apply to this item's category.</span></div>`;
+
+	const legendaryRow = isMasterwork(item)
+		? (legendaries.length ? `
+			<div class="cz-row">
+				<label>Legendary:</label>
+				<select class="cz-legendary-select" data-key="${escapeHtml(key)}">
+					<option value="">- none -</option>
+					${legendaries.map(le => `<option value="${escapeHtml(le.name)}" ${custom.legendary===le.name?'selected':''}>${escapeHtml(le.name)} - ${escapeHtml(le.effect)}</option>`).join('')}
+				</select>
+			</div>` : `<div class="cz-row"><span class="tag">No legendary effects apply to this item's category.</span></div>`)
+		: `<div class="cz-row"><span class="tag">Legendary effects require T4 gear.</span></div>`;
+
+	return `
+		<div class="customize-panel">
+			<div class="cz-title">Customize: ${escapeHtml(item.name)} <span class="tag">${slots} mod slot${slots>1?'s':''}</span></div>
+			${modRows.join('')}
+			${enchantRow}
+			${legendaryRow}
+		</div>
+	`;
+}
+
+function bindCustomizePanelEvents(root, resolveCustom) {
+	root = root || document;
+	resolveCustom = resolveCustom || getCustom;
+
+	function refreshResultsIfShown() {
+		renderResults();
+	}
+
+	root.querySelectorAll('.cz-mod-select').forEach(sel => {
+		sel.addEventListener('change', () => {
+			const key = sel.dataset.key;
+			const slot = parseInt(sel.dataset.slot,10);
+			const custom = resolveCustom(key);
+			custom.mods[slot] = sel.value || undefined;
+			saveState();
+			renderInventory();
+			renderCraftList();
+			renderFavorites();
+			renderQuickStats();
+			refreshResultsIfShown();
+		});
+	});
+
+	root.querySelectorAll('.cz-enchant-select').forEach(sel => {
+		sel.addEventListener('change', () => {
+			const custom = resolveCustom(sel.dataset.key);
+			custom.enchant = sel.value || null;
+			saveState();
+			renderInventory();
+			renderCraftList();
+			renderFavorites();
+			renderQuickStats();
+			refreshResultsIfShown();
+		});
+	});
+
+	root.querySelectorAll('.cz-legendary-select').forEach(sel => {
+		sel.addEventListener('change', () => {
+			const custom = resolveCustom(sel.dataset.key);
+			custom.legendary = sel.value || null;
+			saveState();
+			renderInventory();
+			renderCraftList();
+			renderFavorites();
+			renderQuickStats();
+			refreshResultsIfShown();
+		});
+	});
+}
+
+/* ---------- Repair list UI ---------- */
+const repairSelect	= document.getElementById('repairSelect');
+const repairQty		= document.getElementById('repairQty');
+function refreshRepairSelect() {
+	const prevValue = repairSelect.value;
+	buildSelect(repairSelect, {
+		includeMaterials:false, includeItems:true,
+		itemFilter: it  =>  it.repairIngredients.length > 0 && (state.inventory[it.name] || 0) > 0
+	});
+
+	if ([...repairSelect.options].some(o => o.value===prevValue)) repairSelect.value = prevValue;
+}
+
+refreshRepairSelect();
+
+document.getElementById('repairAddBtn').addEventListener('click', () => {
+	const name = repairSelect.value;
+	if (!name || !ITEMS[name]) return;
+	if ((state.inventory[name] || 0) <= 0) return;
+	const qty = Math.max(1, parseInt(repairQty.value,10) || 1);
+	state.repairList[name] = (state.repairList[name] || 0) + qty;
+	repairQty.value=1;
+	saveState();
+	renderRepairList();
+	renderQuickStats();
+});
+
+document.getElementById('clearRepairBtn').addEventListener('click', () => {
+	state.repairList = {};
+	saveState();
+	renderRepairList();
+	renderQuickStats();
+});
+
+function renderRepairList() {
+	let pruned = false;
+	Object.keys(state.repairList).forEach(n => {
+		if ((state.inventory[n] || 0) <= 0) {
+			delete state.repairList[n];
+			pruned = true;
+		}
+	});
+
+	if (pruned) saveState();
+
+	const tbody = document.querySelector('#repairTable tbody');
+	const names = Object.keys(state.repairList).filter(n => state.repairList[n] > 0);
+	document.getElementById('repairEmpty').style.display = names.length ? 'none' : 'block';
+	document.getElementById('repairTable').style.display = names.length ? 'table' : 'none';
+	tbody.innerHTML = names.map(n => `
+		<tr>
+			<td class="row-name">${escapeHtml(n)}<span class="tag">${escapeHtml(ITEMS[n].category)}${ITEMS[n].tier ? ' · T' + escapeHtml(ITEMS[n].tier) : ''}</span></td>
+			<td><input type="number" class="qty-input repair-qty" data-name="${escapeHtml(n)}" value="${state.repairList[n]}" min="1"></td>
+			<td><button class="danger small repair-remove" data-name="${escapeHtml(n)}">X</button></td>
+		</tr>
+	`).join('');
+
+	tbody.querySelectorAll('.repair-qty').forEach(inp => {
+		inp.addEventListener('change', () => {
+			const v = Math.max(1, parseInt(inp.value,10)||1);
+			state.repairList[inp.dataset.name] = v;
+			saveState();
+			renderQuickStats();
+			renderResults();
+		});
+	});
+
+	tbody.querySelectorAll('.repair-remove').forEach(btn => {
+		btn.addEventListener('click', () => {
+			delete state.repairList[btn.dataset.name];
+			saveState();
+			renderRepairList();
+			renderQuickStats();
+		});
+	});
+
+	renderResults();
+}
+
+/* ---------- Desired Gear (favourites) */
+const desiredSelect = document.getElementById('desiredSelect');
+buildSelect(desiredSelect, {
+	includeMaterials: false,
+	includeItems: true
+});
+
+document.getElementById('desiredAddBtn').addEventListener('click', () => {
+	const name = desiredSelect.value;
+	if (!name || !ITEMS[name]) return;
+	state.favorites.push({
+		id: genId(),
+		name
+	});
+
+	saveState();
+	renderFavorites();
+});
+
+function renderFavorites() {
+	const box = document.getElementById('favTable');
+	const tbody = box.querySelector('tbody');
+	const empty = document.getElementById('favEmpty');
+	if (!state.favorites.length){
+		empty.style.display = 'block';
+		box.style.display = 'none';
+		return;
+	}
+
+	empty.style.display = 'none';
+	box.style.display = 'table';
+	const sorted = state.favorites.slice().sort((a,b) => a.name.localeCompare(b.name));
+	tbody.innerHTML = sorted.map(entry => {
+		const item = ITEMS[entry.name];
+		const expanded = expandedFavItems.has(entry.id);
+		const custom = getFavCustom(entry.id);
+		const mainRow = `
+		<tr>
+			<td class="row-name">${escapeHtml(entry.name)}<span class="tag">${escapeHtml(item ? item.category : '')}</span>${item?customSummary(custom):''}</td>
+			<td>
+				${item ? `<button class="secondary small customize-toggle-fav" data-id="${escapeHtml(entry.id)}" title="Modifications / Enchantments / Legendary">${expanded?'^':'*'}</button>` : ''}
+				<button class="small fav-add-craft" data-id="${escapeHtml(entry.id)}" data-name="${escapeHtml(entry.name)}" title="Add to craft">+</button>
+				<button class="danger small fav-remove" data-id="${escapeHtml(entry.id)}">X</button>
+			</td>
+		</tr>`;
+		const detailRow = (item && expanded) ? `
+		<tr class="customize-row">
+			<td colspan="2">${renderCustomizePanel(entry.id, item, custom)}</td>
+		</tr>` : '';
+		return mainRow + detailRow;
+	}).join('');
+
+	tbody.querySelectorAll('.fav-remove').forEach(btn => {
+		btn.addEventListener('click', () => {
+			const id = btn.dataset.id;
+			state.favorites = state.favorites.filter(f => f.id!==id);
+			delete state.favCustomizations[id];
+			expandedFavItems.delete(id);
+			saveState();
+			renderFavorites();
+			renderCraftList();
+		});
+	});
+
+	tbody.querySelectorAll('.fav-add-craft').forEach(btn => {
+		btn.addEventListener('click', () => {
+			const id = btn.dataset.id;
+			const n = btn.dataset.name;
+			state.craftList[n] = (state.craftList[n] || 0) + 1;
+			const fc = state.favCustomizations[id];
+			if (fc && ((fc.mods||[]).filter(Boolean).length || fc.enchant || fc.legendary)) {
+				state.customizations[n] = {
+					mods:		(fc.mods||[]).filter(Boolean).slice(),
+					enchant:	fc.enchant		|| null,
+					legendary:	fc.legendary	|| null
+				};
+			}
+
+			saveState();
+			renderCraftList();
+			renderQuickStats();
+		});
+	});
+
+	tbody.querySelectorAll('.customize-toggle-fav').forEach(btn => {
+		btn.addEventListener('click', () => {
+			const id = btn.dataset.id;
+			if (expandedFavItems.has(id)) expandedFavItems.delete(id);
+			else expandedFavItems.add(id);
+			renderFavorites();
+		});
+	});
+
+	bindCustomizePanelEvents(tbody, getFavCustom);
+}
+
+/* ---------- Quick stats (old) ---------- */
+function renderQuickStats() {}
+
+/* ---------- Resolver ---------- */
+function resolveAll(options) {
+	options = options || {};
+
+	const includeMods		= options.includeMods		!== false;
+	const includeEnchant	= options.includeEnchant	!== false;
+	const includeLegendary	= options.includeLegendary	!== false;
+
+	const have = {};
+	Object.keys(state.inventory).forEach(n => {
+		have[n] = state.inventory[n] || 0;
+	});
+
+	const craftedNeeded		= {};
+	const rawNeeded			= {};
+	const fromInventory		= {};
+	const repairRawNeeded	= {};
+	const customRawNeeded	= {};
+
+	function resolve(name, qty, rawBucket) {
+		if (qty <= 0) return;
+		const owned = have[name] || 0;
+		const used = Math.min(owned, qty);
+		if (used > 0) {
+			have[name] -= used;
+			fromInventory[name] = (fromInventory[name] || 0) + used;
+		}
+
+		const remaining = qty - used;
+		if (remaining <= 0) return;
+
+		const item = ITEMS[name];
+		if (item && item.ingredients.length) {
+			craftedNeeded[name] = (craftedNeeded[name] || 0) + remaining;
+			item.ingredients.forEach(ing => {
+				resolve(ing.name, ing.qty * remaining, rawBucket);
+			});
+		} else {
+			rawBucket[name] = (rawBucket[name]||0) + remaining;
+		}
+	}
+
+	Object.keys(state.craftList).forEach(n => {
+		resolve(n, state.craftList[n], rawNeeded);
+	});
+
+	// Modifications / Enchantments / Legendaries attached to craft-list items
+	Object.keys(state.craftList).forEach(n => {
+		const qty = state.craftList[n];
+		const custom = state.customizations[n];
+		if (!custom) return;
+		const item = ITEMS[n];
+		if (includeMods) {
+			(custom.mods||[]).filter(Boolean).forEach(modName => {
+				const mod = MODIFICATIONS[modName];
+				if (!mod) return;
+				(item.modIngredients || []).forEach(ing => resolve(ing.name, ing.qty * qty, customRawNeeded));
+				mod.cost.forEach(ing => resolve(ing.name, ing.qty * qty, customRawNeeded));
+			});
+		}
+
+		if (includeEnchant && custom.enchant && ENCHANTMENTS[custom.enchant]) {
+			ENCHANTMENTS[custom.enchant].cost.forEach(ing => resolve(ing.name, ing.qty * qty, customRawNeeded));
+		}
+
+		if (includeLegendary && custom.legendary && isMasterwork(item) && LEGENDARY_EFFECTS[custom.legendary]) {
+			LEGENDARY_EFFECTS[custom.legendary].cost.forEach(ing => resolve(ing.name, ing.qty * qty, customRawNeeded));
+		}
+	});
+
+	Object.keys(state.repairList).forEach(n => {
+		const item = ITEMS[n];
+		const times = state.repairList[n];
+		if (!item || !item.repairIngredients.length) return;
+		item.repairIngredients.forEach(ing => {
+			resolve(ing.name, ing.qty * times, repairRawNeeded);
+		});
+	});
+
+	// ----- Gross totals: same breakdown, but WITHOUT deducting inventory -----
+	const grossRawNeeded		= {};
+	const grossRepairRawNeeded	= {};
+	const grossCustomRawNeeded	= {};
+
+	function resolveGross(name, qty, rawBucket) {
+		if (qty <= 0) return;
+		const item = ITEMS[name];
+		if (item && item.ingredients.length) {
+			item.ingredients.forEach(ing => {
+				resolveGross(ing.name, ing.qty * qty, rawBucket);
+			});
+		} else {
+			rawBucket[name] = (rawBucket[name] || 0) + qty;
+		}
+	}
+
+	Object.keys(state.craftList).forEach(n => {
+		resolveGross(n, state.craftList[n], grossRawNeeded);
+	});
+
+	Object.keys(state.craftList).forEach(n => {
+		const qty = state.craftList[n];
+		const custom = state.customizations[n];
+		if (!custom) return;
+		const item = ITEMS[n];
+		if (includeMods) {
+			(custom.mods||[]).filter(Boolean).forEach(modName => {
+				const mod = MODIFICATIONS[modName];
+				if (!mod) return;
+				(item.modIngredients || []).forEach(ing => resolveGross(ing.name, ing.qty * qty, grossCustomRawNeeded));
+				mod.cost.forEach(ing => resolveGross(ing.name, ing.qty * qty, grossCustomRawNeeded));
+			});
+		}
+
+		if (includeEnchant && custom.enchant && ENCHANTMENTS[custom.enchant]) {
+			ENCHANTMENTS[custom.enchant].cost.forEach(ing => resolveGross(ing.name, ing.qty * qty, grossCustomRawNeeded));
+		}
+
+		if (includeLegendary && custom.legendary && isMasterwork(item) && LEGENDARY_EFFECTS[custom.legendary]) {
+			LEGENDARY_EFFECTS[custom.legendary].cost.forEach(ing => resolveGross(ing.name, ing.qty * qty, grossCustomRawNeeded));
+		}
+	});
+
+	Object.keys(state.repairList).forEach(n => {
+		const item = ITEMS[n];
+		const times = state.repairList[n];
+		if (!item || !item.repairIngredients.length) return;
+		item.repairIngredients.forEach(ing => {
+			resolveGross(ing.name, ing.qty * times, grossRepairRawNeeded);
+		});
+	});
+
+	return {
+		craftedNeeded,
+		rawNeeded,
+		fromInventory,
+		repairRawNeeded,
+		customRawNeeded,
+		grossRawNeeded,
+		grossRepairRawNeeded,
+		grossCustomRawNeeded
+	};
+}
+
+function getCostToggles() {
+	return {
+		includeMods:		document.getElementById('toggleMods').checked,
+		includeEnchant:		document.getElementById('toggleEnchant').checked,
+		includeLegendary:	document.getElementById('toggleLegendary').checked
+	};
+}
+
+['toggleMods', 'toggleEnchant', 'toggleLegendary'].forEach(id => {
+	document.getElementById(id).addEventListener('change', renderResults);
+});
+
+document.getElementById('calcBtn').addEventListener('click', renderResults);
+
+function renderResults() {
+	const resultsEl = document.getElementById('results');
+	if (!Object.keys(state.craftList).length && !Object.keys(state.repairList).length) {
+		resultsEl.innerHTML = '<div class="list-empty">Not calculated yet!</div>';
+		return;
+	}
+
+	const toggles = getCostToggles();
+	const {craftedNeeded, rawNeeded, fromInventory, repairRawNeeded, customRawNeeded,
+		grossRawNeeded, grossRepairRawNeeded, grossCustomRawNeeded} = resolveAll(toggles);
+
+	let html = '';
+	if (Object.keys(state.craftList).length) {
+		const targetRows = Object.keys(state.craftList).sort().map(n => {
+			const qty = state.craftList[n];
+			const covered = fromInventory[n] || 0;
+			const stillNeeded = craftedNeeded[n] || 0;
+			const status = stillNeeded > 0
+				? `<span class="need-more">Need ${stillNeeded} more.</span>`
+				: `<span class="have-enough">Complete!</span>`;
+			return `<tr><td class="row-name">${escapeHtml(n)}</td><td>${qty}</td><td>${covered}</td><td>${status}</td></tr>`;
+		}).join('');
+
+		const intermediateNames = Object.keys(craftedNeeded).filter(n => !(n in state.craftList)).sort();
+		const intermediateRows = intermediateNames.map(n => 
+			`<tr><td class="row-name">${escapeHtml(n)}</td><td>${craftedNeeded[n]}</td></tr>`
+		).join('');
+
+		const perItemNames = Object.keys(state.craftList).sort();
+		const perItemRows = perItemNames.map(n => {
+			const qty = state.craftList[n];
+
+			// Build the crafting chain
+			const chain = [n];
+			let current = ITEMS[n];
+			while (current) {
+				const subItemIng = (current.ingredients || []).find(ing => ITEMS[ing.name]);
+				if (!subItemIng) break;
+				chain.unshift(subItemIng.name);
+				current = ITEMS[subItemIng.name];
+			}
+			const chainStr = chain.map(escapeHtml).join(' &rarr; ');
+
+			// Flatten this item's full requirement tree down to raw materials
+			const flatIngredients = {};
+			function flatten(name, multiplier) {
+				const it = ITEMS[name];
+				if (!it) return;
+				it.ingredients.forEach(ing => {
+					if (ITEMS[ing.name]) {
+						flatten(ing.name, multiplier * ing.qty);
+					} else {
+						flatIngredients[ing.name] = (flatIngredients[ing.name] || 0) + ing.qty * multiplier;
+					}
+				});
+			}
+			flatten(n, qty);
+
+			const ingredientBits = Object.keys(flatIngredients).sort()
+				.map(name => `${escapeHtml(name)} x${flatIngredients[name]}`)
+				.join(', ') || '-';
+
+			return `<tr><td class="row-name">${chainStr}</td><td>${qty}</td><td>${ingredientBits}</td></tr>`;
+		}).join('');
+
+		const perItemNamesOld = Object.keys(craftedNeeded).sort();
+		const perItemRowsOld = perItemNamesOld.map(n => {
+			const item = ITEMS[n];
+			const qty = craftedNeeded[n];
+			const ingredientBits = item.ingredients.map(ing => `${escapeHtml(ing.name)} x${ing.qty * qty}`).join(', ') || '-';
+			return `<tr><td class="row-name">${escapeHtml(n)}</td><td>${qty}</td><td>${ingredientBits}</td></tr>`;
+		}).join('');
+
+		html += `
+			<table><thead><tr><th>Item</th><th>Quantity</th><th>Covered</th><th>Status</th></tr></thead>
+			<tbody>${targetRows}</tbody></table>
+
+			<h3>Intermediate Items</h3>
+			<table><thead><tr><th>Item</th><th>Quantity</th></tr></thead>
+			<tbody>${intermediateRows || '<tr><td colspan="2" class="list-empty">None - no upgrade chains involved.</td></tr>'}</tbody></table>
+
+			<h3>Per-Item Ingredients (Total)</h3>
+			<table><thead><tr><th>Item</th><th>Quantity</th><th>Ingredients</th></tr></thead>
+			<tbody>${perItemRows || '<tr><td colspan="3" class="list-empty">Nothing needed!</td></tr>'}</tbody></table>
+
+			<h3>Per-Item Ingredients (Individual)</h3>
+			<table><thead><tr><th>Item</th><th>Quantity</th><th>Ingredients</th></tr></thead>
+			<tbody>${perItemRowsOld || '<tr><td colspan="3" class="list-empty">Nothing needed!</td></tr>'}</tbody></table>
+		`;
+
+		// Modifications / Enchantments / Legendaries
+		const customEntries = Object.keys(state.craftList).sort().flatMap(n => {
+			const custom = state.customizations[n];
+			if (!custom) return [];
+			const qty = state.craftList[n];
+			const item = ITEMS[n];
+			const rows = [];
+			(custom.mods||[]).filter(Boolean).forEach(modName => {
+				const modCost = mergeIngredientLists(item.modIngredients, MODIFICATIONS[modName]?MODIFICATIONS[modName].cost:[]);
+				rows.push({item:n, qty, kind:'Modification', name:modName, cost:modCost});
+			});
+
+			if (custom.enchant) {
+				rows.push({item:n, qty, kind:'Enchantment', name:custom.enchant, cost:ENCHANTMENTS[custom.enchant]?ENCHANTMENTS[custom.enchant].cost:[]});
+			}
+
+			if (custom.legendary) {
+				rows.push({item:n, qty, kind:'Legendary', name:custom.legendary, cost:LEGENDARY_EFFECTS[custom.legendary]?LEGENDARY_EFFECTS[custom.legendary].cost:[]});
+			}
+
+			return rows;
+		});
+
+		if (customEntries.length) {
+			const kindIncluded = {Modification: toggles.includeMods, Enchantment: toggles.includeEnchant, Legendary: toggles.includeLegendary};
+			const customRows = customEntries.map(r => {
+				const costStr = r.cost.length ? r.cost.map(c => `${escapeHtml(c.name)} x${c.qty}`).join(', ') : '-';
+				const included = kindIncluded[r.kind];
+				const excludedTag = included ? '' : ' <span class="tag">excluded</span>';
+				return `<tr${included?'':' style="opacity: .55;"'}><td class="row-name">${escapeHtml(r.item)}</td><td>${escapeHtml(r.kind)}${excludedTag}</td><td>${escapeHtml(r.name)}</td><td>${r.qty}</td><td>${costStr}</td></tr>`;
+			}).join('');
+
+			html += `
+				<h3>Modifications, Enchantments, &amp; Legendary Effects</h3>
+				<table><thead><tr><th>Item</th><th>Type</th><th>Name</th><th>Quantity</th><th>Cost</th></tr></thead>
+				<tbody>${customRows}</tbody></table>
+			`;
+		}
+	}
+
+	if (Object.keys(state.repairList).length) {
+		const repairPerItemNames = Object.keys(state.repairList).filter(n => state.repairList[n] > 0 && ITEMS[n]).sort();
+		const repairPerItemRows = repairPerItemNames.map(n => {
+			const item = ITEMS[n];
+			const times = state.repairList[n];
+			const ingredientBits = item.repairIngredients.map(ing => `${escapeHtml(ing.name)} x${ing.qty * times}`).join(', ') || '-';
+			return `<tr><td class="row-name">${escapeHtml(n)}</td><td>${times}</td><td>${ingredientBits}</td></tr>`;
+		}).join('');
+
+		html += `
+			<h3>Repair Costs</h3>
+			<table><thead><tr><th>Item</th><th>Times</th><th>Cost</th></tr></thead>
+			<tbody>${repairPerItemRows || '<tr><td colspan="3" class="list-empty">Nothing in the repair list.</td></tr>'}</tbody></table>
+		`;
+	}
+
+	const anySectionShown = Object.keys(rawNeeded).length || Object.keys(state.craftList).length ||
+		Object.keys(customRawNeeded).length || Object.keys(state.repairList).length;
+
+	if (anySectionShown) {
+		const totalForCrafting = {};
+		[grossRawNeeded, grossCustomRawNeeded, grossRepairRawNeeded].forEach(bucket => {
+			Object.keys(bucket).forEach(n => {
+				totalForCrafting[n] = (totalForCrafting[n] || 0) + bucket[n];
+			});
+		});
+
+		const totalForCraftingNames = Object.keys(totalForCrafting).sort();
+		const totalForCraftingRows = totalForCraftingNames.map(n =>
+			`<tr><td class="row-name">${escapeHtml(n)}</td><td>${totalForCrafting[n]}</td></tr>`
+		).join('') || '<tr><td colspan="2" class="list-empty">Nothing needed!</td></tr>';
+
+		html += `
+			<h3>Total Cost</h3>
+			<table><thead><tr><th>Item</th><th>Quantity</th></tr></thead>
+			<tbody>${totalForCraftingRows}</tbody></table>
+		`;
+
+		const grandTotal = {};
+		[rawNeeded, customRawNeeded, repairRawNeeded].forEach(bucket => {
+			Object.keys(bucket).forEach(n => {
+				grandTotal[n] = (grandTotal[n] || 0) + bucket[n];
+			});
+		});
+
+		const grandNames = Object.keys(grandTotal).sort();
+		const grandRows = grandNames.map(n => 
+			`<tr><td class="row-name">${escapeHtml(n)}</td><td>${grandTotal[n]}</td></tr>`
+		).join('') || '<tr><td colspan="2" class="list-empty">Nothing needed!</td></tr>';
+
+		html += `
+			<h3>Items Missing</h3>
+			<table><thead><tr><th>Item</th><th>Quantity</th></tr></thead>
+			<tbody>${grandRows}</tbody></table>
+		`;
+	}
+
+	resultsEl.innerHTML = `<div class="result-section">${html}</div>`;
+}
+
+/* ---------- Export / Import EVERYTHING (inventory, craft list, repair list, Desired Gear) ---------- */
+function cleanCustomForItem(item, raw) {
+	if (!raw || typeof raw !== 'object') return {mods: [], enchant: null, legendary: null};
+	const slots = modSlotsForItem(item);
+	const validModNames = new Set(applicableEntries(MODIFICATIONS, item).map(m => m.name));
+	const validEnchantNames = new Set(applicableEntries(ENCHANTMENTS, item).map(m => m.name));
+	const validLegendaryNames = isMasterwork(item) ? new Set(applicableEntries(LEGENDARY_EFFECTS, item).map(m => m.name)) : new Set();
+	const mods = Array.isArray(raw.mods) ? raw.mods.filter(m  => typeof m === 'string' && validModNames.has(m)).slice(0, slots) : [];
+	const enchant = (typeof raw.enchant === 'string' && validEnchantNames.has(raw.enchant)) ? raw.enchant : null;
+	const legendary = (typeof raw.legendary === 'string' && validLegendaryNames.has(raw.legendary)) ? raw.legendary : null;
+	return {mods, enchant, legendary};
+}
+
+document.getElementById('exportAllBtn').addEventListener('click', () => {
+	const hasAnything = Object.keys(state.inventory).length || Object.keys(state.craftList).length || Object.keys(state.repairList).length || state.favorites.length;
+	if (!hasAnything) {
+		alert('Nothing to export yet - add some items first.');
+		return;
+	}
+
+	const customizations = {};
+	Object.keys(state.customizations).forEach(n => {
+		const c = state.customizations[n];
+		const mods = (c.mods || []).filter(Boolean);
+		if (mods.length || c.enchant || c.legendary) {
+			customizations[n] = {mods, enchant: c.enchant || null, legendary: c.legendary || null};
+		}
+	});
+
+	const favorites = state.favorites.map(entry => {
+		const c = state.favCustomizations[entry.id] || {};
+		const mods = (c.mods||[]).filter(Boolean);
+		return {name: entry.name, mods, enchant: c.enchant || null, legendary: c.legendary || null};
+	});
+
+	const payload = {
+		type:		'crafting-calc-full-backup',
+		version:	1,
+		exportedAt:	new Date().toISOString(),
+		inventory:	{...state.inventory},
+		craftList:	{...state.craftList},
+		repairList:	{...state.repairList},
+		customizations,
+		favorites
+	};
+	const blob = new Blob([JSON.stringify(payload, null, 2)], {type: 'application/json'});
+	const url = URL.createObjectURL(blob);
+	const a = document.createElement('a');
+	a.href = url;
+	a.download = 'crafting-calc-full-backup.json';
+	document.body.appendChild(a);
+	a.click();
+	document.body.removeChild(a);
+	URL.revokeObjectURL(url);
+});
+
+document.getElementById('importAllBtn').addEventListener('click', () => {
+	document.getElementById('importAllFile').click();
+});
+
+document.getElementById('importAllFile').addEventListener('change', e => {
+	const file = e.target.files[0];
+	if(!file) return;
+	const reader = new FileReader();
+	reader.onload = ()  =>  {
+		let parsed;
+		try {
+			parsed = JSON.parse(reader.result);
+		} catch(err) {
+			alert('File is not valid JSON.');
+			e.target.value='';
+			return;
+		}
+
+		if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+			alert('File doesn\'t look like a proper export.');
+			e.target.value='';
+			return;
+		}
+
+		// Inventory
+		const cleanInventory = {};
+		if (parsed.inventory && typeof parsed.inventory === 'object') {
+			Object.entries(parsed.inventory).forEach(([name, qty]) => {
+				if ((MATERIALS[name] || ITEMS[name]) && typeof qty === 'number' && qty > 0) {
+					cleanInventory[name] = Math.floor(qty);
+				}
+			});
+		}
+
+		// Craft
+		const cleanCraftList = {};
+		if (parsed.craftList && typeof parsed.craftList === 'object') {
+			Object.entries(parsed.craftList).forEach(([name, qty]) => {
+				if (ITEMS[name] && typeof qty === 'number' && qty > 0) cleanCraftList[name] = Math.floor(qty);
+			});
+		}
+
+		// Repair
+		const cleanRepairList = {};
+		if (parsed.repairList && typeof parsed.repairList === 'object') {
+			Object.entries(parsed.repairList).forEach(([name, qty]) => {
+				if (ITEMS[name] && typeof qty === 'number' && qty > 0) cleanRepairList[name] = Math.floor(qty);
+			});
+		}
+
+		// Customizations
+		const cleanCustomizations = {};
+		if (parsed.customizations && typeof parsed.customizations === 'object') {
+			Object.entries(parsed.customizations).forEach(([name, raw]) => {
+				const item = ITEMS[name];
+				if (!item) return;
+				const c = cleanCustomForItem(item, raw);
+				if (c.mods.length || c.enchant || c.legendary) cleanCustomizations[name] = c;
+			});
+		}
+
+		// Desired
+		const cleanFavorites = [];
+		if (Array.isArray(parsed.favorites)) {
+			parsed.favorites.forEach(entry => {
+				const name = typeof entry === 'string' ? entry : (entry && entry.name);
+				if (typeof name !== 'string' || !ITEMS[name]) return;
+				const item = ITEMS[name];
+				const c = cleanCustomForItem(item, typeof entry === 'object' ? entry : {});
+				cleanFavorites.push({id: genId(), name, ...c});
+			});
+		}
+
+		const totalCount = Object.keys(cleanInventory).length + Object.keys(cleanCraftList).length + Object.keys(cleanRepairList).length + cleanFavorites.length;
+		if (!totalCount) {
+			alert('No recognizable data found in that file.');
+			e.target.value='';
+			return;
+		}
+
+		const merge = confirm(
+			`Found: ${Object.keys(cleanInventory).length} inventory item(s), ${Object.keys(cleanCraftList).length} craft list item(s), ` +
+			`${Object.keys(cleanRepairList).length} repair list item(s), ${cleanFavorites.length} Desired Gear item(s).\n\n` +
+			`Click OK to MERGE with what you currently have, or Cancel to REPLACE everything entirely.`
+		);
+
+		if (!merge) {
+			state.inventory			= {};
+			state.craftList			= {};
+			state.repairList		= {};
+			state.favorites			= [];
+			state.favCustomizations	= {};
+			state.customizations	= {};
+			state.invCustomizations	= {};
+		}
+
+		Object.entries(cleanInventory).forEach(([n,q]) => {
+			state.inventory[n] = (state.inventory[n] || 0) + q;
+		});
+
+		Object.entries(cleanCraftList).forEach(([n,q]) => {
+			state.craftList[n] = (state.craftList[n] || 0) + q;
+		});
+
+		Object.entries(cleanRepairList).forEach(([n,q]) => {
+			if ((state.inventory[n] || 0) > 0) state.repairList[n] = (state.repairList[n] || 0) + q;
+		});
+
+		Object.entries(cleanCustomizations).forEach(([n,c]) => {
+			state.customizations[n] = c;
+		});
+
+		cleanFavorites.forEach(f => {
+			state.favorites.push({id: f.id, name: f.name});
+			if (f.mods.length || f.enchant || f.legendary) {
+				state.favCustomizations[f.id] = {mods: f.mods, enchant: f.enchant, legendary: f.legendary};
+			}
+		});
+
+		saveState();
+		renderInventory();
+		renderCraftList();
+		renderRepairList();
+		renderFavorites();
+		renderQuickStats();
+		refreshRepairSelect();
+		e.target.value = '';
+	};
+
+	reader.readAsText(file);
+});
+
+
+
+/* ---------- Init ---------- */
+renderInventory();
+renderCraftList();
+renderRepairList();
+renderFavorites();
+renderQuickStats();
+</script>
+</body>
+</html>
