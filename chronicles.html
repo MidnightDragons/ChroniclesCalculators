@@ -882,6 +882,11 @@ function initCraftCalc() {
 	loadState();
 	if (!state.favCustomizations || typeof state.favCustomizations !== 'object') state.favCustomizations = {};
 	if (!state.invCustomizations || typeof state.invCustomizations !== 'object') state.invCustomizations = {};
+	if (!state.costToggles || typeof state.costToggles !== 'object') state.costToggles = {includeMods: true, includeEnchant: true, includeLegendary: true};
+
+	document.getElementById('toggleMods').checked		= state.costToggles.includeMods			!== false;
+	document.getElementById('toggleEnchant').checked	= state.costToggles.includeEnchant		!== false;
+	document.getElementById('toggleLegendary').checked	= state.costToggles.includeLegendary	!== false;
 
 	function genId() {
 		return 'f_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2,9);
@@ -1626,7 +1631,11 @@ function initCraftCalc() {
 	}
 
 	['toggleMods', 'toggleEnchant', 'toggleLegendary'].forEach(id => {
-		document.getElementById(id).addEventListener('change', renderResults);
+		document.getElementById(id).addEventListener('change', () => {
+			state.costToggles = getCostToggles();
+			saveState();
+			renderResults();
+		});
 	});
 
 	document.getElementById('calcBtn').addEventListener('click', renderResults);
