@@ -862,7 +862,8 @@ function initCraftCalc() {
 		favorites:			[],
 		customizations:		{},
 		invCustomizations:	{},
-		favCustomizations:	{}
+		favCustomizations:	{},
+		costToggles:		{includeMods: true, includeEnchant: true, includeLegendary: true}
 	};
 
 	function loadState() {
@@ -915,7 +916,7 @@ function initCraftCalc() {
 		selectEl.innerHTML = '';
 
 		if (includeMaterials) {
-			// group materials by gathering node, in tier order within each node
+			// Group materials by gathering node, in tier order within each node
 			const nodeOrder = [
 				'Light Metals',
 				'Heavy Metals',
@@ -2157,6 +2158,38 @@ function getMatchingEnemies(biome) {
 }
 
 function initXpCalc() {
+	const XP_STORE_KEY = 'xpCalcState_v1';
+	const XP_FIELD_IDS = ['curLevel','desLevel','curXP','crisis','energy','wellfed','encDifficulty','biome','faction'];
+
+	function loadXpState() {
+		try {
+			const raw = localStorage.getItem(XP_STORE_KEY);
+			if (!raw) return;
+
+			const saved = JSON.parse(raw);
+			XP_FIELD_IDS.forEach(id => {
+				if (saved[id] !== undefined && saved[id] !== null) {
+					const el = document.getElementById(id);
+					if (el) el.value = saved[id];
+				}
+			});
+
+			if (saved.weeklyXP !== undefined) document.getElementById('weeklyXP').checked = !!saved.weeklyXP;
+		} catch (e) {}
+	}
+
+	function saveXpState() {
+		try {
+			const state = {};
+			XP_FIELD_IDS.forEach(id => {
+				state[id] = document.getElementById(id).value;
+			});
+
+			state.weeklyXP = document.getElementById('weeklyXP').checked;
+			localStorage.setItem(XP_STORE_KEY, JSON.stringify(state));
+		} catch (e) {}
+	}
+
 	const factionSel = document.getElementById('faction');
 	Object.entries(FACTIONS).forEach(([key, f]) => {
 		const opt = document.createElement('option');
@@ -2172,6 +2205,8 @@ function initXpCalc() {
 		opt.textContent	= b;
 		biomeSel.appendChild(opt);
 	});
+
+	loadXpState();
 
 	let chart;
 
@@ -2288,9 +2323,14 @@ function initXpCalc() {
 		`;
 	}
 
-	const calcs = ['curLevel','desLevel','curXP','crisis','energy','wellfed','encDifficulty','biome','faction','weeklyXP'];
-	calcs.forEach(id => document.getElementById(id).addEventListener('input', calculate));
-	document.getElementById('weeklyXP').addEventListener('change', calculate);
+	function calculateAndSave() {
+		calculate();
+		saveXpState();
+	}
+
+	const calcs = ['curLevel', 'desLevel', 'curXP', 'crisis', 'energy', 'wellfed', 'encDifficulty', 'biome', 'faction', 'weeklyXP'];
+	calcs.forEach(id => document.getElementById(id).addEventListener('input', calculateAndSave));
+	document.getElementById('weeklyXP').addEventListener('change', calculateAndSave);
 
 	calculate();
 
