@@ -1,10 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 	<head>
-	<meta charset="UTF-8">
-	<title>Elder Scrolls: Chronicles - Calculators</title>
-	<link rel="stylesheet" href="chronicles.css">
+		<meta charset="UTF-8">
+		<title>Elder Scrolls: Chronicles - Calculators</title>
+		<link rel="stylesheet" href="chronicles.css">
 	</head>
+
+	<img class="bg-image" alt="" data-ssr-src-done="true" fetchpriority="high" src="https://static.wixstatic.com/media/1a6ccf_ff8375cd008b4fe39480cf8e3cd53bd1~mv2.png/v1/fill/w_1920,h_1080,al_c,q_95,usm_0.66_1.00_0.01,enc_avif,quality_auto/1a6ccf_ff8375cd008b4fe39480cf8e3cd53bd1~mv2.png">
 
 	<body>
 		<div class="page-tabs">
@@ -12,30 +14,38 @@
 			<button class="page-tab" data-page="page-xp">Experience Calculator</button>
 		</div>
 
-		<div class="page" id="page-craft">
-			<!-- OPTIONS -->
-			<div class="panel sidenav">
-				<h2>Options</h2>
-				<div class="cz-title" style="margin-bottom: 5px;">Backup</div>
-				<div class="pill-btns">
-					<button class="secondary small" id="importAllBtn">Import</button>
-					<button class="secondary small" id="exportAllBtn">Export</button>
-					<input type="file" id="importAllFile" accept="application/json" style="display: none;">
-				</div>
-				<div id="quickStats" style="font-size: .9rem; line-height: 1.9;"></div>
-				<div class="cz-title" style="margin-top: 6px;">Include in cost totals:</div>
-				<div style="display: flex; flex-direction: column; gap: 4px; font-size: .85rem; margin: 6px 0 10px;">
-					<label style="display: flex; align-items: center; gap: 6px; cursor: pointer;"><input type="checkbox" id="toggleMods" checked> Modifications</label>
-					<label style="display: flex; align-items: center; gap: 6px; cursor: pointer;"><input type="checkbox" id="toggleEnchant" checked> Enchantments</label>
-					<label style="display: flex; align-items: center; gap: 6px; cursor: pointer;"><input type="checkbox" id="toggleLegendary" checked> Legendary Effects</label>
-				</div>
+		<div class="panel sidenav">
+			<h2>Options</h2>
 
-				<button id="calcBtn" style="width: 100%; margin-top: 10px; padding: 10px;">Recalculate (Debug)</button>
+			<div class="cz-title" style="margin-bottom: 5px;">Backup</div>
+			<div class="pill-btns">
+				<button class="secondary small" id="importAllBtn">Import</button>
+				<button class="secondary small" id="exportAllBtn">Export</button>
+				<input type="file" id="importAllFile" accept="application/json" style="display: none;">
 			</div>
 
-			<h1>Elder Scrolls: Chronicles - Crafting Cost Calculator</h1>
-			<div class="site-link"><a href="https://www.eschronicles.com/" target="_blank" rel="noopener">Visit Server Website</a></div>
+			<div id="quickStats" style="line-height: 1.9;"></div>
+			<div class="cz-title" style="margin-top: 6px;">Include in cost totals:</div>
+			<div style="display: flex; flex-direction: column; gap: 4px; margin: 6px 0 10px;">
+				<label style="display: flex; align-items: center; gap: 6px; cursor: pointer;"><input type="checkbox" id="toggleMods" checked> Modifications</label>
+				<label style="display: flex; align-items: center; gap: 6px; cursor: pointer;"><input type="checkbox" id="toggleEnchant" checked> Enchantments</label>
+				<label style="display: flex; align-items: center; gap: 6px; cursor: pointer;"><input type="checkbox" id="toggleLegendary" checked> Legendary Effects</label>
+			</div>
 
+			<button id="chroBtn">Change Style</button>
+		</div>
+
+		<h1>
+			<img class="logo-side" alt="" data-ssr-src-done="true" fetchpriority="high" src="https://static.wixstatic.com/media/1a6ccf_f467680897ec41c5bb74791f7f4d819f~mv2.png/v1/crop/x_0,y_0,w_215,h_88/fill/w_82,h_30,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/SR-qico-Daedric-right.png">
+			<tes-logo>The Elder Scrolls</tes-logo>
+			<img class="logo-side" alt="" data-ssr-src-done="true" fetchpriority="high" src="https://static.wixstatic.com/media/1a6ccf_185f9b0e4bde4837b3096a11ec0a270f~mv2.png/v1/crop/x_82,y_0,w_218,h_86/fill/w_89,h_30,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/SR-qico-Daedric-left.png">
+			<br>
+			<a href="https://www.eschronicles.com/" target="_blank" rel="noopener">
+				<chro-logo>Chronicles</chro-logo>
+			</a>
+		</h1>
+
+		<div class="page" id="page-craft">
 			<div class="grid">
 				<!-- INVENTORY -->
 				<div class="panel">
@@ -115,37 +125,34 @@
 		</div>
 
 		<div class="page" id="page-xp">
-			<h1>Elder Scrolls: Chronicles - Experience Calculator</h1>
-			<div class="site-link"><a href="https://www.eschronicles.com/" target="_blank" rel="noopener">Visit Server Website</a></div>
-
 			<div class="panel xp-center">
 				<div class="grid2">
 					<div class="field">
-						<label for="curLevel">Current level</label>
+						<h2 for="curLevel">Current level</h2>
 						<input type="number" id="curLevel" min="0" max="19" value="0">
 					</div>
 					<div class="field">
-						<label for="desLevel">Desired level</label>
+						<h2 for="desLevel">Desired level</h2>
 						<input type="number" id="desLevel" min="1" max="20" value="20">
 					</div>
 					<div class="field">
-						<label for="curXP">Current experience</label>
+						<h2 for="curXP">Current experience</h2>
 						<input type="number" id="curXP" min="0" value="0">
 					</div>
 					<div class="field">
-						<label for="crisis">Crisis level</label>
+						<h2 for="crisis">Crisis level</h2>
 						<input type="number" id="crisis" min="0" value="0">
 					</div>
 					<div class="field">
-						<label for="energy">Energy per day</label>
+						<h2 for="energy">Energy per day</h2>
 						<input type="number" id="energy" min="1" max="10" value="3">
 					</div>
 					<div class="field">
-						<label for="wellfed">Well-fed modifier (%)</label>
+						<h2 for="wellfed">Well-fed modifier (%)</h2>
 						<input type="number" id="wellfed" min="50" max="150" value="95">
 					</div>
 					<div class="field">
-						<label for="encDifficulty">Encounter difficulty</label>
+						<h2 for="encDifficulty">Encounter difficulty</h2>
 						<select id="encDifficulty">
 							<option value="Easy">Easy (-2 Difficulty)</option>
 							<option value="Medium" selected>Medium (+0 Difficulty)</option>
@@ -155,7 +162,7 @@
 						</select>
 					</div>
 					<div class="field">
-						<label for="biome">Biome</label>
+						<h2 for="biome">Biome</h2>
 						<select id="biome"><option value="">- any biome -</option></select>
 					</div>
 				</div>
@@ -164,7 +171,7 @@
 
 				<div class="xp-grid">
 					<div class="field" style="margin-bottom:.75rem">
-						<label for="faction">Faction (optional)</label>
+						<h2 for="faction">Faction (optional)</h2>
 						<select id="faction"><option value="">- no faction -</option></select>
 					</div>
 
@@ -179,14 +186,15 @@
 							<thead><tr><th>Quest</th><th>XP reward</th><th>Cooldown</th><th>XP/day avg</th></tr></thead>
 							<tbody id="questRows"></tbody>
 							<tfoot><tr>
-								<td style="padding:6px 8px;font-weight:500">Total</td>
-								<td id="totalQuestXP" style="padding:6px 8px;font-weight:500"></td>
+								<td style="padding:6px 8px">Total</td>
+								<td id="totalQuestXP" style="padding:6px 8px"></td>
 								<td></td>
-								<td id="totalQuestXPDay" style="padding:6px 8px;font-weight:500;color:var(--accent)"></td>
+								<td id="totalQuestXPDay" style="padding:6px 8px"></td>
 							</tr></tfoot>
 						</table>
 					</div>
 
+					<div class="section">Results</div>
 					<div class="results" id="xpResults"></div>
 				</div>
 			</div>
@@ -847,6 +855,100 @@
 				ITEM_NAMES = Object.keys(ITEMS);
 			}
 
+			function makeCustomDropdown(selectEl) {
+				if (selectEl._cselRefresh) {
+					selectEl._cselRefresh();
+					return;
+				}
+
+				const wrap = document.createElement('div');
+				wrap.className = 'csel-wrap';
+				selectEl.insertAdjacentElement('afterend', wrap);
+				selectEl.classList.add('csel-native');
+
+				const btn = document.createElement('button');
+				btn.type = 'button';
+				btn.className = 'csel-btn';
+
+				const label = document.createElement('span');
+				label.className = 'csel-label';
+
+				const arrow = document.createElement('span');
+				arrow.className = 'csel-arrow';
+				arrow.textContent = '▼';
+				btn.appendChild(label);
+				btn.appendChild(arrow);
+
+				const panel = document.createElement('div');
+				panel.className = 'csel-panel';
+				panel.hidden = true;
+
+				wrap.appendChild(btn);
+				wrap.appendChild(panel);
+
+				function updateLabel() {
+					const opt = selectEl.options[selectEl.selectedIndex];
+					label.textContent = opt ? opt.textContent : '';
+				}
+
+				function makeOptionEl(opt) {
+					const item = document.createElement('div');
+					item.className = 'csel-option';
+					item.textContent = opt.textContent;
+
+					if (opt.value === selectEl.value) item.classList.add('is-selected');
+					item.addEventListener('click', () => {
+						selectEl.value = opt.value;
+						selectEl.dispatchEvent(new Event('change', {bubbles:true}));
+						updateLabel();
+						closePanel();
+					});
+
+					return item;
+				}
+
+				function rebuildPanel() {
+					panel.innerHTML = '';
+					Array.from(selectEl.children).forEach(child => {
+						if (child.tagName === 'OPTGROUP') {
+							const groupLabel = document.createElement('div');
+							groupLabel.className = 'csel-group-label';
+							groupLabel.textContent = child.label;
+							panel.appendChild(groupLabel);
+							Array.from(child.children).forEach(opt => panel.appendChild(makeOptionEl(opt)));
+						} else if (child.tagName === 'OPTION') {
+							panel.appendChild(makeOptionEl(child));
+						}
+					});
+				}
+
+				function openPanel() {
+					rebuildPanel();
+					panel.hidden = false;
+					wrap.classList.add('is-open');
+				}
+
+				function closePanel() {
+					panel.hidden = true;
+					wrap.classList.remove('is-open');
+				}
+
+				btn.addEventListener('click', (e) => {
+					e.stopPropagation();
+					panel.hidden ? openPanel() : closePanel();
+				});
+
+				document.addEventListener('click', (e) => {
+					if (!wrap.contains(e.target)) closePanel();
+				});
+
+				document.addEventListener('keydown', (e) => {
+					if (e.key === 'Escape') closePanel();
+				});
+
+				selectEl._cselRefresh = updateLabel;
+				updateLabel();
+			}
 
 			function initCraftCalc() {
 				/* ---------- Persistent state ---------- */
@@ -912,12 +1014,11 @@
 					}[c]));
 				}
 
-				/* Build the full pool of names for inventory*/
+				/* Build the full pool of names for inventory */
 				function buildSelect(selectEl, {includeMaterials, includeItems, itemFilter}) {
 					selectEl.innerHTML = '';
 
 					if (includeMaterials) {
-						// Group materials by gathering node, in tier order within each node
 						const nodeOrder = [
 							'Light Metals',
 							'Heavy Metals',
@@ -936,15 +1037,16 @@
 						});
 
 						const tierRank = {
-							'1': 1,
-							'2': 2,
-							'3': 3,
-							'4': 4,
-							'N/A': 5
+							'1':	1,
+							'2':	2,
+							'3':	3,
+							'4':	4,
+							'N/A':	5
 						};
 
 						nodeOrder.forEach(node => {
 							if (!byNode[node]) return;
+
 							const group = document.createElement('optgroup');
 							group.label = 'Resource - ' + node;
 							byNode[node].sort((a,b) => (tierRank[a.tier]||9) - (tierRank[b.tier]||9)).forEach(m => {
@@ -985,6 +1087,8 @@
 							selectEl.appendChild(group);
 						});
 					}
+
+					makeCustomDropdown(selectEl);
 				}
 
 				/* ---------- Inventory UI ---------- */
@@ -1021,7 +1125,7 @@
 							<td class="row-name">${escapeHtml(n)}${item?customSummary(state.invCustomizations[n]):''}</td>
 							<td><input type="number" class="qty-input inv-qty" data-name="${escapeHtml(n)}" value="${state.inventory[n]}" min="0"></td>
 							<td>
-								${item ? `<button class="secondary small customize-toggle-inv" data-name="${escapeHtml(n)}" title="Modifications / Enchantments / Legendary">${expanded?'^':'*'}</button>` : ''}
+								${item ? `<button class="secondary small customize-toggle-inv" data-name="${escapeHtml(n)}" title="Modifications / Enchantments / Legendary">${expanded?'▲':'▼'}</button>` : ''}
 								<button class="danger small inv-remove" data-name="${escapeHtml(n)}">X</button>
 							</td>
 						</tr>`;
@@ -1142,7 +1246,7 @@
 							<td class="row-name">${escapeHtml(n)}<span class="tag">${escapeHtml(item.category)}${item.tier ? ' · T'+escapeHtml(item.tier) : ''}</span>${customSummary(state.customizations[n])}</td>
 							<td><input type="number" class="qty-input craft-qty" data-name="${escapeHtml(n)}" value="${state.craftList[n]}" min="1"></td>
 							<td>
-								<button class="secondary small customize-toggle" data-name="${escapeHtml(n)}" title="Modifications / Enchantments / Legendary">${expanded?'^':'*'}</button>
+								<button class="secondary small customize-toggle" data-name="${escapeHtml(n)}" title="Modifications / Enchantments / Legendary">${expanded?'▲':'▼'}</button>
 								<button class="danger small craft-remove" data-name="${escapeHtml(n)}">X</button>
 							</td>
 						</tr>`;
@@ -1413,8 +1517,8 @@
 						<tr>
 							<td class="row-name">${escapeHtml(entry.name)}<span class="tag">${escapeHtml(item ? item.category : '')}</span>${item?customSummary(custom):''}</td>
 							<td>
-								${item ? `<button class="secondary small customize-toggle-fav" data-id="${escapeHtml(entry.id)}" title="Modifications / Enchantments / Legendary">${expanded?'^':'*'}</button>` : ''}
 								<button class="small fav-add-craft" data-id="${escapeHtml(entry.id)}" data-name="${escapeHtml(entry.name)}" title="Add to craft">+</button>
+								${item ? `<button class="secondary small customize-toggle-fav" data-id="${escapeHtml(entry.id)}" title="Modifications / Enchantments / Legendary">${expanded?'▲':'▼'}</button>` : ''}
 								<button class="danger small fav-remove" data-id="${escapeHtml(entry.id)}">X</button>
 							</td>
 						</tr>`;
@@ -1634,7 +1738,23 @@
 					});
 				});
 
-				document.getElementById('calcBtn').addEventListener('click', renderResults);
+				document.getElementById('chroBtn').addEventListener('click', chroMode);
+
+				function chroMode() {
+					document.body.classList.toggle("chronicles");
+
+					try {
+						if (document.body.classList.contains('chronicles')) localStorage.setItem('chroniclesChroMode', 'disabled');
+						else localStorage.setItem('chroniclesChroMode', 'enabled');
+					} catch (e) {}
+				}
+
+				function initChroMode() {
+					const saved = localStorage.getItem('chroniclesChroMode');
+					if (saved === 'disabled') chroMode();
+				}
+
+				initChroMode();
 
 				function renderResults() {
 					const resultsEl = document.getElementById('results');
@@ -2208,6 +2328,10 @@
 				});
 
 				loadXpState();
+
+				makeCustomDropdown(document.getElementById('encDifficulty'));
+				makeCustomDropdown(factionSel);
+				makeCustomDropdown(biomeSel);
 
 				let chart;
 				function calculate() {
