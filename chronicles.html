@@ -15,21 +15,23 @@
 		</div>
 
 		<div class="panel sidenav">
-			<h2>Options</h2>
+			<span>
+				<h2>Options</h2>
 
-			<div class="cz-title cz-backup">Backup</div>
-			<div class="pill-btns">
-				<button class="secondary small" id="importAllBtn">Import</button>
-				<button class="secondary small" id="exportAllBtn">Export</button>
-				<input type="file" id="importAllFile" accept="application/json" style="display: none;">
-			</div>
+				<div class="cz-title cz-backup">Backup</div>
+				<div class="pill-btns">
+					<button class="secondary small" id="importAllBtn">Import</button>
+					<button class="secondary small" id="exportAllBtn">Export</button>
+					<input type="file" id="importAllFile" accept="application/json" style="display: none;">
+				</div>
 
-			<div class="cz-title cz-include-title">Include in cost totals:</div>
-			<div class="cz-include-toggles">
-				<label class="cz-include-checkbox"><input type="checkbox" id="toggleMods" checked> Modifications</label>
-				<label class="cz-include-checkbox"><input type="checkbox" id="toggleEnchant" checked> Enchantments</label>
-				<label class="cz-include-checkbox"><input type="checkbox" id="toggleLegendary" checked> Legendary Effects</label>
-			</div>
+				<div class="cz-title cz-include-title">Include in cost totals:</div>
+				<div class="cz-include-toggles">
+					<label class="cz-include-checkbox"><input type="checkbox" id="toggleMods" checked> Modifications</label>
+					<label class="cz-include-checkbox"><input type="checkbox" id="toggleEnchant" checked> Enchantments</label>
+					<label class="cz-include-checkbox"><input type="checkbox" id="toggleLegendary" checked> Legendary Effects</label>
+				</div>
+			</span>
 
 			<button id="chroBtn">Change Style</button>
 		</div>
@@ -48,71 +50,79 @@
 			<div class="grid">
 				<!-- INVENTORY -->
 				<div class="panel">
-					<h2>Inventory</h2>
-					<div class="search-row" id="invSearchWrap">
-						<select id="invSelect"></select>
-						<input type="number" id="invQty" value="1" min="0">
-						<button id="invAddBtn">Add</button>
-					</div>
-					<div class="scrollbox">
-						<table id="invTable">
-							<thead><tr><th>Item</th><th>Quantity</th><th></th></tr></thead>
-							<tbody></tbody>
-						</table>
-						<div class="list-empty" id="invEmpty">EMPTY</div>
-					</div>
+					<span>
+						<h2>Inventory</h2>
+						<div class="search-row" id="invSearchWrap">
+							<select id="invSelect"></select>
+							<input type="number" id="invQty" value="1" min="0">
+							<button id="invAddBtn">Add</button>
+						</div>
+						<div class="scrollbox">
+							<table id="invTable">
+								<thead><tr><th>Item</th><th>Quantity</th><th></th></tr></thead>
+								<tbody></tbody>
+							</table>
+							<div class="list-empty" id="invEmpty">EMPTY</div>
+						</div>
+					</span>
 				</div>
 
 				<!-- DESIRED GEAR -->
 				<div class="panel">
-					<h2>Desired Gear</h2>
-					<div class="search-row" id="desiredSearchWrap">
-						<select id="desiredSelect"></select>
-						<button id="desiredAddBtn">Add</button>
-					</div>
-					<div class="scrollbox" id="favBox">
-						<div class="list-empty" id="favEmpty">EMPTY</div>
-						<table id="favTable" style="display: none;">
-							<thead><tr><th>Item</th><th></th></tr></thead>
-							<tbody></tbody>
-						</table>
-					</div>
+					<span>
+						<h2>Desired Gear</h2>
+						<div class="search-row" id="desiredSearchWrap">
+							<select id="desiredSelect"></select>
+							<button id="desiredAddBtn">Add</button>
+						</div>
+						<div class="scrollbox" id="favBox">
+							<div class="list-empty" id="favEmpty">EMPTY</div>
+							<table id="favTable" style="display: none;">
+								<thead><tr><th>Item</th><th></th></tr></thead>
+								<tbody></tbody>
+							</table>
+						</div>
+					</span>
 				</div>
 
 				<!-- REPAIR LIST -->
 				<div class="panel">
-					<h2>To Repair</h2>
-					<div class="search-row" id="repairSearchWrap">
-						<select id="repairSelect"></select>
-						<input type="number" id="repairQty" value="1" min="1">
-						<button id="repairAddBtn">Add</button>
-					</div>
-					<div class="scrollbox">
-						<table id="repairTable">
-							<thead><tr><th>Item</th><th>Count</th><th></th></tr></thead>
-							<tbody></tbody>
-						</table>
-						<div class="list-empty" id="repairEmpty">EMPTY</div>
-					</div>
-					<div style="margin-top: 10px;">
+					<span>
+						<h2>To Repair</h2>
+						<div class="search-row" id="repairSearchWrap">
+							<select id="repairSelect"></select>
+							<input type="number" id="repairQty" value="1" min="1">
+							<button id="repairAddBtn">Add</button>
+						</div>
+						<div class="scrollbox">
+							<table id="repairTable">
+								<thead><tr><th>Item</th><th>Count</th><th></th></tr></thead>
+								<tbody></tbody>
+							</table>
+							<div class="list-empty" id="repairEmpty">EMPTY</div>
+						</div>
+					</span>
+					<span class="clear-buttons">
 						<button class="secondary small" id="clearRepairBtn">Clear</button>
-					</div>
+					</span>
 				</div>
 
 				<!-- CRAFT LIST -->
 				<div class="panel">
-					<h2>To Craft</h2>
-					<div class="scrollbox">
-						<table id="craftTable">
-							<thead><tr><th>Item</th><th>Quantity</th><th></th></tr></thead>
-							<tbody></tbody>
-						</table>
-						<div class="list-empty" id="craftEmpty">EMPTY</div>
-					</div>
-					<div style="margin-top: 10px; display: flex; gap: 8px;">
+					<span class="pre-buttons">
+						<h2>To Craft</h2>
+						<div class="scrollbox">
+							<table id="craftTable">
+								<thead><tr><th>Item</th><th>Quantity</th><th></th></tr></thead>
+								<tbody></tbody>
+							</table>
+							<div class="list-empty" id="craftEmpty">EMPTY</div>
+						</div>
+					</span>
+					<span class="bottom-buttons">
 						<button class="secondary small" id="loadFavsBtn">Import Desired Gear</button>
 						<button class="secondary small" id="clearCraftBtn">Clear</button>
-					</div>
+					</span>
 				</div>
 
 				<!-- RESULTS -->
@@ -125,77 +135,79 @@
 
 		<div class="page" id="page-xp">
 			<div class="panel xp-center">
-				<div class="grid2">
-					<div class="field">
-						<h2 for="curLevel">Current level</h2>
-						<input type="number" id="curLevel" min="0" max="19" value="0">
-					</div>
-					<div class="field">
-						<h2 for="desLevel">Desired level</h2>
-						<input type="number" id="desLevel" min="1" max="20" value="20">
-					</div>
-					<div class="field">
-						<h2 for="curXP">Current experience</h2>
-						<input type="number" id="curXP" min="0" value="0">
-					</div>
-					<div class="field">
-						<h2 for="crisis">Crisis level</h2>
-						<input type="number" id="crisis" min="0" value="0">
-					</div>
-					<div class="field">
-						<h2 for="energy">Energy per day</h2>
-						<input type="number" id="energy" min="1" max="10" value="3">
-					</div>
-					<div class="field">
-						<h2 for="wellfed">Well-fed modifier (%)</h2>
-						<input type="number" id="wellfed" min="50" max="150" value="95">
-					</div>
-					<div class="field">
-						<h2 for="encDifficulty">Encounter difficulty</h2>
-						<select id="encDifficulty">
-							<option value="Easy">Easy (-2 Difficulty)</option>
-							<option value="Medium" selected>Medium (+0 Difficulty)</option>
-							<option value="Hard">Hard (+2 Difficulty, +1 Health)</option>
-							<option value="Perilous">Perilous (+4 Difficulty, +2 Health)</option>
-							<option value="Lethal">Lethal (+6 Difficulty, +3 Health)</option>
-						</select>
-					</div>
-					<div class="field">
-						<h2 for="biome">Biome</h2>
-						<select id="biome"><option value="">- any biome -</option></select>
-					</div>
-				</div>
-
-				<div id="biomeWarning" class="warn-note" style="display:none"></div>
-
-				<div class="xp-grid">
-					<div class="field" style="margin-bottom:.75rem">
-						<h2 for="faction">Faction (optional)</h2>
-						<select id="faction"><option value="">- no faction -</option></select>
+				<span>
+					<div class="grid2">
+						<div class="field">
+							<h2 for="curLevel">Current level</h2>
+							<input type="number" id="curLevel" min="0" max="19" value="0">
+						</div>
+						<div class="field">
+							<h2 for="desLevel">Desired level</h2>
+							<input type="number" id="desLevel" min="1" max="20" value="20">
+						</div>
+						<div class="field">
+							<h2 for="curXP">Current experience</h2>
+							<input type="number" id="curXP" min="0" value="0">
+						</div>
+						<div class="field">
+							<h2 for="crisis">Crisis level</h2>
+							<input type="number" id="crisis" min="0" value="0">
+						</div>
+						<div class="field">
+							<h2 for="energy">Energy per day</h2>
+							<input type="number" id="energy" min="1" max="10" value="3">
+						</div>
+						<div class="field">
+							<h2 for="wellfed">Well-fed modifier (%)</h2>
+							<input type="number" id="wellfed" min="50" max="150" value="95">
+						</div>
+						<div class="field">
+							<h2 for="encDifficulty">Encounter difficulty</h2>
+							<select id="encDifficulty">
+								<option value="Easy">Easy (-2 Difficulty)</option>
+								<option value="Medium" selected>Medium (+0 Difficulty)</option>
+								<option value="Hard">Hard (+2 Difficulty, +1 Health)</option>
+								<option value="Perilous">Perilous (+4 Difficulty, +2 Health)</option>
+								<option value="Lethal">Lethal (+6 Difficulty, +3 Health)</option>
+							</select>
+						</div>
+						<div class="field">
+							<h2 for="biome">Biome</h2>
+							<select id="biome"><option value="">- any biome -</option></select>
+						</div>
 					</div>
 
-					<div class="toggle-row">
-						<input type="checkbox" id="weeklyXP" checked style="width:auto">
-						<label for="weeklyXP">Weekly experience bonus <span class="badge">+150 XP/week</span></label>
-					</div>
+					<div id="biomeWarning" class="warn-note" style="display: none"></div>
 
-					<div id="questInfo" style="display:none">
-						<div class="section">Faction quests</div>
-						<table class="quest-table">
-							<thead><tr><th>Quest</th><th>XP reward</th><th>Cooldown</th><th>XP/day avg</th></tr></thead>
-							<tbody id="questRows"></tbody>
-							<tfoot><tr>
-								<td style="padding:6px 8px">Total</td>
-								<td id="totalQuestXP" style="padding:6px 8px"></td>
-								<td></td>
-								<td id="totalQuestXPDay" style="padding:6px 8px"></td>
-							</tr></tfoot>
-						</table>
-					</div>
+					<div class="xp-grid">
+						<div class="field faction">
+							<h2 for="faction">Faction (optional)</h2>
+							<select id="faction"><option value="">- no faction -</option></select>
+						</div>
 
-					<div class="section">Results</div>
-					<div class="results" id="xpResults"></div>
-				</div>
+						<div class="toggle-row">
+							<input class="weekly" type="checkbox" id="weeklyXP" checked>
+							<label for="weeklyXP">Weekly experience bonus <span class="badge">+150 XP/week</span></label>
+						</div>
+
+						<div id="questInfo" style="display: none">
+							<div class="section">Faction quests</div>
+							<table class="quest-table">
+								<thead><tr><th>Quest</th><th>XP reward</th><th>Cooldown</th><th>XP/day avg</th></tr></thead>
+								<tbody id="questRows"></tbody>
+								<tfoot><tr>
+									<td class="xp-total">Total</td>
+									<td id="totalQuestXP" class="xp-total"></td>
+									<td></td>
+									<td id="totalQuestXPDay" class="xp-total"></td>
+								</tr></tfoot>
+							</table>
+						</div>
+
+						<div class="section">Results</div>
+						<div class="results" id="xpResults"></div>
+					</div>
+				</span>
 			</div>
 		</div>
 
@@ -2002,7 +2014,7 @@
 					const url = URL.createObjectURL(blob);
 					const a = document.createElement('a');
 					a.href = url;
-					a.download = 'crafting-calc-full-backup.json';
+					a.download = 'chro-calc-settings-backup.json';
 					document.body.appendChild(a);
 					a.click();
 					document.body.removeChild(a);

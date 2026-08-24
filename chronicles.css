@@ -50,6 +50,7 @@
 	box-sizing: border-box;
 }
 
+/* ---------- Fonts ---------- */
 @font-face {
 	font-family: 'IM FELL English SC';
 	font-display: swap;
@@ -59,7 +60,6 @@
 		url('https://static.wixstatic.com/ufonts/123e32_fc856a5a60d04ed58fcbe5fdd2823dad/ttf/file.ttf')		format('ttf')
 	;
 }
-
 @font-face {
 	font-family: 'Planewalker Regular';
 	font-display: swap;
@@ -69,7 +69,6 @@
 		url('https://static.wixstatic.com/ufonts/1a6ccf_1e092431ecea467f811afb84d8a77f43/ttf/file.ttf')		format('ttf')
 	;
 }
-
 @font-face {
 	font-family: 'Kingthings Petrock';
 	font-display: swap;
@@ -79,7 +78,6 @@
 		url("https://static.wixstatic.com/ufonts/0c7ab2_853496e9be4a4a8b92f9dfb480d34b28/ttf/file.ttf") format("ttf")
 	;
 }
-
 @font-face {
 	font-family: 'Helvetica W01 Light';
 	font-display: swap;
@@ -88,7 +86,6 @@
 	unicode-range: U+D, U+20-7E, U+A0-FF, U+152-153, U+160-161, U+178, U+17D-17E, U+192, U+2C6, U+2DC, U+2013-2014, U+2018-201A, U+201C-201E, U+2020-2022, U+2026, U+2030, U+2039-203A, U+20AC, U+2122;
 	src: url('//static.parastorage.com/fonts/v2/8eac109b-0fa9-42bf-a305-43e471e23779/v1/helvetica-w01-light.woff2') format('woff2');
 }
-
 @font-face {
 	font-family: 'Crimson Text Regular';
 	font-display: swap;
@@ -99,10 +96,12 @@
 	;
 }
 
+/* ---------- Global HTML Settings ---------- */
 html {
 	scrollbar-gutter: stable;
 }
 
+/* ---------- Images ---------- */
 img.bg-image {
 	content: var(--img-bg);
 	z-index: -999;
@@ -121,7 +120,6 @@ img.bg-image {
 	object-position: 50% 50%;
 	--wix-img-max-width: max(4088px, 100%);
 }
-
 img.logo-side {
 	margin: 0 0 -7px;
 	filter: invert(100%);
@@ -129,7 +127,6 @@ img.logo-side {
 .chronicles img.logo-side {
 	filter: brightness(0%);
 }
-
 img.logo-left {
 	content: var(--img-logo-left);
 }
@@ -137,6 +134,7 @@ img.logo-right {
 	content: var(--img-logo-right);
 }
 
+/* ---------- Body ---------- */
 body {
 	font-family: var(--font-default);
 	background: var(--bg);
@@ -145,6 +143,7 @@ body {
 	margin: 0;
 }
 
+/* ---------- Headers ---------- */
 h1 {
 	color: var(--text);
 	text-align: center;
@@ -156,7 +155,6 @@ h1 {
 .chronicles h1 {
 	color: var(--text2-chro);
 }
-
 h1 a {
 	color: var(--text);
 	text-decoration: none;
@@ -167,7 +165,37 @@ h1 a {
 h1 a:hover {
 	text-decoration: underline;
 }
+h2 {
+	font-size: 1.05rem;
+	font-weight: 700;
+	margin: 0 0 12px;
+	color: var(--accent);
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+.chronicles h2 {
+	font-family: var(--font-label-chro);
+	font-weight: normal;
+	font-size: 1.4rem;
+	color: var(--accent2-chro);
+}
+.result-section h3 {
+	margin: 14px 0 6px;
+	color: var(--accent2);
+	font-size: .95rem;
+}
+.chronicles .result-section h3 {
+	font-family: var(--font-text-chro);
+	font-size: 17px;
+	font-weight: normal;
+	color: var(--accent2-chro);
+}
+.result-section h3:first-child {
+	margin-top: 0;
+}
 
+/* ---------- Logo Fonts ---------- */
 tes-logo {
 	font-family: 'Planewalker Regular';
 	font-weight: normal;
@@ -178,20 +206,7 @@ chro-logo {
 	font-size: 3rem;
 }
 
-h1-small {
-	font-size: 1.25rem;
-}
-
-.sub {
-	color: var(--muted);
-	margin-bottom: 20px;
-	font-size: .9rem;
-}
-.chronicles .sub {
-	color: var(--muted-chro);
-}
-
-/* ---------- Page / tab navigation ---------- */
+/* ---------- Page Tabs ---------- */
 .page-tabs {
 	display: flex;
 	justify-content: center;
@@ -229,7 +244,6 @@ h1-small {
 	background: var(--button2-chro);
 	border-color: var(--button2-chro);
 }
-
 .page {
 	display: none;
 }
@@ -237,7 +251,7 @@ h1-small {
 	display: block;
 }
 
-/* ---------- Layout grids ---------- */
+/* ---------- Layout Grids ---------- */
 .grid {
 	display: grid;
 	grid-template-columns: 1fr 1fr;
@@ -250,7 +264,6 @@ h1-small {
 		grid-template-columns: 1fr;
 	}
 }
-
 .grid2 {
 	display: grid;
 	grid-template-columns: 1fr 1fr;
@@ -258,21 +271,23 @@ h1-small {
 	max-width: 1300px;
 	margin: 0 auto;
 }
-
 .xp-grid {
 	display: block;
 	max-width: 1300px;
 	margin: 0 auto;
 	padding: 1rem 0px;
 }
-
 @media(max-width:900px) {
 	.xp-grid {
 		grid-template-columns: 1fr;
 	}
 }
 
+/* ---------- Panels ---------- */
 .panel {
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
 	background: var(--panel);
 	border: 1px solid var(--border);
 	border-radius: 4px;
@@ -285,26 +300,11 @@ h1-small {
 	border-radius: 5px;
 	box-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
 }
-.panel h2 {
-	font-size: 1.05rem;
-	font-weight: 700;
-	margin: 0 0 12px;
-	color: var(--accent);
-	display: flex;
-	align-items: center;
-	gap: 8px;
-}
-.chronicles .panel h2 {
-	font-family: var(--font-label-chro);
-	font-weight: normal;
-	font-size: 1.4rem;
-	color: var(--accent2-chro);
-}
 
+/* ---------- Positioning ---------- */
 .full {
 	grid-column: 1/-1;
 }
-
 .center {
 	grid-column: 1/-1;
 	max-width: 1300px;
@@ -315,22 +315,23 @@ h1-small {
 	gap: 10px;
 	width: 25%;
 }
-
 .xp-center {
 	margin: 0 auto 18px;
 	width: 50%;
 }
-
 .field {
 	padding-bottom: 10px;
 }
-
+.field.faction {
+	margin-bottom: .75rem;
+}
 .search-row {
 	display: flex;
-	gap: 8px;
 	margin-bottom: 10px;
+	gap: 8px;
 }
 
+/* ---------- Input ---------- */
 input[type=text], input[type=number], select {
 	background: var(--panel2);
 	border: 1px solid var(--border);
@@ -352,7 +353,7 @@ input[type=number] {
 	appearance: textfield;
 }
 .chronicles input[type=number] {
-	font-family: var(--font-text-chro);;
+	font-family: var(--font-text-chro);
 	font-size: 1.05rem;
 	font-weight: normal;
 	color: var(--text-chro);
@@ -361,6 +362,12 @@ input[type=number]::-webkit-outer-spin-button,
 input[type=number]::-webkit-inner-spin-button {
 	-webkit-appearance: none;
 	margin: 0;
+}
+input[type=number].qty-input {
+	width: 60px;
+}
+input[type=checkbox].weekly {
+	width: auto;
 }
 select {
 	color: var(--text);
@@ -373,12 +380,14 @@ select {
 .chronicles .cz-mod-select,
 .chronicles .cz-enchant-select,
 .chronicles .cz-legendary-select {
-	font-family: var(--font-text-chro);;
+	font-family: var(--font-text-chro);
 	font-size: 0.95rem;
 	font-weight: normal;
 	color: var(--text-chro);
 }
 
+
+/* ---------- Custom Dropdown ---------- */
 .csel-native {
 	position: absolute;
 	opacity: 0;
@@ -489,6 +498,7 @@ select {
 	background: rgba(255, 255, 255, 0.12);
 }
 
+/* ---------- Number Selection Arrows ---------- */
 .num-spin {
 	position: relative;
 	display: inline-flex;
@@ -545,11 +555,12 @@ select {
 	border-bottom-right-radius: 3px;
 }
 
+/* ---------- Labels ---------- */
 label {
 	color: var(--text);
 }
 .chronicles label {
-	font-family: var(--font-label-chro);;
+	font-family: var(--font-label-chro);
 	font-weight: normal;
 	font-size: 1.05rem;
 	color: var(--text-chro);
@@ -567,6 +578,7 @@ label {
 	font-size: 1.2rem;
 }
 
+/* ---------- Buttons ---------- */
 button {
 	color: var(--text2);
 	background: var(--button2);
@@ -578,7 +590,7 @@ button {
 	cursor: pointer;
 }
 .chronicles button {
-	font-family: var(--font-button-chro);;
+	font-family: var(--font-button-chro);
 	font-size: 1.1rem;
 	color: var(--text2-chro);
 	background: var(--button2-chro);
@@ -609,64 +621,26 @@ button.small {
 	padding: 3px 8px;
 	font-size: .75rem;
 }
-
-.autocomplete {
-	position:relative;
+span.pre-buttons {
+	align-self: stretch;
+}
+span.bottom-buttons {
+	align-self: end;
+	gap: 8px;
 }
 
-.ac-list {
-	position: absolute;
-	top: 100%;
-	left: 0;
-	right: 0;
-	background: var(--panel2);
-	border: 1px solid var(--border);
-	border-radius: 4px;
-	max-height: 220px;
-	overflow-y: auto;
-	z-index: 20;
-	margin-top: 2px;
-}
-.chronicles .ac-list {
-	background: var(--panel2-chro);
-	border-color: var(--border-chro);
-}
-.ac-item {
-	padding: 7px 10px;
-	cursor: pointer;
-	font-size: .85rem;
-	border-bottom: 1px solid var(--border);
-}
-.chronicles .ac-item {
-	border-bottom-color: var(--border);
-}
-.ac-item:last-child {
-	border-bottom: none;
-}
-.ac-item:hover {
-	background: var(--panel2);
-}
-.chronicles .ac-item:hover {
-	background: var(--panel2-chro);
-}
-.ac-item small {
-	color: var(--muted);
-	display: block;
-}
-.chronicles .ac-item small {
-	color: var(--muted-chro);
-}
-
+/* ---------- Tables ---------- */
 table {
-	width: 100%;
 	border-collapse: collapse;
+	width: 100%;
 	font-size: .85rem;
 }
 
+/* ---------- Table Headers ---------- */
 th {
+	font-weight: 600;
 	text-align: left;
 	color: var(--muted);
-	font-weight: 600;
 	padding: 6px 8px;
 	border-bottom: 1px solid var(--border);
 }
@@ -676,6 +650,15 @@ th {
 	color: var(--muted-chro);
 	border-bottom-color: var(--border-chro);
 }
+.quest-table th {
+	padding: 6px 8px;
+	border-bottom: 0.5px solid var(--border);
+}
+.chronicles .quest-table th {
+	border-bottom-color: var(--border-chro);
+}
+
+/* ---------- Table Data ---------- */
 td {
 	color: var(--text);
 	padding: 6px 8px;
@@ -688,18 +671,21 @@ td {
 	color: var(--text-chro);
 	border-bottom-color: var(--panel2-chro);
 }
+.quest-table td {
+	padding: 6px 8px;
+	border-bottom: 0.5px solid var(--border);
+}
+.chronicles .quest-table td {
+	border-bottom-color: var(--border-chro);
+}
 tr:last-child td {
 	border-bottom: none;
 }
-
-.row-name {
+td.row-name {
 	font-weight: 600;
 }
 
-.qty-input {
-	width: 60px;
-}
-
+/* ---------- Text Modifiers ---------- */
 .list-empty {
 	color: var(--muted);
 	font-style: italic;
@@ -710,7 +696,6 @@ tr:last-child td {
 	font-family: var(--font-text-chro);
 	color: var(--muted-chro);
 }
-
 .tag {
 	display: inline-block;
 	font-size: .7rem;
@@ -726,21 +711,6 @@ tr:last-child td {
 	font-weight: normal;
 	background: var(--panel2-chro);
 	color: var(--muted-chro);
-}
-
-.result-section h3 {
-	margin: 14px 0 6px;
-	color: var(--accent2);
-	font-size: .95rem;
-}
-.chronicles .result-section h3 {
-	font-family: var(--font-text-chro);
-	font-size: 17px;
-	font-weight: normal;
-	color: var(--accent2-chro);
-}
-.result-section h3:first-child {
-	margin-top: 0;
 }
 
 .need-more {
@@ -848,22 +818,21 @@ tr:last-child td {
 	max-width: 420px;
 }
 
+/* ---------- Side Settings ---------- */
 .sidenav {
 	position: fixed;
 	top: 37%;
-	width: 13%;
 	left: 0;
 	overflow-x: hidden;
 }
 
-/* ---------- Experience calculator specific ---------- */
+/* ---------- Experience Calculator Specific ---------- */
 .results {
 	display: grid;
 	grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
 	gap: 12px;
 	margin: -0.5rem 0;
 }
-
 .metric {
 	background: var(--surface-1);
 	border-radius: var(--radius);
@@ -917,7 +886,6 @@ tr:last-child td {
 	font-weight: normal;
 	color: var(--muted-chro);
 }
-
 .section {
 	font-size: 12px;
 	font-weight: 500;
@@ -932,33 +900,6 @@ tr:last-child td {
 	font-weight: normal;
 	color: var(--accent2-chro);
 }
-
-.quest-table {
-	width: 100%;
-	border-collapse: collapse;
-}
-.quest-table th {
-	padding: 6px 8px;
-	border-bottom: 0.5px solid var(--border);
-}
-.chronicles .quest-table th {
-	border-bottom-color: var(--border-chro);
-}
-.quest-table td {
-	padding: 6px 8px;
-	border-bottom: 0.5px solid var(--border);
-}
-.chronicles .quest-table td {
-	border-bottom-color: var(--border-chro);
-}
-
-.chart-wrap {
-	position: relative;
-	width: 100%;
-	height: 240px;
-	margin: 1rem 0;
-}
-
 .toggle-row {
 	display: flex;
 	align-items: center;
@@ -975,6 +916,7 @@ tr:last-child td {
 	color: var(--secondary-chro);
 }
 
+/* ---------- Miscellaneous ---------- */
 .badge {
 	display: inline-block;
 	font-size: 0.7rem;
@@ -987,6 +929,10 @@ tr:last-child td {
 	font-size: 0.85rem;
 	background: var(--bg-accent-chro);
 	color: var(--accent2-chro);
+}
+
+.xp-total {
+	padding: 6px 8px;
 }
 
 .warn-note {
