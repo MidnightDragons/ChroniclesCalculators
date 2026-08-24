@@ -1,40 +1,49 @@
 :root {
-	--font:				'Segoe UI', 'Tahoma', 'sans-serif';
-	--bg:				#14181fff;
+	/* Background */
+	--bg:				rgba(20, 24, 31, 1);
 
-	--panel:			#1c222cff;
-	--panel2:			#232a36ff;
-	--border:			#2e3644ff;
-	--text:				#e8ecf3ff;
-	--text2:			#17130cff;
-	--secondary:		#e8ecf3a9;
-	--muted:			#8b95a7ff;
-	--accent:			#d4a24cff;
-	--accent2:			#5ba3d0ff;
-	--good:				#5fb87aff;
-	--bad:				#e2695fff;
-	--black:			#000000ff;
-	--button:			#232a36ff;
-	--button2:			#5ba3d0ff;
+	/* Legacy Style */
+	--panel:			rgba(28,	34,		44,		1);
+	--panel2:			rgba(35,	42,		54,		1);
+	--border:			rgba(46,	54,		68,		1);
+	--text:				rgba(232,	236,	243,	1);
+	--text2:			rgba(23,	19,		12,		1);
+	--secondary:		rgba(232,	236,	243,	0.65);
+	--muted:			rgba(139,	149,	167,	1);
+	--accent:			rgba(212,	162,	76,		1);
+	--accent2:			rgba(91,	163,	208,	1);
+	--good:				rgba(95,	184,	122,	1);
+	--bad:				rgba(226,	105,	95,		1);
+	--black:			rgba(0,	0,		0,		1);
+	--button:			rgba(35,	42,		54,		1);
+	--button2:			rgba(91,	163,	208,	1);
 
-	--panel-chro:		#000000da;
-	--panel2-chro:		#333;
-	--border-chro:		#00000000;
-	--text-chro:		rgb(236, 229, 219);
-	--text2-chro:		#000000ff;
-	--secondary-chro:	#e8ecf3a9;
-	--muted-chro:		#8b95a7ff;
-	--accent-chro:		rgb(236, 229, 219);
-	--accent2-chro:		#ffe1a1ff;
-	--good-chro:		#bada55ff;
-	--bad-chro:			#e2695fff;
-	--black-chro:		#000000ff;
-	--button-chro:		#000000d9;
-	--button2-chro:		#38a9c0ff;
+	/* Chronicles Style */
+	--panel-chro:		rgba(0,	0,		0,		0.85);
+	--panel2-chro:		rgba(51,	51,		51,		1);
+	--border-chro:		rgba(0,	0,		0,		0);
+	--text-chro:		rgba(236,	229,	219,	1);
+	--text2-chro:		rgba(0,	0,		0,		1);
+	--secondary-chro:	rgba(232,	236,	243,	0.65);
+	--muted-chro:		rgba(139,	149,	167,	1);
+	--accent-chro:		rgba(236,	229,	219,	1);
+	--accent2-chro:		rgba(255,	225,	161,	1);
+	--good-chro:		rgba(186,	218,	85,		1);
+	--bad-chro:			rgba(226,	105,	95,		1);
+	--black-chro:		rgba(0,	0,		0,		1);
+	--button-chro:		rgba(0,	0,		0,		0.85);
+	--button2-chro:		rgba(56,	169,	192,	1);
 
+	/* Fonts */
+	--font-default:		'Segoe UI', 'Tahoma', 'sans-serif';
 	--font-text-chro:	'Crimson Text Regular';
 	--font-label-chro:	'Kingthings Petrock';
 	--font-button-chro:	'IM FELL English SC';
+
+	/* Images */
+	--img-bg:			url('https://static.wixstatic.com/media/1a6ccf_ff8375cd008b4fe39480cf8e3cd53bd1~mv2.png/v1/fill/w_1920,h_1080,al_c,q_95,usm_0.66_1.00_0.01,enc_avif,quality_auto/1a6ccf_ff8375cd008b4fe39480cf8e3cd53bd1~mv2.png');
+	--img-logo-left:	url('https://static.wixstatic.com/media/1a6ccf_f467680897ec41c5bb74791f7f4d819f~mv2.png/v1/crop/x_0,y_0,w_215,h_88/fill/w_82,h_30,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/SR-qico-Daedric-right.png');
+	--img-logo-right:	url('https://static.wixstatic.com/media/1a6ccf_185f9b0e4bde4837b3096a11ec0a270f~mv2.png/v1/crop/x_82,y_0,w_218,h_86/fill/w_89,h_30,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/SR-qico-Daedric-left.png');
 }
 
 * {
@@ -95,6 +104,7 @@ html {
 }
 
 img.bg-image {
+	content: var(--img-bg);
 	z-index: -999;
 	width: 0;
 	height: 0;
@@ -120,8 +130,15 @@ img.logo-side {
 	filter: brightness(0%);
 }
 
+img.logo-left {
+	content: var(--img-logo-left);
+}
+img.logo-right {
+	content: var(--img-logo-right);
+}
+
 body {
-	font-family: var(--font);
+	font-family: var(--font-default);
 	background: var(--bg);
 	min-height: 100vh;
 	padding: 24px;
@@ -795,6 +812,24 @@ tr:last-child td {
 	font-weight: normal;
 	color: var(--accent2-chro);
 }
+.cz-backup {
+	margin-bottom: 5px;
+}
+.cz-include-title {
+	margin-top: 6px;
+}
+.cz-include-toggles {
+	display: flex;
+	flex-direction: column;
+	margin: 6px 0 10px;
+	gap: 4px;
+}
+.cz-include-checkbox {
+	display: flex;
+	align-items: center;
+	cursor: pointer;
+	gap: 6px;
+}
 .cz-row {
 	display: flex;
 	align-items: center;
@@ -989,24 +1024,24 @@ span.block-line {
 	color: transparent;
 	display: inline-block;
 	background-image: linear-gradient(90deg,
-		#c63939ff,
-		#c66839ff,
-		#c69739ff,
-		#c6c639ff,
-		#97c639ff,
-		#68c639ff,
-		#39c639ff,
-		#39c668ff,
-		#39c697ff,
-		#39c6c6ff,
-		#3997c6ff,
-		#3968c6ff,
-		#3939c6ff,
-		#6839c6ff,
-		#9739c6ff,
-		#c639c6ff,
-		#c63997ff,
-		#c63968ff,
-		#c63939ff
+		rgb(198,	57,		57),
+		rgb(198,	104,	57),
+		rgb(198,	151,	57),
+		rgb(198,	198,	57),
+		rgb(151,	198,	57),
+		rgb(104,	198,	57),
+		rgb(57,	198,	57),
+		rgb(57,	198,	104),
+		rgb(57,	198,	151),
+		rgb(57,	198,	198),
+		rgb(57,	151,	198),
+		rgb(57,	104,	198),
+		rgb(57,	57,		198),
+		rgb(104,	57,		198),
+		rgb(151,	57,		198),
+		rgb(198,	57,		198),
+		rgb(198,	57,		151),
+		rgb(198,	57,		104),
+		rgb(198,	57,		57)
 	);
 }

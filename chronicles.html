@@ -6,7 +6,7 @@
 		<link rel="stylesheet" href="chronicles.css">
 	</head>
 
-	<img class="bg-image" alt="" data-ssr-src-done="true" fetchpriority="high" src="https://static.wixstatic.com/media/1a6ccf_ff8375cd008b4fe39480cf8e3cd53bd1~mv2.png/v1/fill/w_1920,h_1080,al_c,q_95,usm_0.66_1.00_0.01,enc_avif,quality_auto/1a6ccf_ff8375cd008b4fe39480cf8e3cd53bd1~mv2.png">
+	<img class="bg-image" alt="" data-ssr-src-done="true" fetchpriority="high">
 
 	<body>
 		<div class="page-tabs">
@@ -17,27 +17,27 @@
 		<div class="panel sidenav">
 			<h2>Options</h2>
 
-			<div class="cz-title" style="margin-bottom: 5px;">Backup</div>
+			<div class="cz-title cz-backup">Backup</div>
 			<div class="pill-btns">
 				<button class="secondary small" id="importAllBtn">Import</button>
 				<button class="secondary small" id="exportAllBtn">Export</button>
 				<input type="file" id="importAllFile" accept="application/json" style="display: none;">
 			</div>
 
-			<div class="cz-title" style="margin-top: 6px;">Include in cost totals:</div>
-			<div style="display: flex; flex-direction: column; gap: 4px; margin: 6px 0 10px;">
-				<label style="display: flex; align-items: center; gap: 6px; cursor: pointer;"><input type="checkbox" id="toggleMods" checked> Modifications</label>
-				<label style="display: flex; align-items: center; gap: 6px; cursor: pointer;"><input type="checkbox" id="toggleEnchant" checked> Enchantments</label>
-				<label style="display: flex; align-items: center; gap: 6px; cursor: pointer;"><input type="checkbox" id="toggleLegendary" checked> Legendary Effects</label>
+			<div class="cz-title cz-include-title">Include in cost totals:</div>
+			<div class="cz-include-toggles">
+				<label class="cz-include-checkbox"><input type="checkbox" id="toggleMods" checked> Modifications</label>
+				<label class="cz-include-checkbox"><input type="checkbox" id="toggleEnchant" checked> Enchantments</label>
+				<label class="cz-include-checkbox"><input type="checkbox" id="toggleLegendary" checked> Legendary Effects</label>
 			</div>
 
 			<button id="chroBtn">Change Style</button>
 		</div>
 
 		<h1>
-			<img class="logo-side" alt="" data-ssr-src-done="true" fetchpriority="high" src="https://static.wixstatic.com/media/1a6ccf_f467680897ec41c5bb74791f7f4d819f~mv2.png/v1/crop/x_0,y_0,w_215,h_88/fill/w_82,h_30,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/SR-qico-Daedric-right.png">
+			<img class="logo-side logo-left" alt="" data-ssr-src-done="true" fetchpriority="high">
 			<tes-logo>The Elder Scrolls</tes-logo>
-			<img class="logo-side" alt="" data-ssr-src-done="true" fetchpriority="high" src="https://static.wixstatic.com/media/1a6ccf_185f9b0e4bde4837b3096a11ec0a270f~mv2.png/v1/crop/x_82,y_0,w_218,h_86/fill/w_89,h_30,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/SR-qico-Daedric-left.png">
+			<img class="logo-side logo-right" alt="" data-ssr-src-done="true" fetchpriority="high">
 			<br>
 			<a href="https://www.eschronicles.com/" target="_blank" rel="noopener">
 				<chro-logo>Chronicles</chro-logo>
