@@ -24,7 +24,6 @@
 				<input type="file" id="importAllFile" accept="application/json" style="display: none;">
 			</div>
 
-			<div id="quickStats" style="line-height: 1.9;"></div>
 			<div class="cz-title" style="margin-top: 6px;">Include in cost totals:</div>
 			<div style="display: flex; flex-direction: column; gap: 4px; margin: 6px 0 10px;">
 				<label style="display: flex; align-items: center; gap: 6px; cursor: pointer;"><input type="checkbox" id="toggleMods" checked> Modifications</label>
@@ -1107,7 +1106,6 @@
 					invQty.value=1;
 					saveState();
 					renderInventory();
-					renderQuickStats();
 					refreshRepairSelect();
 					renderResults();
 				});
@@ -1141,7 +1139,6 @@
 							const v = Math.max(0, parseInt(inp.value,10) || 0);
 							state.inventory[inp.dataset.name] = v;
 							saveState();
-							renderQuickStats();
 							refreshRepairSelect();
 							renderResults();
 						});
@@ -1154,7 +1151,6 @@
 							expandedInvItems.delete(btn.dataset.name);
 							saveState();
 							renderInventory();
-							renderQuickStats();
 							refreshRepairSelect();
 							renderResults();
 						});
@@ -1177,7 +1173,6 @@
 					state.craftList = {};
 					saveState();
 					renderCraftList();
-					renderQuickStats();
 				});
 
 				document.getElementById('loadFavsBtn').addEventListener('click', () => {
@@ -1195,7 +1190,6 @@
 
 					saveState();
 					renderCraftList();
-					renderQuickStats();
 				});
 
 				const expandedCraftItems	= new Set();
@@ -1263,7 +1257,6 @@
 							const v = Math.max(1, parseInt(inp.value,10)||1);
 							state.craftList[inp.dataset.name] = v;
 							saveState();
-							renderQuickStats();
 							renderResults();
 						});
 					});
@@ -1275,7 +1268,6 @@
 							expandedCraftItems.delete(btn.dataset.name);
 							saveState();
 							renderCraftList();
-							renderQuickStats();
 						});
 					});
 
@@ -1366,7 +1358,6 @@
 							renderInventory();
 							renderCraftList();
 							renderFavorites();
-							renderQuickStats();
 							refreshResultsIfShown();
 						});
 					});
@@ -1379,7 +1370,6 @@
 							renderInventory();
 							renderCraftList();
 							renderFavorites();
-							renderQuickStats();
 							refreshResultsIfShown();
 						});
 					});
@@ -1392,7 +1382,6 @@
 							renderInventory();
 							renderCraftList();
 							renderFavorites();
-							renderQuickStats();
 							refreshResultsIfShown();
 						});
 					});
@@ -1422,14 +1411,12 @@
 					repairQty.value=1;
 					saveState();
 					renderRepairList();
-					renderQuickStats();
 				});
 
 				document.getElementById('clearRepairBtn').addEventListener('click', () => {
 					state.repairList = {};
 					saveState();
 					renderRepairList();
-					renderQuickStats();
 				});
 
 				function renderRepairList() {
@@ -1460,7 +1447,6 @@
 							const v = Math.max(1, parseInt(inp.value,10)||1);
 							state.repairList[inp.dataset.name] = v;
 							saveState();
-							renderQuickStats();
 							renderResults();
 						});
 					});
@@ -1470,7 +1456,6 @@
 							delete state.repairList[btn.dataset.name];
 							saveState();
 							renderRepairList();
-							renderQuickStats();
 						});
 					});
 
@@ -1557,7 +1542,6 @@
 
 							saveState();
 							renderCraftList();
-							renderQuickStats();
 						});
 					});
 
@@ -1572,9 +1556,6 @@
 
 					bindCustomizePanelEvents(tbody, getFavCustom);
 				}
-
-				/* ---------- Quick stats (old) ---------- */
-				function renderQuickStats() {}
 
 				/* ---------- Resolver ---------- */
 				function resolveAll(options) {
@@ -2157,7 +2138,6 @@
 						renderCraftList();
 						renderRepairList();
 						renderFavorites();
-						renderQuickStats();
 						refreshRepairSelect();
 						e.target.value = '';
 					};
@@ -2170,7 +2150,6 @@
 				renderCraftList();
 				renderRepairList();
 				renderFavorites();
-				renderQuickStats();
 			}
 		</script>
 
