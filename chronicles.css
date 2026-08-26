@@ -1,6 +1,7 @@
 :root {
 	/* Background */
 	--bg:				rgba(20,	24,		31,		1);
+	--empty:			rgba(0,	0,		0,		0);
 
 	/* Legacy Style */
 	--panel:			rgba(28,	34,		44,		1);
@@ -33,6 +34,17 @@
 	--black-chro:		rgba(0,	0,		0,		1);
 	--button-chro:		rgba(0,	0,		0,		0.85);
 	--button2-chro:		rgba(56,	169,	192,	1);
+
+	/* Tiers */
+	--novice:			rgba(89,	201,	37,		1);
+	--apprentice:		rgba(85,	184,	245,	1);
+	--journeyman:		rgba(170,	100,	243,	1);
+	--adept:			rgba(241,	148,	69,		1);
+	--expert:			rgba(255,	205,	79,		1);
+	--master:			rgba(209,	42,		42,		1);
+
+	/* Text */
+	--text-padding:		5px;
 
 	/* Fonts */
 	--font-default:		'Segoe UI', 'Tahoma', 'sans-serif';
@@ -141,6 +153,18 @@ body {
 	min-height: 100vh;
 	padding: 24px;
 	margin: 0;
+}
+.body, p {
+	font-family: var(--font-default);
+	font-size: 1rem;
+	font-weight: normal;
+	color: var(--text);
+}
+.chronicles .body, .chronicles p {
+	font-family: var(--font-text-chro);
+	font-size: 0.95rem;
+	font-weight: normal;
+	color: var(--text-chro);
 }
 
 /* ---------- Headers ---------- */
@@ -254,22 +278,16 @@ chro-logo {
 /* ---------- Layout Grids ---------- */
 .grid {
 	display: grid;
-	grid-template-columns: 1fr 1fr;
-	gap: 18px;
+	grid-template-columns: repeat(2, 1fr);
 	max-width: 1300px;
+	width: 100%;
 	margin: 0 auto;
+	gap: 18px;
 }
-@media(max-width:900px) {
+@media(max-width: 900px) {
 	.grid {
 		grid-template-columns: 1fr;
 	}
-}
-.grid2 {
-	display: grid;
-	grid-template-columns: 1fr 1fr;
-	gap: 18px;
-	max-width: 1300px;
-	margin: 0 auto;
 }
 .xp-grid {
 	display: block;
@@ -277,17 +295,122 @@ chro-logo {
 	margin: 0 auto;
 	padding: 1rem 0px;
 }
-@media(max-width:900px) {
+@media(max-width: 900px) {
 	.xp-grid {
 		grid-template-columns: 1fr;
 	}
+}
+#plStatsGrid {
+	display: grid;
+	justify-items: center;
+	width: 28%;
+	gap: 16px;
+}
+.stat-group {
+	border: 1px solid var(--border);
+	border-radius: 6px;
+	padding: 12px 14px;
+}
+.chronicles .stat-group {
+	border-color: var(--border-chro);
+}
+@media (max-width: 700px) {
+	#plStatsGrid {
+		grid-template-columns: 1fr;
+	}
+	.stat-group-grid {
+		grid-template-columns: 1fr;
+	}
+}
+.stat-group-title {
+	font-size: .75rem;
+	font-weight: 600;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+	color: var(--muted);
+	margin-bottom: 10px;
+	text-align: center;
+}
+.chronicles .stat-group-title {
+	font-family: var(--font-label-chro);
+	color: var(--muted-chro);
+}
+.stat-group-grid {
+	display: grid;
+	gap: 10px;
+}
+.stat-group-grid .field > div {
+	justify-content: center;
+}
+.stat-group-grid .field label {
+	display: block;
+	text-align: center;
+}
+.stat-group-lone {
+	display: block;
+}
+.stat-group-lone > .stat-group-grid {
+	width: auto;
+}
+.stat-group-cell {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+#plSkillsGrid {
+	grid-template-columns: 1fr;
+	gap: 14px;
+}
+#plSkillsGrid > div > .field {
+	text-align: center;
+}
+#plSkillsGrid > div > .field label {
+	display: block;
+}
+.stat-main-grid {
+	left: 0px
+}
+.stat-grid {
+	width: 100%;
+	height: 100%;
+	grid-template-columns: 1fr 1fr 1.5fr;
+	justify-items: center;
+	gap: 1px;
+}
+.stat-grid-cell {
+	grid-template-columns: 100%;
+	grid-template-rows: repeat(2, 1fr);
+	justify-items: center;
+	text-align: center;
+	gap: 1px;
+}
+.stat-grid-cell-text {
+	width: 100%;
+	height: 36px;
+	padding: 9px;
+	gap: 1px;
+}
+.stat-grid-cell-prefix {
+	margin: 0px;
+	margin-top: 4px;
+}
+.stat-grid-left {
+	justify-items: left;
+}
+.character-grid {
+	grid-template-columns: repeat(2, 1fr);
+}
+
+.remaining-table {
+	margin-top: 10px;
+	width: auto;
 }
 
 /* ---------- Panels ---------- */
 .panel {
 	display: flex;
 	flex-direction: column;
-	justify-content: space-between;
+	justify-content: flex-start;
 	background: var(--panel);
 	border: 1px solid var(--border);
 	border-radius: 4px;
@@ -299,6 +422,28 @@ chro-logo {
 	border: 2px solid rgba(0, 0, 0, 0.16);
 	border-radius: 5px;
 	box-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+}
+.side-panel {
+	justify-content: flex-start;
+}
+.side-panel #chroBtn {
+	margin-top: 8px;
+}
+
+/* ---------- Sidebar Panel Visibility ---------- */
+#sideStatsPanel {
+	display: none;
+}
+body[data-active-page="page-planner"] #sideStatsPanel {
+	display: block;
+}
+#sideIncludeCosts,
+#sideIncludeCostsToggles {
+	display: none;
+}
+body[data-active-page="page-craft"] #sideIncludeCosts,
+body[data-active-page="page-craft"] #sideIncludeCostsToggles {
+	display: block;
 }
 
 /* ---------- Positioning ---------- */
@@ -335,10 +480,10 @@ chro-logo {
 input[type=text], input[type=number], select {
 	background: var(--panel2);
 	border: 1px solid var(--border);
+	font-size: .9rem;
 	color: var(--text);
 	padding: 7px 9px;
 	border-radius: 4px;
-	font-size: .9rem;
 }
 .chronicles input[type=text], .chronicles input[type=number], .chronicles select {
 	background: var(--panel2-chro);
@@ -371,7 +516,7 @@ input[type=checkbox].weekly {
 }
 select {
 	color: var(--text);
-	max-width: 100%;
+	width: 100%;
 	flex: 1;
 }
 .chronicles select,
@@ -386,6 +531,17 @@ select {
 	color: var(--text-chro);
 }
 
+/* ---------- Notes ---------- */
+.notes {
+	text-align: center;
+	font-size: .8rem;
+	color: var(--muted);
+	margin-top: 10px;
+}
+.chronicles .notes {
+	font-size: .9rem;
+	color: var(--muted-chro);
+}
 
 /* ---------- Custom Dropdown ---------- */
 .csel-native {
@@ -401,8 +557,13 @@ select {
 	flex: 1 1 80px;
 	min-width: 65%;
 }
+#plSpellSkillFilter + .csel-wrap {
+	min-width: 0;
+	flex: 0 1 25%;
+}
 .csel-btn {
 	width: 100%;
+	height: 36px;
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
@@ -428,8 +589,10 @@ select {
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
-	font-family: var(--font-button-chro);
-	font-size: 0.95rem;
+}
+.chronicles .csel-label {
+	font-family: var(--font-label-chro);
+	font-size: 1.05rem;
 	font-weight: normal;
 }
 .csel-arrow {
@@ -463,24 +626,24 @@ select {
 	border-color: var(--border-chro);
 }
 .csel-group-label {
-	padding: 6px 10px 2px;
 	font-size: .75rem;
+	font-style: italic;
 	text-transform: uppercase;
 	letter-spacing: .04em;
 	color: var(--muted);
-	font-style: italic;
+	padding: 6px 10px 2px;
 }
 .chronicles .csel-group-label {
 	font-family: var(--font-label-chro);
-	font-size: 1.1rem;
+	font-size: 1.15rem;
 	text-transform: none;
 	color: var(--muted-chro);
 }
 .csel-option {
-	padding: 6px 10px;
-	padding-left: 20px;
 	font-size: .9rem;
 	color: var(--text);
+	padding: 6px 10px;
+	padding-left: 20px;
 	cursor: pointer;
 }
 .csel-option:hover,
@@ -488,8 +651,8 @@ select {
 	background: var(--border);
 }
 .chronicles .csel-option {
-	font-family: var(--font-text-chro);
-	font-size: 0.95rem;
+	font-family: var(--font-label-chro);
+	font-size: 1rem;
 	font-weight: normal;
 	color: var(--text-chro);
 }
@@ -497,6 +660,38 @@ select {
 .chronicles .csel-option.is-selected {
 	background: rgba(255, 255, 255, 0.12);
 }
+
+/* ---------- Skill Tier Colours ---------- */
+.csel-btn.tier-Novice,
+.csel-option.tier-Novice {
+	color: var(--novice);
+}
+.csel-btn.tier-Apprentice,
+.csel-option.tier-Apprentice {
+	color: var(--apprentice);
+}
+.csel-btn.tier-Journeyman,
+.csel-option.tier-Journeyman {
+	color: var(--journeyman);
+}
+.csel-btn.tier-Adept,
+.csel-option.tier-Adept {
+	color: var(--adept);
+}
+.csel-btn.tier-Expert,
+.csel-option.tier-Expert {
+	color: var(--expert);
+}
+.csel-btn.tier-Master,
+.csel-option.tier-Master {
+	color: var(--master);
+}
+.csel-btn.tier-Novice			{ border-color: var(--novice); }
+.csel-btn.tier-Apprentice		{ border-color: var(--apprentice); }
+.csel-btn.tier-Journeyman		{ border-color: var(--journeyman); }
+.csel-btn.tier-Adept			{ border-color: var(--adept); }
+.csel-btn.tier-Expert			{ border-color: var(--expert); }
+.csel-btn.tier-Master			{ border-color: var(--master); }
 
 /* ---------- Number Selection Arrows ---------- */
 .num-spin {
@@ -569,13 +764,19 @@ label {
 	font-size: 1.05rem;
 	font-weight: 700;
 	color: var(--accent);
-	margin: 0 0 12px;
 	display: flex;
 	align-items: center;
 	gap: 8px;
 }
 .chronicles .field label {
 	font-size: 1.2rem;
+}
+.padding-top-fix {
+	padding-top: 5px;
+}
+.center-text {
+	text-align: center;
+	align-self: center;
 }
 
 /* ---------- Buttons ---------- */
@@ -632,8 +833,10 @@ span.bottom-buttons {
 /* ---------- Tables ---------- */
 table {
 	border-collapse: collapse;
-	width: 100%;
+	table-layout: fixed;
 	font-size: .85rem;
+	width: 100%;
+	padding-bottom: 12px;
 }
 
 /* ---------- Table Headers ---------- */
@@ -685,7 +888,7 @@ td.row-name {
 	font-weight: 600;
 }
 
-/* ---------- Text Modifiers ---------- */
+/* ---------- List Empty ---------- */
 .list-empty {
 	color: var(--muted);
 	font-style: italic;
@@ -696,6 +899,8 @@ td.row-name {
 	font-family: var(--font-text-chro);
 	color: var(--muted-chro);
 }
+
+/* ---------- Tags ---------- */
 .tag {
 	display: inline-block;
 	font-size: .7rem;
@@ -711,6 +916,26 @@ td.row-name {
 	font-weight: normal;
 	background: var(--panel2-chro);
 	color: var(--muted-chro);
+}
+.tag-field {
+	padding: 0;
+}
+.tag-flex {
+	display: flex;
+	overflow: visible;
+	align-items: center;
+	flex-direction: row;
+	height: 36px;
+}
+.tag-label {
+	flex-shrink: 1;
+	flex-grow: 0;
+}
+.tag-bonuses {
+	text-wrap: nowrap;
+	margin: 2px;
+	height: 100%;
+	width: 100%;
 }
 
 .need-more {
@@ -819,11 +1044,39 @@ td.row-name {
 }
 
 /* ---------- Side Settings ---------- */
-.sidenav {
+.side {
 	position: fixed;
-	top: 37%;
-	left: 0;
 	overflow-x: hidden;
+	align-items: center;
+	grid-template-columns: 1fr;
+	width: 260px;
+	height: 100%;
+	top: 0;
+	left: 0;
+	padding-left: 5px;
+	overflow-y: auto;
+	z-index: 10;
+}
+.side-align {
+	grid-auto-columns: min-content;
+	grid-template-columns: auto;
+	align-items: center;
+	gap: 10px;
+}
+.side-panel {
+	align-self: center;
+}
+@media (max-width: 900px) {
+	.side {
+		position: static;
+		width: 100%;
+		height: auto;
+	}
+
+	body > h1,
+	body > .page {
+		margin-left: 0;
+	}
 }
 
 /* ---------- Experience Calculator Specific ---------- */
