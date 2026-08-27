@@ -4312,7 +4312,7 @@
 				function gearEffects() {
 					const a = [];
 					equippedGearEffectTexts().forEach(text => {
-						const re = /([+-]\s*\d+)\s+([A-Za-z][A-Za-z ]*?)(?=,|\(|\/|$)/g;
+						const re = /([+-]\s*\d+)\s+([A-Za-z][A-Za-z ]*?)(?=,|\(|\/|;|$)/g;
 						let match;
 						while ((match = re.exec(text)) !== null) {
 							const value = parseInt(match[1].replace(/\s+/g, ''), 10);
@@ -4588,12 +4588,12 @@
 					'Defense':				{ group: 'Offense / Defense',		default: 11 },
 					'Resilience':			{ group: 'Offense / Defense',		default: 0 },
 
-					'Physical Resistance':	{ group: 'Physical Resistances',	default: 0 },
+					'Physical Resistance':	{ group: 'Physical Resistances',	default: 0,		attrBonus: [['Strength', 1]] },
 					'Slashing Resistance':	{ group: 'Physical Resistances',	default: 0 },
 					'Piercing Resistance':	{ group: 'Physical Resistances',	default: 0 },
 					'Blunt Resistance':		{ group: 'Physical Resistances',	default: 0 },
 
-					'Magic Resistance':		{ group: 'Magic Resistances',		default: 0 },
+					'Magic Resistance':		{ group: 'Magic Resistances',		default: 0,		attrBonus: [['Intelligence', 1]] },
 					'Fire Resistance':		{ group: 'Magic Resistances',		default: 0 },
 					'Frost Resistance':		{ group: 'Magic Resistances',		default: 0 },
 					'Shock Resistance':		{ group: 'Magic Resistances',		default: 0 },
@@ -4658,7 +4658,7 @@
 
 					const dodgeVal = skillTotalValue('Dodge');
 					const blockVal = skillTotalValue('Block');
-					totals['Defense'] = Math.max(dodgeVal, blockVal) + STAT_ROWS.Defense.default;
+					totals['Defense'] = Math.max(dodgeVal, blockVal) + STAT_ROWS.Defense.default + bonusFor(['Defense']);
 
 					const groups			= {};
 					const discoveredOrder	= [];
