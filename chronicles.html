@@ -2072,55 +2072,40 @@
 					},
 				},
 			};
+
+			// Attribute Points
+			const AP = {
+				START:	12,
+				BONUS:	2
+			}
+
+			// Perk Points
+			const PP = {
+				START:	5,
+				BG:		0,
+				LEVEL:	2
+			}
+
+			// Levels
+			const LEVEL = {
+				MAX: 20
+			}
+
+			// Skills
+			const SKILL = {
+				TIERS: {
+					'- none -':		0,
+					'Novice':		1,
+					'Apprentice':	2,
+					'Journeyman':	3,
+					'Adept':		4,
+					'Expert':		5,
+					'Master':		6
+				}
+			}
 		</script>
 
 		<script>
-			/* ---------- Shared CSV parser ---------- */
-			function parseCSV(text) {
-				const rows = [];
-				let row = [], field = '', inQuotes = false;
-				for (let i = 0; i < text.length; i++) {
-					const c = text[i];
-					if (inQuotes) {
-						if (c === '"') {
-							if (text[i + 1] === '"') {
-								field += '"';
-								i++;
-							} else inQuotes = false;
-						} else field += c;
-					} else {
-						if (c === '"') {
-							inQuotes = true;
-						} else if (c === ',') {
-							row.push(field);
-							field = '';
-						} else if (c === '\r') {
-							/* skip */
-						} else if (c === '\n') {
-							row.push(field);
-							rows.push(row);
-							row = [];
-							field = '';
-						} else field += c;
-					}
-				}
-
-				if (field.length || row.length) {
-					row.push(field);
-					rows.push(row);
-				}
-
-				const header = rows.shift() || [];
-				return rows.filter(r => r.length > 1 || r[0] !== '').map(r => {
-					const obj = {};
-					header.forEach((h, i) => {
-						obj[h.trim()] = (r[i] !== undefined ? r[i] : '').trim();
-					});
-
-					return obj;
-				});
-			}
-
 			/* ---------- Data loading ---------- */
 			function loadAllData() {
 				// Crafting
@@ -2160,37 +2145,6 @@
 			document.querySelectorAll('.page-tab').forEach(btn => {
 				btn.addEventListener('click', () => showPage(btn.dataset.page));
 			});
-
-			// Attribute Points
-			const AP = {
-				START:	12,
-				BONUS:	2
-			}
-
-			// Perk Points
-			const PP = {
-				START:	5,
-				BG:		0,
-				LEVEL:	2
-			}
-
-			// Levels
-			const LEVEL = {
-				MAX: 20
-			}
-
-			// Skills
-			const SKILL = {
-				TIERS: {
-					'- none -':		0,
-					'Novice':		1,
-					'Apprentice':	2,
-					'Journeyman':	3,
-					'Adept':		4,
-					'Expert':		5,
-					'Master':		6
-				}
-			}
 		</script>
 
 		<script>
@@ -2308,12 +2262,12 @@
 						ITEMS[name] = {
 							name:				name,
 							category:			category,
-							tier:				(r.tier||'').trim(),
-							stats:				(r.stats||'').trim(),
-							ingredients:		parseIngredients((r.recipe||[]).join(', ')),
-							upgradesTo:			(r.upgrades||'').trim(),
-							modIngredients:		parseIngredients((r.mod||[]).join(', ')),
-							repairIngredients:	parseIngredients((r.repair||[]).join(', '))
+							tier:				(r.tier		|| '').trim(),
+							stats:				(r.stats	|| '').trim(),
+							ingredients:		parseIngredients((r.recipe	|| []).join(', ')),
+							upgradesTo:			(r.upgrades	|| '').trim(),
+							modIngredients:		parseIngredients((r.mod		|| []).join(', ')),
+							repairIngredients:	parseIngredients((r.repair	|| []).join(', '))
 						};
 					});
 				});
@@ -2386,7 +2340,7 @@
 					id:				name,
 					name:			name,
 					skill:			r.skill,
-					proficiency:	(r.proficiency||'').replace(/^\d+\.\s*/, ''),
+					proficiency:	(r.proficiency || '').replace(/^\d+\.\s*/, ''),
 					attribute:		r.attribute,
 					lp:				(r.lp === 'N/A' ? 0 : (parseInt(r.lp, 10) || 0)),
 					action:			r.action,
@@ -2657,8 +2611,12 @@
 					state.favorites = state.favorites.map(n => {
 						const id = genId();
 						const c = state.customizations[n];
-						if (c && ((c.mods||[]).filter(Boolean).length || c.enchant || c.legendary)) {
-							state.favCustomizations[id] = {mods:(c.mods||[]).filter(Boolean), enchant:c.enchant||null, legendary:c.legendary||null};
+						if (c && ((c.mods || []).filter(Boolean).length || c.enchant || c.legendary)) {
+							state.favCustomizations[id] = {
+								mods:		(c.mods		|| []).filter(Boolean),
+								enchant:	c.enchant	|| null,
+								legendary:	c.legendary	|| null
+							};
 						}
 
 						return {id, name:n};
@@ -2716,8 +2674,8 @@
 					}
 
 					if (includeItems) {
-						const byCat = {};
-						const catOrder = [];
+						const byCat		= {};
+						const catOrder	= [];
 						ITEM_NAMES.filter(n => !itemFilter || itemFilter(ITEMS[n])).forEach(n => {
 							const it = ITEMS[n];
 							if (!byCat[it.category]) {
@@ -2745,19 +2703,20 @@
 				}
 
 				/* ---------- Inventory UI ---------- */
-				const invSelect = document.getElementById('invSelect');
-				const invQty = document.getElementById('invQty');
+				const invSelect	= document.getElementById('invSelect');
+				const invQty	= document.getElementById('invQty');
 				buildSelect(invSelect, {
-					includeMaterials:true,
-					includeItems:true
+					includeMaterials:	true,
+					includeItems:		true
 				});
 
 				document.getElementById('invAddBtn').addEventListener('click', () => {
 					const name = invSelect.value;
 					if (!name) return;
-					const qty = Math.max(0, parseInt(invQty.value,10) || 0);
+
+					const qty = Math.max(0, parseInt(invQty.value, 10) || 0);
 					state.inventory[name] = (state.inventory[name] || 0) + qty;
-					invQty.value=1;
+					invQty.value = 1;
 					saveState();
 					renderInventory();
 					refreshRepairSelect();
@@ -2765,10 +2724,10 @@
 				});
 
 				function renderInventory() {
-					const tbody = document.querySelector('#invTable tbody');
-					const names = Object.keys(state.inventory).filter(n => state.inventory[n] > 0).sort();
-					document.getElementById('invEmpty').style.display = names.length ? 'none' : 'block';
-					document.getElementById('invTable').style.display = names.length ? 'table' : 'none';
+					const tbody	= document.querySelector('#invTable tbody');
+					const names	= Object.keys(state.inventory).filter(n => state.inventory[n] > 0).sort();
+					document.getElementById('invEmpty').style.display	= names.length	? 'none'	: 'block';
+					document.getElementById('invTable').style.display	= names.length	? 'table'	: 'none';
 					tbody.innerHTML = names.map(n => {
 						const item = ITEMS[n];
 						const expanded = expandedInvItems.has(n);
@@ -2781,16 +2740,17 @@
 								<button class="danger small inv-remove" data-name="${escapeHtml(n)}">X</button>
 							</td>
 						</tr>`;
+
 						const detailRow = (item && expanded) ? `
 						<tr class="customize-row">
-							<td colspan="3">${renderCustomizePanel(n, item, getInvCustom(n))}</td>
+							<td colspan="3">${renderCustomizePanel(n, item, getCustom(n, state.invCustomizations))}</td>
 						</tr>` : '';
 						return mainRow + detailRow;
 					}).join('');
 
 					tbody.querySelectorAll('.inv-qty').forEach(inp => {
 						inp.addEventListener('change', () => {
-							const v = Math.max(0, parseInt(inp.value,10) || 0);
+							const v = Math.max(0, parseInt(inp.value, 10) || 0);
 							state.inventory[inp.dataset.name] = v;
 							saveState();
 							refreshRepairSelect();
@@ -2819,7 +2779,7 @@
 						});
 					});
 
-					bindCustomizePanelEvents(tbody, getInvCustom);
+					bindCustomizePanelEvents(tbody, n => getCustom(n, 'inv'));
 				}
 
 				/* ---------- Craft list UI ---------- */
@@ -2835,9 +2795,9 @@
 						const fc = state.favCustomizations[entry.id];
 						if (fc && ((fc.mods||[]).filter(Boolean).length || fc.enchant || fc.legendary)) {
 							state.customizations[entry.name] = {
-								mods:(fc.mods			|| []).filter(Boolean).slice(),
-								enchant:fc.enchant		|| null,
-								legendary:fc.legendary	|| null
+								mods:		(fc.mods		|| []).filter(Boolean).slice(),
+								enchant:	fc.enchant		|| null,
+								legendary:	fc.legendary	|| null
 							};
 						}
 					});
@@ -2850,32 +2810,26 @@
 				const expandedInvItems		= new Set();
 				const expandedFavItems		= new Set();
 
-				function getCustom(name) {
-					if (!state.customizations[name]) state.customizations[name] = {mods:[], enchant:null, legendary:null};
-					const c = state.customizations[name];
-					if (!Array.isArray(c.mods)) c.mods = [];
-					return c;
-				}
+				function getCustom(name, store) {
+					store = store || state.customizations;
 
-				function getInvCustom(name) {
-					if (!state.invCustomizations[name]) state.invCustomizations[name] = {mods:[], enchant:null, legendary:null};
-					const c = state.invCustomizations[name];
-					if (!Array.isArray(c.mods)) c.mods = [];
-					return c;
-				}
+					if (!store[name]) store[name] = {
+						mods:		[],
+						enchant:	null,
+						legendary:	null
+					};
 
-				function getFavCustom(id) {
-					if (!state.favCustomizations[id]) state.favCustomizations[id] = {mods:[], enchant:null, legendary:null};
-					const c = state.favCustomizations[id];
+					const c = store[name];
 					if (!Array.isArray(c.mods)) c.mods = [];
 					return c;
 				}
 
 				function customSummary(custom) {
 					if (!custom) return '';
+
 					const bits = [];
-					const modCount = (custom.mods||[]).filter(Boolean).length;
-					if (modCount)			bits.push(`${modCount} mod${modCount>1?'s':''}`);
+					const modCount = (custom.mods || []).filter(Boolean).length;
+					if (modCount)			bits.push(`${modCount} mod${modCount > 1 ? 's' : ''}`);
 					if (custom.enchant)		bits.push('enchanted');
 					if (custom.legendary)	bits.push('legendary');
 					return bits.length ? ` <span class="tag">${bits.join(', ')}</span>` : '';
@@ -2884,8 +2838,8 @@
 				function renderCraftList() {
 					const tbody = document.querySelector('#craftTable tbody');
 					const names = Object.keys(state.craftList).filter(n => state.craftList[n] > 0).sort();
-					document.getElementById('craftEmpty').style.display = names.length ? 'none' : 'block';
-					document.getElementById('craftTable').style.display = names.length ? 'table' : 'none';
+					document.getElementById('craftEmpty').style.display	= names.length	? 'none'	: 'block';
+					document.getElementById('craftTable').style.display	= names.length	? 'table'	: 'none';
 					tbody.innerHTML = names.map(n => {
 						const item = ITEMS[n];
 						const expanded = expandedCraftItems.has(n);
@@ -2908,7 +2862,7 @@
 
 					tbody.querySelectorAll('.craft-qty').forEach(inp => {
 						inp.addEventListener('change', () => {
-							const v = Math.max(1, parseInt(inp.value,10)||1);
+							const v = Math.max(1, parseInt(inp.value, 10) || 1);
 							state.craftList[inp.dataset.name] = v;
 							saveState();
 							renderResults();
@@ -2928,7 +2882,7 @@
 					tbody.querySelectorAll('.customize-toggle').forEach(btn => {
 						btn.addEventListener('click', () => {
 							const n = btn.dataset.name;
-							if(expandedCraftItems.has(n)) expandedCraftItems.delete(n);
+							if (expandedCraftItems.has(n)) expandedCraftItems.delete(n);
 							else expandedCraftItems.add(n);
 							renderCraftList();
 						});
@@ -2940,10 +2894,10 @@
 
 				/* ---------- Customizations (modifications / enchantment / legendary) ---------- */
 				function renderCustomizePanel(key, item, custom) {
-					const slots = modSlotsForItem(item);
-					const mods = applicableEntries(MODIFICATIONS, item).sort((a, b) => a.name.localeCompare(b.name));
-					const enchants = applicableEntries(ENCHANTMENTS, item).sort((a, b) => a.name.localeCompare(b.name));
-					const legendaries = isMasterwork(item) ? applicableEntries(LEGENDARY_EFFECTS, item).sort((a,b) => a.name.localeCompare(b.name)) : [];
+					const slots			= modSlotsForItem(item);
+					const mods			= applicableEntries(MODIFICATIONS,	item).sort((a, b) => a.name.localeCompare(b.name));
+					const enchants		= applicableEntries(ENCHANTMENTS,	item).sort((a, b) => a.name.localeCompare(b.name));
+					const legendaries	= isMasterwork(item) ? applicableEntries(LEGENDARY_EFFECTS, item).sort((a, b) => a.name.localeCompare(b.name)) : [];
 
 					const modRows = [];
 					for (let i = 0; i < slots; i++) {
@@ -2958,7 +2912,7 @@
 								<label>Mod slot ${i + 1}:</label>
 								<select class="cz-mod-select" data-key="${escapeHtml(key)}" data-slot="${i}">
 									<option value="">- none -</option>
-									${options.map(m => `<option value="${escapeHtml(m.name)}" ${m.name===current?'selected':''}>${escapeHtml(m.name)} - ${escapeHtml(m.effect)}</option>`).join('')}
+									${options.map(m => `<option value="${escapeHtml(m.name)}" ${m.name === current ? 'selected' : ''}>${escapeHtml(m.name)} - ${escapeHtml(m.effect)}</option>`).join('')}
 								</select>
 							</div>`
 						);
@@ -2969,7 +2923,7 @@
 							<label>Enchantment:</label>
 							<select class="cz-enchant-select" data-key="${escapeHtml(key)}">
 								<option value="">- none -</option>
-								${enchants.map(en => `<option value="${escapeHtml(en.name)}" ${custom.enchant===en.name?'selected':''}>${escapeHtml(en.name)} - ${escapeHtml(en.effect)}</option>`).join('')}
+								${enchants.map(en => `<option value="${escapeHtml(en.name)}" ${custom.enchant === en.name ? 'selected' : ''}>${escapeHtml(en.name)} - ${escapeHtml(en.effect)}</option>`).join('')}
 							</select>
 						</div>` : `<div class="cz-row"><span class="tag">No enchantments apply to this item's category.</span></div>`;
 
@@ -2979,14 +2933,14 @@
 								<label>Legendary:</label>
 								<select class="cz-legendary-select" data-key="${escapeHtml(key)}">
 									<option value="">- none -</option>
-									${legendaries.map(le => `<option value="${escapeHtml(le.name)}" ${custom.legendary===le.name?'selected':''}>${escapeHtml(le.name)} - ${escapeHtml(le.effect)}</option>`).join('')}
+									${legendaries.map(le => `<option value="${escapeHtml(le.name)}" ${custom.legendary === le.name ? 'selected' : ''}>${escapeHtml(le.name)} - ${escapeHtml(le.effect)}</option>`).join('')}
 								</select>
 							</div>` : `<div class="cz-row"><span class="tag">No legendary effects apply to this item's category.</span></div>`)
 						: `<div class="cz-row"><span class="tag">Legendary effects require T4 gear.</span></div>`;
 
 					return `
 						<div class="customize-panel">
-							<div class="cz-title">Customize: ${escapeHtml(item.name)} <span class="tag">${slots} mod slot${slots>1?'s':''}</span></div>
+							<div class="cz-title">Customize: ${escapeHtml(item.name)} <span class="tag">${slots} mod slot${slots > 1 ? 's' : ''}</span></div>
 							${modRows.join('')}
 							${enchantRow}
 							${legendaryRow}
@@ -2995,8 +2949,8 @@
 				}
 
 				function bindCustomizePanelEvents(root, resolveCustom) {
-					root = root || document;
-					resolveCustom = resolveCustom || getCustom;
+					root			= root			|| document;
+					resolveCustom	= resolveCustom	|| getCustom;
 
 					function refreshResultsIfShown() {
 						renderResults();
@@ -3005,7 +2959,7 @@
 					root.querySelectorAll('.cz-mod-select').forEach(sel => {
 						sel.addEventListener('change', () => {
 							const key = sel.dataset.key;
-							const slot = parseInt(sel.dataset.slot,10);
+							const slot = parseInt(sel.dataset.slot, 10);
 							const custom = resolveCustom(key);
 							custom.mods[slot] = sel.value || undefined;
 							saveState();
@@ -3051,7 +3005,7 @@
 						itemFilter: it => it.repairIngredients.length > 0 && (state.inventory[it.name] || 0) > 0
 					});
 
-					if ([...repairSelect.options].some(o => o.value===prevValue)) repairSelect.value = prevValue;
+					if ([...repairSelect.options].some(o => o.value === prevValue)) repairSelect.value = prevValue;
 				}
 
 				refreshRepairSelect();
@@ -3060,9 +3014,9 @@
 					const name = repairSelect.value;
 					if (!name || !ITEMS[name]) return;
 					if ((state.inventory[name] || 0) <= 0) return;
-					const qty = Math.max(1, parseInt(repairQty.value,10) || 1);
+					const qty = Math.max(1, parseInt(repairQty.value, 10) || 1);
 					state.repairList[name] = (state.repairList[name] || 0) + qty;
-					repairQty.value=1;
+					repairQty.value = 1;
 					saveState();
 					renderRepairList();
 				});
@@ -3098,7 +3052,7 @@
 
 					tbody.querySelectorAll('.repair-qty').forEach(inp => {
 						inp.addEventListener('change', () => {
-							const v = Math.max(1, parseInt(inp.value,10)||1);
+							const v = Math.max(1, parseInt(inp.value, 10) || 1);
 							state.repairList[inp.dataset.name] = v;
 							saveState();
 							renderResults();
@@ -3119,8 +3073,8 @@
 				/* ---------- Desired Gear ---------- */
 				const desiredSelect = document.getElementById('desiredSelect');
 				buildSelect(desiredSelect, {
-					includeMaterials: false,
-					includeItems: true
+					includeMaterials:	false,
+					includeItems:		true
 				});
 
 				document.getElementById('desiredAddBtn').addEventListener('click', () => {
@@ -3151,7 +3105,7 @@
 					tbody.innerHTML = sorted.map(entry => {
 						const item		= ITEMS[entry.name];
 						const expanded	= expandedFavItems.has(entry.id);
-						const custom	= getFavCustom(entry.id);
+						const custom	= getCustom(entry.id, state.favCustomizations);
 						const mainRow	= `
 						<tr>
 							<td class="row-name">${escapeHtml(entry.name)}<span class="tag">${escapeHtml(item ? item.category : '')}</span>${item?customSummary(custom):''}</td>
@@ -3171,7 +3125,7 @@
 					tbody.querySelectorAll('.fav-remove').forEach(btn => {
 						btn.addEventListener('click', () => {
 							const id = btn.dataset.id;
-							state.favorites = state.favorites.filter(f => f.id!==id);
+							state.favorites = state.favorites.filter(f => f.id !== id);
 							delete state.favCustomizations[id];
 							expandedFavItems.delete(id);
 							saveState();
@@ -3185,6 +3139,7 @@
 							const id = btn.dataset.id;
 							const n = btn.dataset.name;
 							state.craftList[n] = (state.craftList[n] || 0) + 1;
+
 							const fc = state.favCustomizations[id];
 							if (fc && ((fc.mods||[]).filter(Boolean).length || fc.enchant || fc.legendary)) {
 								state.customizations[n] = {
@@ -3208,7 +3163,7 @@
 						});
 					});
 
-					bindCustomizePanelEvents(tbody, getFavCustom);
+					bindCustomizePanelEvents(tbody, n => getCustom(n, 'fav'));
 				}
 
 				/* ---------- Resolver ---------- */
@@ -3232,6 +3187,7 @@
 
 					function resolve(name, qty, rawBucket) {
 						if (qty <= 0) return;
+
 						const owned = have[name] || 0;
 						const used = Math.min(owned, qty);
 						if (used > 0) {
@@ -3249,7 +3205,7 @@
 								resolve(ing.name, ing.qty * remaining, rawBucket);
 							});
 						} else {
-							rawBucket[name] = (rawBucket[name]||0) + remaining;
+							rawBucket[name] = (rawBucket[name] || 0) + remaining;
 						}
 					}
 
@@ -3262,9 +3218,10 @@
 						const qty = state.craftList[n];
 						const custom = state.customizations[n];
 						if (!custom) return;
+
 						const item = ITEMS[n];
 						if (includeMods) {
-							(custom.mods||[]).filter(Boolean).forEach(modName => {
+							(custom.mods || []).filter(Boolean).forEach(modName => {
 								const mod = MODIFICATIONS[modName];
 								if (!mod) return;
 								(item.modIngredients || []).forEach(ing => resolve(ing.name, ing.qty * qty, customRawNeeded));
@@ -3285,6 +3242,7 @@
 						const item = ITEMS[n];
 						const times = state.repairList[n];
 						if (!item || !item.repairIngredients.length) return;
+
 						item.repairIngredients.forEach(ing => {
 							resolve(ing.name, ing.qty * times, repairRawNeeded);
 						});
@@ -3322,6 +3280,7 @@
 							(custom.mods||[]).filter(Boolean).forEach(modName => {
 								const mod = MODIFICATIONS[modName];
 								if (!mod) return;
+
 								(item.modIngredients || []).forEach(ing => resolveGross(ing.name, ing.qty * qty, grossCustomRawNeeded));
 								mod.cost.forEach(ing => resolveGross(ing.name, ing.qty * qty, grossCustomRawNeeded));
 							});
@@ -3340,6 +3299,7 @@
 						const item = ITEMS[n];
 						const times = state.repairList[n];
 						if (!item || !item.repairIngredients.length) return;
+
 						item.repairIngredients.forEach(ing => {
 							resolveGross(ing.name, ing.qty * times, grossRepairRawNeeded);
 						});
@@ -3431,6 +3391,7 @@
 							while (current) {
 								const subItemIng = (current.ingredients || []).find(ing => ITEMS[ing.name]);
 								if (!subItemIng) break;
+
 								chain.unshift(subItemIng.name);
 								current = ITEMS[subItemIng.name];
 							}
@@ -3442,6 +3403,7 @@
 							function flatten(name, multiplier) {
 								const it = ITEMS[name];
 								if (!it) return;
+
 								it.ingredients.forEach(ing => {
 									if (ITEMS[ing.name]) {
 										flatten(ing.name, multiplier * ing.qty);
@@ -3495,27 +3457,33 @@
 							const item = ITEMS[n];
 							const rows = [];
 							(custom.mods||[]).filter(Boolean).forEach(modName => {
-								const modCost = mergeIngredientLists(item.modIngredients, MODIFICATIONS[modName]?MODIFICATIONS[modName].cost:[]);
-								rows.push({item:n, qty, kind:'Modification', name:modName, cost:modCost});
+								const modCost = mergeIngredientLists(item.modIngredients, MODIFICATIONS[modName] ? MODIFICATIONS[modName].cost : []);
+								rows.push({
+									item: n,
+									qty,
+									kind: 'Modification',
+									name: modName,
+									cost: modCost
+								});
 							});
 
 							if (custom.enchant) {
 								rows.push({
-									item:n,
+									item: n,
 									qty,
-									kind:'Enchantment',
-									name:custom.enchant,
-									cost:ENCHANTMENTS[custom.enchant] ? ENCHANTMENTS[custom.enchant].cost : []
+									kind: 'Enchantment',
+									name: custom.enchant,
+									cost: ENCHANTMENTS[custom.enchant] ? ENCHANTMENTS[custom.enchant].cost : []
 								});
 							}
 
 							if (custom.legendary) {
 								rows.push({
-									item:n,
+									item: n,
 									qty,
-									kind:'Legendary',
-									name:custom.legendary,
-									cost:LEGENDARY_EFFECTS[custom.legendary] ? LEGENDARY_EFFECTS[custom.legendary].cost : []
+									kind: 'Legendary',
+									name: custom.legendary,
+									cost: LEGENDARY_EFFECTS[custom.legendary] ? LEGENDARY_EFFECTS[custom.legendary].cost : []
 								});
 							}
 
@@ -3523,12 +3491,17 @@
 						});
 
 						if (customEntries.length) {
-							const kindIncluded = {Modification: toggles.includeMods, Enchantment: toggles.includeEnchant, Legendary: toggles.includeLegendary};
+							const kindIncluded = {
+								Modification:	toggles.includeMods,
+								Enchantment:	toggles.includeEnchant,
+								Legendary:		toggles.includeLegendary
+							};
+
 							const customRows = customEntries.map(r => {
 								const costStr = r.cost.length ? r.cost.map(c => `${escapeHtml(c.name)} x${c.qty}`).join(', ') : '-';
 								const included = kindIncluded[r.kind];
 								const excludedTag = included ? '' : ' <span class="tag">excluded</span>';
-								return `<tr${included?'':' style="opacity: .55;"'}><td class="row-name">${escapeHtml(r.item)}</td><td>${escapeHtml(r.kind)}${excludedTag}</td><td>${escapeHtml(r.name)}</td><td>${r.qty}</td><td>${costStr}</td></tr>`;
+								return `<tr${included ? '' : ' style="opacity: .55;"'}><td class="row-name">${escapeHtml(r.item)}</td><td>${escapeHtml(r.kind)}${excludedTag}</td><td>${escapeHtml(r.name)}</td><td>${r.qty}</td><td>${costStr}</td></tr>`;
 							}).join('');
 
 							html += `
@@ -3632,7 +3605,7 @@
 
 					const favorites = state.favorites.map(entry => {
 						const c = state.favCustomizations[entry.id] || {};
-						const mods = (c.mods||[]).filter(Boolean);
+						const mods = (c.mods || []).filter(Boolean);
 						return {
 							name: entry.name,
 							mods,
@@ -3720,6 +3693,7 @@
 							Object.entries(parsed.customizations).forEach(([name, raw]) => {
 								const item = ITEMS[name];
 								if (!item) return;
+
 								const c = cleanCustomForItem(item, raw);
 								if (c.mods.length || c.enchant || c.legendary) cleanCustomizations[name] = c;
 							});
@@ -3760,19 +3734,19 @@
 							state.invCustomizations	= {};
 						}
 
-						Object.entries(cleanInventory).forEach(([n,q]) => {
+						Object.entries(cleanInventory).forEach(([n, q]) => {
 							state.inventory[n] = (state.inventory[n] || 0) + q;
 						});
 
-						Object.entries(cleanCraftList).forEach(([n,q]) => {
+						Object.entries(cleanCraftList).forEach(([n, q]) => {
 							state.craftList[n] = (state.craftList[n] || 0) + q;
 						});
 
-						Object.entries(cleanRepairList).forEach(([n,q]) => {
+						Object.entries(cleanRepairList).forEach(([n, q]) => {
 							if ((state.inventory[n] || 0) > 0) state.repairList[n] = (state.repairList[n] || 0) + q;
 						});
 
-						Object.entries(cleanCustomizations).forEach(([n,c]) => {
+						Object.entries(cleanCustomizations).forEach(([n, c]) => {
 							state.customizations[n] = c;
 						});
 
@@ -3811,9 +3785,9 @@
 						if (!g || !g.name || !ITEMS[g.name]) return;
 						state.craftList[g.name] = (state.craftList[g.name] || 0) + 1;
 						state.customizations[g.name] = {
-							mods:		(g.mods || []).filter(Boolean),
-							enchant:	g.enchant || null,
-							legendary:	g.legendary || null
+							mods:		(g.mods		|| []).filter(Boolean),
+							enchant:	g.enchant	|| null,
+							legendary:	g.legendary	|| null
 						};
 					});
 					saveState();
@@ -3836,8 +3810,8 @@
 					Object.entries(quests || {}).forEach(([questName, q]) => {
 						FACTIONS[key].quests.push({
 							name:		questName,
-							xp:			parseInt(q.xp, 10) || 0,
-							cooldown:	parseInt(q.cooldown_days, 10) || 1
+							xp:			parseInt(q.xp,				10)	|| 0,
+							cooldown:	parseInt(q.cooldown_days,	10)	|| 1
 						});
 					});
 				});
@@ -3877,21 +3851,11 @@
 
 			// Extracted from EnemyDatabase.csv - Bosses are excluded
 			let ENEMIES = [];
-
-//			function buildEnemies(rows) {
-//				ENEMIES = rows.map(r => ({
-//					name:		r.name,
-//					health:		parseInt(r.health, 10)		|| 0,
-//					difficulty:	parseInt(r.difficulty, 10)	|| 0,
-//					biomes:		(r.biomes					|| '').split(';').map(b => b.trim()).filter(Boolean)
-//				}));
-//			}
-
 			function buildEnemies(data) {
 				ENEMIES = Object.entries(data || {}).map(([name, r]) => ({
 					name:		name,
-					health:		parseInt(r.health, 10)		|| 0,
-					difficulty:	parseInt(r.difficulty, 10)	|| 0,
+					health:		parseInt(r.health,		10)	|| 0,
+					difficulty:	parseInt(r.difficulty,	10)	|| 0,
 					biomes:		(r.biomes || []).join(',').split(',').map(b => b.trim()).filter(Boolean)
 				}));
 			}
@@ -3940,7 +3904,7 @@
 
 			function initXpCalc() {
 				const XP_STORE_KEY = 'xpCalcState_v1';
-				const XP_FIELD_IDS = ['curLevel','desLevel','curXP','crisis','energy','wellfed','encDifficulty','biome','faction'];
+				const XP_FIELD_IDS = ['curLevel', 'desLevel', 'curXP', 'crisis', 'energy', 'wellfed', 'encDifficulty', 'biome', 'faction'];
 
 				function loadXpState() {
 					try {
@@ -3955,7 +3919,7 @@
 							}
 						});
 
-						if (saved.weeklyXP !== undefined) document.getElementById('weeklyXP').checked = !!saved.weeklyXP;
+						if (saved.weeklyXP !== undefined) document.getElementById('weeklyXP').checked = !! saved.weeklyXP;
 					} catch (e) {}
 				}
 
@@ -4028,8 +3992,8 @@
 					const xpFromEncAvg	= xpAvg		* energy;
 					const xpFromEncHigh	= xpHigh	* energy;
 
-					const faction		= factionKey	? FACTIONS[factionKey] : null;
-					const questXPDay	= faction		? questXPPerDay(faction.quests) : 0;
+					const faction		= factionKey	? FACTIONS[factionKey]			: null;
+					const questXPDay	= faction		? questXPPerDay(faction.quests)	: 0;
 					const weeklyXPDay	= useWeekly		? 150 / 7 : 0;
 
 					const xpPerDayLow	= xpFromEncLow	+ questXPDay + weeklyXPDay;
@@ -4096,8 +4060,8 @@
 						</div>
 						<div class="metric">
 							<div class="metric-label">Total encounters</div>
-							<div class="metric-value">${totalEncsAvg === Infinity ? '∞' : totalEncsAvg.toLocaleString()}</div>
-							<div class="metric-range">${totalEncsHigh === Infinity ? '∞' : totalEncsHigh.toLocaleString()} - ${totalEncsLow === Infinity ? '∞' : totalEncsLow.toLocaleString()}</div>
+							<div class="metric-value">${totalEncsAvg	=== Infinity ? '∞' : totalEncsAvg.toLocaleString()}</div>
+							<div class="metric-range">${totalEncsHigh	=== Infinity ? '∞' : totalEncsHigh.toLocaleString()} - ${totalEncsLow === Infinity ? '∞' : totalEncsLow.toLocaleString()}</div>
 							<div class="metric-sub">from encounters only</div>
 						</div>
 					`;
@@ -4169,17 +4133,20 @@
 						if (raw) pState = Object.assign(pState, JSON.parse(raw));
 					} catch (e) {}
 				}
+
 				function saveState() {
 					try {
 						localStorage.setItem(STORE_KEY, JSON.stringify(pState));
 					} catch (e) {}
 				}
+
 				loadState();
-				if (!pState.skillLevels || typeof pState.skillLevels !== 'object') pState.skillLevels = {};
-				if (!pState.crafting || typeof pState.crafting !== 'object') pState.crafting = {};
-				if (!pState.baseStats || typeof pState.baseStats !== 'object') pState.baseStats = {};
-				if (!pState.gear || typeof pState.gear !== 'object') pState.gear = {};
-				if (!pState.knownSpells || typeof pState.knownSpells !== 'object') pState.knownSpells = {};
+
+				if (!pState.skillLevels	|| typeof pState.skillLevels	!== 'object') pState.skillLevels	= {};
+				if (!pState.crafting	|| typeof pState.crafting		!== 'object') pState.crafting		= {};
+				if (!pState.baseStats	|| typeof pState.baseStats		!== 'object') pState.baseStats		= {};
+				if (!pState.gear		|| typeof pState.gear			!== 'object') pState.gear			= {};
+				if (!pState.knownSpells	|| typeof pState.knownSpells	!== 'object') pState.knownSpells	= {};
 
 				function escapeHtml(s) {
 					return (s == null ? '' : String(s)).replace(/[&<>"']/g, c => ({
@@ -4216,7 +4183,7 @@
 
 				refreshSubraceOptions();
 
-				[['plRace', 'race'], ['plSubrace', 'subrace'], ['plBirthsign', 'birthsign'], ['plBackground', 'background'], ['plTrait1', 'trait1'], ['plTrait2', 'trait2']].forEach(([id,key]) => {
+				[['plRace', 'race'], ['plSubrace', 'subrace'], ['plBirthsign', 'birthsign'], ['plBackground', 'background'], ['plTrait1', 'trait1'], ['plTrait2', 'trait2']].forEach(([id, key]) => {
 					el(id).addEventListener('change', () => {
 						pState[key] = el(id).value;
 						if (id === 'plRace') {
@@ -4356,7 +4323,7 @@
 					});
 
 					const clothing = pState.gear && pState.gear.clothing;
-					const wearingClothes = !!(clothing && clothing.itemName && ITEMS[clothing.itemName] && ITEMS[clothing.itemName].category === 'Clothes');
+					const wearingClothes = !! (clothing && clothing.itemName && ITEMS[clothing.itemName] && ITEMS[clothing.itemName].category === 'Clothes');
 					if (!wearingClothes) a.push({ name: 'Frost Resistance', value: -2 });
 
 					return a;
@@ -4378,6 +4345,7 @@
 				const ATTR_START = 0;
 				const ATTR_NAMES = ['Strength', 'Endurance', 'Agility', 'Intelligence', 'Willpower', 'Personality'];
 				const ATTR_TICK_COST = [1, 1, 2];
+
 				const SKILL_ATTR_SCALE = {
 					'Block': 0.5,
 					'Dodge': 0.5
@@ -4935,7 +4903,7 @@
 						sel.addEventListener('change', () => {
 							const g = pState.gear[sel.dataset.slot];
 							g.mods = g.mods || [];
-							g.mods[parseInt(sel.dataset.idx,10)] = sel.value || undefined;
+							g.mods[parseInt(sel.dataset.idx, 10)] = sel.value || undefined;
 							saveState();
 							renderGear();
 							renderStats();
