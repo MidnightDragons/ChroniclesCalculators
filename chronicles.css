@@ -438,11 +438,15 @@ body[data-active-page="page-planner"] #sideStatsPanel {
 	display: block;
 }
 #sideIncludeCosts,
-#sideIncludeCostsToggles {
+#sideIncludeCostsToggles,
+#sideNewJourney {
 	display: none;
 }
 body[data-active-page="page-craft"] #sideIncludeCosts,
 body[data-active-page="page-craft"] #sideIncludeCostsToggles {
+	display: block;
+}
+body[data-active-page="page-planner"] #sideNewJourney {
 	display: block;
 }
 
