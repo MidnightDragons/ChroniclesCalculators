@@ -2417,6 +2417,11 @@
 				return (item.category === 'Bows' || item.category === '2H Weapons') ? 2 : 1;
 			}
 
+			function enchantSlotsForItem(item) {
+				if (!item) return 1;
+				return (item.category === 'Bows' || item.category === '2H Weapons') ? 2 : 1;
+			}
+
 			function applicableEntries(db, item) {
 				if (!item) return [];
 				return Object.values(db).filter(e => e.categories.has(item.category));
@@ -2977,10 +2982,10 @@
 					state.favorites.forEach(entry => {
 						state.craftList[entry.name] = (state.craftList[entry.name] || 0) + 1;
 						const fc = state.favCustomizations[entry.id];
-						if (fc && ((fc.mods||[]).filter(Boolean).length || fc.enchant || fc.legendary)) {
+						if (fc && ((fc.mods || []).filter(Boolean).length || (fc.enchants || []).filter(Boolean).length || fc.enchant || fc.legendary)) {
 							state.customizations[entry.name] = {
 								mods:		(fc.mods		|| []).filter(Boolean).slice(),
-								enchant:	fc.enchant		|| null,
+								enchants:	(fc.enchants	|| []).filter(Boolean).slice(),
 								legendary:	fc.legendary	|| null
 							};
 						}
@@ -2999,12 +3004,13 @@
 
 					if (!store[name]) store[name] = {
 						mods:		[],
-						enchant:	null,
+						enchants:	[],
 						legendary:	null
 					};
 
 					const c = store[name];
-					if (!Array.isArray(c.mods)) c.mods = [];
+					if (!Array.isArray(c.mods))		c.mods		= [];
+					if (!Array.isArray(c.enchants))	c.enchants	= [];
 					return c;
 				}
 
@@ -3102,14 +3108,29 @@
 						);
 					}
 
-					const enchantRow = enchants.length ? `
-						<div class="cz-row">
-							<label>Enchantment:</label>
-							<select class="cz-enchant-select" data-key="${escapeHtml(key)}">
-								<option value="">${noneDisplay}</option>
-								${enchants.map(en => `<option value="${escapeHtml(en.name)}" ${custom.enchant === en.name ? 'selected' : ''}>${escapeHtml(en.name)} - ${escapeHtml(en.effect)}</option>`).join('')}
-							</select>
-						</div>` : `<div class="cz-row"><span class="tag">No enchantments apply to this item's category.</span></div>`;
+					const enchantRows = [];
+					const enchantSlotCount = enchantSlotsForItem(item);
+					if (enchants.length) {
+						for (let i = 0; i < enchantSlotCount; i++) {
+							const current = custom.enchants[i] || '';
+							const options = enchants.filter(en => {
+								const selectedElsewhere = custom.enchants.some((v, idx) => v === en.name && idx !== i);
+								return !selectedElsewhere;
+							});
+
+							enchantRows.push(`
+								<div class="cz-row">
+									<label>Enchantment slot ${i + 1}:</label>
+									<select class="cz-enchant-select" data-key="${escapeHtml(key)}" data-slot="${i}">
+										<option value="">${noneDisplay}</option>
+										${options.map(en => `<option value="${escapeHtml(en.name)}" ${en.name === current ? 'selected' : ''}>${escapeHtml(en.name)} - ${escapeHtml(en.effect)}</option>`).join('')}
+									</select>
+								</div>`
+							);
+						}
+					} else {
+						enchantRows.push(`<div class="cz-row"><span class="tag">No enchantments apply to this item's category.</span></div>`);
+					}
 
 					const legendaryRow = isMasterwork(item)
 						? (legendaries.length ? `
@@ -3120,13 +3141,14 @@
 									${legendaries.map(le => `<option value="${escapeHtml(le.name)}" ${custom.legendary === le.name ? 'selected' : ''}>${escapeHtml(le.name)} - ${escapeHtml(le.effect)}</option>`).join('')}
 								</select>
 							</div>` : `<div class="cz-row"><span class="tag">No legendary effects apply to this item's category.</span></div>`)
-						: `<div class="cz-row"><span class="tag">Legendary effects require T4 gear.</span></div>`;
+						: `<div class="cz-row"><span class="tag">Legendary effects require T4 gear.</span></div>`
+					;
 
 					return `
 						<div class="customize-panel">
 							<div class="cz-title">Customize: ${escapeHtml(item.name)} <span class="tag">${slots} mod slot${slots > 1 ? 's' : ''}</span></div>
 							${modRows.join('')}
-							${enchantRow}
+							${enchantRows.join('')}
 							${legendaryRow}
 						</div>
 					`;
@@ -3156,8 +3178,10 @@
 
 					root.querySelectorAll('.cz-enchant-select').forEach(sel => {
 						sel.addEventListener('change', () => {
-							const custom = resolveCustom(sel.dataset.key);
-							custom.enchant = sel.value || null;
+							const key = sel.dataset.key;
+							const slot = parseInt(sel.dataset.slot, 10);
+							const custom = resolveCustom(key);
+							custom.enchants[slot] = sel.value || undefined;
 							saveState();
 							renderInventory();
 							renderCraftList();
@@ -3325,10 +3349,10 @@
 							state.craftList[n] = (state.craftList[n] || 0) + 1;
 
 							const fc = state.favCustomizations[id];
-							if (fc && ((fc.mods||[]).filter(Boolean).length || fc.enchant || fc.legendary)) {
+							if (fc && ((fc.mods||[]).filter(Boolean).length || (fc.enchants||[]).filter(Boolean).length || fc.enchant || fc.legendary)) {
 								state.customizations[n] = {
 									mods:		(fc.mods		|| []).filter(Boolean).slice(),
-									enchant:	fc.enchant		|| null,
+									enchants:	((fc.enchants	|| (fc.enchant ? [fc.enchant] : [])) || []).filter(Boolean).slice(),
 									legendary:	fc.legendary	|| null
 								};
 							}
@@ -3408,13 +3432,19 @@
 							(custom.mods || []).filter(Boolean).forEach(modName => {
 								const mod = MODIFICATIONS[modName];
 								if (!mod) return;
+
 								(item.modIngredients || []).forEach(ing => resolve(ing.name, ing.qty * qty, customRawNeeded));
 								mod.cost.forEach(ing => resolve(ing.name, ing.qty * qty, customRawNeeded));
 							});
 						}
 
-						if (includeEnchant && custom.enchant && ENCHANTMENTS[custom.enchant]) {
-							ENCHANTMENTS[custom.enchant].cost.forEach(ing => resolve(ing.name, ing.qty * qty, customRawNeeded));
+						if (includeEnchant) {
+							(custom.enchants || []).filter(Boolean).forEach(enchantName => {
+								const enchant = ENCHANTMENTS[enchantName];
+								if (!enchant) return;
+
+								enchant.cost.forEach(ing => resolve(ing.name, ing.qty * qty, customRawNeeded));
+							});
 						}
 
 						if (includeLegendary && custom.legendary && isMasterwork(item) && LEGENDARY_EFFECTS[custom.legendary]) {
@@ -3470,8 +3500,13 @@
 							});
 						}
 
-						if (includeEnchant && custom.enchant && ENCHANTMENTS[custom.enchant]) {
-							ENCHANTMENTS[custom.enchant].cost.forEach(ing => resolveGross(ing.name, ing.qty * qty, grossCustomRawNeeded));
+						if (includeEnchant) {
+							(custom.enchants || []).filter(Boolean).forEach(enchantName => {
+								const enchants = ENCHANTMENTS[enchantName];
+								if (!enchants) return;
+
+								enchants.cost.forEach(ing => resolveGross(ing.name, ing.qty * qty, grossCustomRawNeeded));
+							});
 						}
 
 						if (includeLegendary && custom.legendary && isMasterwork(item) && LEGENDARY_EFFECTS[custom.legendary]) {
@@ -3640,7 +3675,7 @@
 							const qty = state.craftList[n];
 							const item = ITEMS[n];
 							const rows = [];
-							(custom.mods||[]).filter(Boolean).forEach(modName => {
+							(custom.mods || []).filter(Boolean).forEach(modName => {
 								const modCost = mergeIngredientLists(item.modIngredients, MODIFICATIONS[modName] ? MODIFICATIONS[modName].cost : []);
 								rows.push({
 									item: n,
@@ -3651,15 +3686,15 @@
 								});
 							});
 
-							if (custom.enchant) {
+							(custom.enchants || []).filter(Boolean).forEach(enchantName => {
 								rows.push({
 									item: n,
 									qty,
 									kind: 'Enchantment',
-									name: custom.enchant,
-									cost: ENCHANTMENTS[custom.enchant] ? ENCHANTMENTS[custom.enchant].cost : []
+									name: enchantName,
+									cost: ENCHANTMENTS[enchantName] ? ENCHANTMENTS[enchantName].cost : []
 								});
-							}
+							});
 
 							if (custom.legendary) {
 								rows.push({
@@ -3754,17 +3789,18 @@
 					resultsEl.innerHTML = `<div class="result-section">${html}</div>`;
 				}
 
-				/* ---------- Export / Import EVERYTHING (inventory, craft list, repair list, desired gear) ---------- */
+				/* ---------- Export / Import EVERYTHING ---------- */
 				function cleanCustomForItem(item, raw) {
-					if (!raw || typeof raw !== 'object') return {mods: [], enchant: null, legendary: null};
-					const slots					= modSlotsForItem(item);
+					if (!raw || typeof raw !== 'object') return {mods: [], enchants: [], legendary: null};
+
 					const validModNames			= new Set(applicableEntries(MODIFICATIONS,	item).map(m => m.name));
 					const validEnchantNames		= new Set(applicableEntries(ENCHANTMENTS,	item).map(m => m.name));
 					const validLegendaryNames	= isMasterwork(item) ? new Set(applicableEntries(LEGENDARY_EFFECTS, item).map(m => m.name)) : new Set();
-					const mods					= Array.isArray(raw.mods) ? raw.mods.filter(m => typeof m === 'string' && validModNames.has(m)).slice(0, slots) : [];
-					const enchant				= (typeof raw.enchant	=== 'string' && validEnchantNames.has(raw.enchant))		? raw.enchant	: null;
+
+					const mods					= Array.isArray(raw.mods)		? raw.mods.filter(m		=> typeof m === 'string' && validModNames.has(m)).slice(0,		modSlotsForItem(item))		: [];
+					const enchants				= Array.isArray(raw.enchants)	? raw.enchants.filter(m	=> typeof m === 'string' && validEnchantNames.has(m)).slice(0,	enchantSlotsForItem(item))	: [];
 					const legendary				= (typeof raw.legendary	=== 'string' && validLegendaryNames.has(raw.legendary))	? raw.legendary	: null;
-					return {mods, enchant, legendary};
+					return {mods, enchants, legendary};
 				}
 
 				document.getElementById('exportAllBtn').addEventListener('click', () => {
@@ -3776,24 +3812,26 @@
 
 					const customizations = {};
 					Object.keys(state.customizations).forEach(n => {
-						const c = state.customizations[n];
-						const mods = (c.mods || []).filter(Boolean);
-						if (mods.length || c.enchant || c.legendary) {
+						const c			= state.customizations[n];
+						const mods		= (c.mods		|| []).filter(Boolean);
+						const enchants	= (c.enchants	|| []).filter(Boolean);
+						if (mods.length || enchants.length || c.legendary) {
 							customizations[n] = {
 								mods,
-								enchant:	c.enchant	|| null,
+								enchants,
 								legendary:	c.legendary	|| null
 							};
 						}
 					});
 
 					const favorites = state.favorites.map(entry => {
-						const c = state.favCustomizations[entry.id] || {};
-						const mods = (c.mods || []).filter(Boolean);
+						const c			= state.favCustomizations[entry.id] || {};
+						const mods		= (c.mods		|| []).filter(Boolean);
+						const enchants	= (c.enchants	|| []).filter(Boolean);
 						return {
 							name: entry.name,
 							mods,
-							enchant:	c.enchant	|| null,
+							enchants,
 							legendary:	c.legendary	|| null
 						};
 					});
@@ -3879,7 +3917,7 @@
 								if (!item) return;
 
 								const c = cleanCustomForItem(item, raw);
-								if (c.mods.length || c.enchant || c.legendary) cleanCustomizations[name] = c;
+								if (c.mods.length || c.enchants.length || c.legendary) cleanCustomizations[name] = c;
 							});
 						}
 
@@ -3936,10 +3974,10 @@
 
 						cleanFavorites.forEach(f => {
 							state.favorites.push({id: f.id, name: f.name});
-							if (f.mods.length || f.enchant || f.legendary) {
+							if (f.mods.length || f.enchants.length || f.legendary) {
 								state.favCustomizations[f.id] = {
 									mods:		f.mods,
-									enchant:	f.enchant,
+									enchants:	f.enchants,
 									legendary:	f.legendary
 								};
 							}
@@ -3970,10 +4008,11 @@
 						state.craftList[g.name] = (state.craftList[g.name] || 0) + 1;
 						state.customizations[g.name] = {
 							mods:		(g.mods		|| []).filter(Boolean),
-							enchant:	g.enchant	|| null,
+							enchants:	(g.enchants	|| []).filter(Boolean),
 							legendary:	g.legendary	|| null
 						};
 					});
+
 					saveState();
 					renderCraftList();
 					renderQuickStats();
@@ -4472,8 +4511,10 @@
 							if (m && m.effect) texts.push(m.effect);
 						});
 
-						const hasEnchantments = g.enchant && ENCHANTMENTS[g.enchant] && ENCHANTMENTS[g.enchant].effect;
-						if (hasEnchantments) texts.push(ENCHANTMENTS[g.enchant].effect);
+						(g.enchants || []).filter(Boolean).forEach(name => {
+							const m = ENCHANTMENTS[name];
+							if (m && m.effect) texts.push(m.effect);
+						});
 
 						const hasLegendary = g.legendary && LEGENDARY_EFFECTS[g.legendary] && LEGENDARY_EFFECTS[g.legendary].effect;
 						if (hasLegendary) texts.push(LEGENDARY_EFFECTS[g.legendary].effect);
@@ -4841,13 +4882,56 @@
 						const g = pState.gear[slot.key] || (pState.gear[slot.key] = {});
 						if (slot.key === 'offHand' && mainHandBlocksOffHand) {
 							pState.gear.offHand = {};
+							const mhGear = pState.gear.mainHand || {};
+							const mhItem = mhGear.itemName ? ITEMS[mhGear.itemName] : null;
+
+							let overflowTypeHtml		= '<select disabled><option value="">${noneDisplay}</option></select>';
+							let overflowModsHtml		= '<span class="tag">N/A</span>';
+							let overflowEnchantHtml		= '<span class="tag">N/A</span>';
+							let overflowOtherHtml		= '<span class="tag">N/A</span>';
+
+							if (mhItem) {
+								const mhMods			= applicableEntries(MODIFICATIONS,	mhItem).sort((a, b) => a.name.localeCompare(b.name));
+								const mhEnchants		= applicableEntries(ENCHANTMENTS,	mhItem).sort((a, b) => a.name.localeCompare(b.name));
+								const mhChosenMods		= mhGear.mods		|| [];
+								const mhChosenEnchants	= mhGear.enchants	|| [];
+								const mhModSlots		= modSlotsForItem(mhItem);
+								const mhEnchantSlots	= enchantSlotsForItem(mhItem);
+
+								overflowModsHtml = mhModSlots > 1 ? (() => {
+									const i = 1;
+									const current = mhChosenMods[i] || '';
+									const opts = mhMods.filter(m => !mhChosenMods.some((v, idx) => v === m.name && idx !== i));
+									return `<select class="pl-gear-mod" data-slot="mainHand" data-idx="${i}">
+										<option value="">${noneDisplay}</option>
+										${opts.map(m =>
+											`<option value="${escapeHtml(m.name)}" title="${escapeHtml(m.effect)}" ${m.name === current ? 'selected' : ''}>${escapeHtml(m.name)}</option>`
+										).join('')}
+									</select>`;
+								})() : '<span class="tag">N/A</span>';
+
+								overflowEnchantHtml = mhEnchantSlots > 1 ? (() => {
+									const i = 1;
+									const current = mhChosenEnchants[i] || '';
+									const opts = mhEnchants.filter(en => !mhChosenEnchants.some((v, idx) => v === en.name && idx !== i));
+									return `<select class="pl-gear-enchant" data-slot="mainHand" data-idx="${i}">
+										<option value="">${noneDisplay}</option>
+										${opts.map(en =>
+											`<option value="${escapeHtml(en.name)}" title="${escapeHtml(en.effect)}" ${en.name === current ? 'selected' : ''}>${escapeHtml(en.name)}</option>`
+										).join('')}
+									</select>`;
+								})() : '<span class="tag">N/A</span>';
+
+								overflowTypeHtml	= (mhModSlots > 1 || mhEnchantSlots > 1) ? `<span class="tag"></span>` : `<select disabled><option value="">${noneDisplay}</option></select>`;
+								overflowOtherHtml	= (mhModSlots > 1 || mhEnchantSlots > 1) ? '<span class="tag"></span>' : '<span class="tag">N/A</span>';
+							}
 							return `<tr class=>
-								<td class="row-name">${escapeHtml(slot.label)}</td>
-								<td><select disabled><option value="">${noneDisplay}</option></select></td>
-								<td><span class="tag">N/A</span></td>
-								<td><span class="tag">N/A</span></td>
-								<td><span class="tag">N/A</span></td>
-								<td><span class="tag">N/A</span></td>
+								<td class="row-name"></td>
+								<td class="center-text">${overflowTypeHtml}</td>
+								<td class="center-text">${overflowOtherHtml}</td>
+								<td class="center-text">${overflowModsHtml}</td>
+								<td class="center-text">${overflowEnchantHtml}</td>
+								<td class="center-text">${overflowOtherHtml}</td>
 							</tr>`;
 						}
 
@@ -4883,35 +4967,42 @@
 						let legendaryHtml	= '<span class="tag">N/A</span>';
 
 						if (item) {
-							const slotsN		= modSlotsForItem(item);
-							const mods			= applicableEntries(MODIFICATIONS,	item).sort((a,b) => a.name.localeCompare(b.name));
-							const enchants		= applicableEntries(ENCHANTMENTS,	item).sort((a,b) => a.name.localeCompare(b.name));
-							const legendaries	= isMasterwork(item) ? applicableEntries(LEGENDARY_EFFECTS, item).sort((a,b) => a.name.localeCompare(b.name)) : [];
+							const overflowToOffHand = slot.key === 'mainHand' && mainHandBlocksOffHand;
+							const slotsN		= overflowToOffHand ? Math.min(1, modSlotsForItem(item)) : modSlotsForItem(item);
+							const enchantSlotsN = overflowToOffHand ? Math.min(1, enchantSlotsForItem(item)) : enchantSlotsForItem(item);
+							const mods			= applicableEntries(MODIFICATIONS,	item).sort((a, b) => a.name.localeCompare(b.name));
+							const enchants		= applicableEntries(ENCHANTMENTS,	item).sort((a, b) => a.name.localeCompare(b.name));
+							const legendaries	= isMasterwork(item) ? applicableEntries(LEGENDARY_EFFECTS, item).sort((a, b) => a.name.localeCompare(b.name)) : [];
 							const chosenMods	= g.mods || [];
+							const chosenEnchants = g.enchants || [];
 
 							modsHtml = Array.from({length: slotsN}).map((_, i) => {
 								const current = chosenMods[i] || '';
-								const opts = mods.filter(m => !chosenMods.some((v, idx) => v===m.name && idx!==i));
+								const opts = mods.filter(m => !chosenMods.some((v, idx) => v === m.name && idx !== i));
 								return `<select class="pl-gear-mod" data-slot="${slot.key}" data-idx="${i}">
 									<option value="">${noneDisplay}</option>
 									${opts.map(m =>
-										`<option value="${escapeHtml(m.name)}" title="${escapeHtml(m.effect)}" ${m.name===current?'selected':''}>${escapeHtml(m.name)}</option>`
+										`<option value="${escapeHtml(m.name)}" title="${escapeHtml(m.effect)}" ${m.name === current ? 'selected' : ''}>${escapeHtml(m.name)}</option>`
 									).join('')}
 								</select>`;
 							}).join(' ');
 
-							enchantHtml = `<select class="pl-gear-enchant" data-slot="${slot.key}">
-								<option value="">${noneDisplay}</option>
-								${enchants.map(en =>
-									`<option value="${escapeHtml(en.name)}" title="${escapeHtml(en.effect)}" ${g.enchant===en.name?'selected':''}>${escapeHtml(en.name)}</option>`
-								).join('')}
-							</select>`;
+							enchantHtml = Array.from({length: enchantSlotsN}).map((_, i) => {
+								const current = chosenEnchants[i] || '';
+								const opts = enchants.filter(en => !chosenEnchants.some((v, idx) => v === en.name && idx !== i));
+								return `<select class="pl-gear-enchant" data-slot="${slot.key}" data-idx="${i}">
+									<option value="">${noneDisplay}</option>
+									${opts.map(en =>
+										`<option value="${escapeHtml(en.name)}" title="${escapeHtml(en.effect)}" ${en.name === current ? 'selected' : ''}>${escapeHtml(en.name)}</option>`
+									).join('')}
+								</select>`;
+							}).join(' ');
 
 							legendaryHtml = isMasterwork(item)
 								? `<select class="pl-gear-legendary" data-slot="${slot.key}">
 									<option value="">${noneDisplay}</option>
 									${legendaries.map(le =>
-										`<option value="${escapeHtml(le.name)}" title="${escapeHtml(le.effect)}" ${g.legendary===le.name?'selected':''}>${escapeHtml(le.name)}</option>`
+										`<option value="${escapeHtml(le.name)}" title="${escapeHtml(le.effect)}" ${g.legendary === le.name ? 'selected' : ''}>${escapeHtml(le.name)}</option>`
 									).join('')}
 								</select>`
 								: `<span class="tag">requires Masterwork</span>`
@@ -4934,7 +5025,7 @@
 							g.typeLabel	= sel.value;
 							g.itemName	= '';
 							g.mods		= [];
-							g.enchant	= null;
+							g.enchants	= [];
 							g.legendary	= null;
 							saveState();
 							renderGear();
@@ -4948,7 +5039,7 @@
 							const g = pState.gear[sel.dataset.slot];
 							g.itemName	= sel.value;
 							g.mods		= [];
-							g.enchant	= null;
+							g.enchants	= [];
 							g.legendary	= null;
 							saveState();
 							renderGear();
@@ -4971,7 +5062,9 @@
 
 					el('plGearBody').querySelectorAll('.pl-gear-enchant').forEach(sel => {
 						sel.addEventListener('change', () => {
-							pState.gear[sel.dataset.slot].enchant = sel.value || null;
+							const g = pState.gear[sel.dataset.slot];
+							g.enchants = g.enchants || [];
+							g.enchants[parseInt(sel.dataset.idx, 10)] = sel.value || undefined;
 							saveState();
 							renderGear();
 							renderStats();
@@ -4993,7 +5086,12 @@
 				el('plSyncGearBtn').addEventListener('click', () => {
 					const gearItems = Object.values(pState.gear)
 						.filter(g => g && g.itemName)
-						.map(g => ({name: g.itemName, mods: (g.mods||[]).filter(Boolean), enchant: g.enchant, legendary: g.legendary}))
+						.map(g => ({
+							name:		g.itemName,
+							mods:		(g.mods		|| []).filter(Boolean),
+							enchants:	(g.enchants	|| []).filter(Boolean),
+							legendary:	g.legendary
+						}))
 					;
 
 					if (!gearItems.length) {
