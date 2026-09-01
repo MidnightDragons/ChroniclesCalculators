@@ -3310,7 +3310,7 @@
 
 					empty.style.display	= 'none';
 					box.style.display	= 'table';
-					const sorted = state.favorites.slice().sort((a,b) => a.name.localeCompare(b.name));
+					const sorted = state.favorites.slice().sort((a, b) => a.name.localeCompare(b.name));
 					tbody.innerHTML = sorted.map(entry => {
 						const item		= ITEMS[entry.name];
 						const expanded	= expandedFavItems.has(entry.id);
