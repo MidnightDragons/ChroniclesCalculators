@@ -4996,8 +4996,9 @@
 						const reqIdx	= levelIndex(t.proficiency);
 						const meetsReq	= skillIdx >= reqIdx;
 						const viaTag	= isChild ? ` <span class="tag" title="Included automatically by ${escapeHtml(parentIds.join(', '))}">via ${escapeHtml(parentIds.join(', '))}</span>` : '';
+						const locked	= isChild || !meetsReq;
 						return `<tr style="${meetsReq ? '' : 'opacity:.5;'}">
-							<td><input type="checkbox" class="pl-spell-check" data-id="${t.id}" ${known?'checked':''} ${isChild?'disabled':''}></td>
+							<td><input type="checkbox" class="pl-spell-check" data-id="${t.id}" ${known?'checked':''} ${locked?'disabled':''}></td>
 							<td class="row-name">${escapeHtml(t.name)}${viaTag}</td>
 							<td>${escapeHtml(t.skill)}</td>
 							<td>${escapeHtml(t.proficiency)}${meetsReq ? '' : ' <span class="tag">not yet met</span>'}</td>
