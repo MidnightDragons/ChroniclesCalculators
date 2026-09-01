@@ -3017,10 +3017,11 @@
 				function customSummary(custom) {
 					if (!custom) return '';
 
-					const bits = [];
-					const modCount = (custom.mods || []).filter(Boolean).length;
+					const bits			= [];
+					const modCount		= (custom.mods		|| []).filter(Boolean).length;
+					const enchantCount	= (custom.enchants	|| []).filter(Boolean).length;
 					if (modCount)			bits.push(`${modCount} mod${modCount > 1 ? 's' : ''}`);
-					if (custom.enchant)		bits.push('enchanted');
+					if (enchantCount)		bits.push(`${enchantCount} enchant${enchantCount > 1 ? 's' : ''}`);
 					if (custom.legendary)	bits.push('legendary');
 					return bits.length ? ` <span class="tag">${bits.join(', ')}</span>` : '';
 				}
