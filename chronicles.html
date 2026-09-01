@@ -2491,6 +2491,7 @@
 				function updateLabel() {
 					const opt = selectEl.options[selectEl.selectedIndex];
 					label.textContent = opt ? opt.textContent : '';
+					btn.title = opt ? (opt.title || '') : '';
 
 					btn.className = 'csel-btn';
 					const tierClass = opt ? tierClassOf(opt) : null;
@@ -2503,6 +2504,7 @@
 					const tierClass = tierClassOf(opt);
 					if (tierClass) item.classList.add(tierClass);
 					item.textContent = opt.textContent;
+					item.title = opt.title || '';
 
 					if (opt.value === selectEl.value) item.classList.add('is-selected');
 					item.addEventListener('click', () => {
@@ -4168,17 +4170,36 @@
 				const el = id => document.getElementById(id);
 
 				/* ---------- Character selects ---------- */
-				function fillSelect(sel, names, placeholder) {
-					sel.innerHTML = `<option value="">${placeholder}</option>`
-						+ names.map(n => `<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`).join('')
+				function statBonusTooltipText(stats) {
+					if (!stats) return '';
+					return Object.entries(stats)
+						.filter(([, v]) => v)
+						.map(([k, v]) => `${k}: ${v > 0 ? '+' : ''}${v}`)
+						.join('\n')
 					;
 				}
 
-				fillSelect(el('plRace'),		RACE_NAMES,			'- none -');
-				fillSelect(el('plBirthsign'),	BIRTHSIGN_NAMES,	'- none -');
-				fillSelect(el('plBackground'),	BACKGROUND_NAMES,	'- none -');
-				fillSelect(el('plTrait1'),		TRAIT_NAMES,		'- none -');
-				fillSelect(el('plTrait2'),		TRAIT_NAMES,		'- none -');
+				function backgroundTooltipText(bg) {
+					const lines = [];
+					SKILL_NAMES.forEach(skill => {
+						const level = (BACKGROUND_GRANTS[skill] || {})[bg];
+						if (level && level !== '- none -') lines.push(`${skill}: ${level}`);
+					});
+
+					return lines.join('\n');
+				}
+
+				function fillSelect(sel, names, placeholder, titleFn) {
+					sel.innerHTML = `<option value="">${placeholder}</option>` + names.map(n =>
+						`<option value="${escapeHtml(n)}" title="${escapeHtml(titleFn ? titleFn(n) : '')}">${escapeHtml(n)}</option>`
+					).join('');
+				}
+
+				fillSelect(el('plRace'),		RACE_NAMES,			'- none -',	n => statBonusTooltipText(RACES[n]));
+				fillSelect(el('plBirthsign'),	BIRTHSIGN_NAMES,	'- none -',	n => statBonusTooltipText(BIRTHSIGNS[n]));
+				fillSelect(el('plBackground'),	BACKGROUND_NAMES,	'- none -',	n => backgroundTooltipText(n));
+				fillSelect(el('plTrait1'),		TRAIT_NAMES,		'- none -',	n => statBonusTooltipText(TRAITS[n]));
+				fillSelect(el('plTrait2'),		TRAIT_NAMES,		'- none -',	n => statBonusTooltipText(TRAITS[n]));
 
 				el('plRace').value				= pState.race					|| '';
 				el('plBirthsign').value			= pState.birthsign				|| '';
@@ -4210,7 +4231,7 @@
 
 				function refreshSubraceOptions() {
 					const list = SUBRACES[pState.race] || [];
-					fillSelect(el('plSubrace'), list, '- none -');
+					fillSelect(el('plSubrace'), list, '- none -', n => statBonusTooltipText(SUBRACE_ATTRS[n]));
 					el('plSubrace').value = pState.subrace || '';
 					if (el('plSubrace')._cselRefresh) el('plSubrace')._cselRefresh();
 				}
@@ -4832,7 +4853,9 @@
 
 							variantSel = `<select class="pl-gear-variant" data-slot="${slot.key}">
 								<option value="">- pick -</option>
-								${cands.map(n => `<option value="${escapeHtml(n)}" ${g.itemName===n?'selected':''}>${escapeHtml(n)}</option>`).join('')}
+								${cands.map(n =>
+									`<option value="${escapeHtml(n)}" title="${escapeHtml(ITEMS[n].stats)}" ${g.itemName===n?'selected':''}>${escapeHtml(n)}</option>`
+								).join('')}
 							</select>`;
 
 							item = g.itemName ? ITEMS[g.itemName] : null;
@@ -4854,19 +4877,25 @@
 								const opts = mods.filter(m => !chosenMods.some((v, idx) => v===m.name && idx!==i));
 								return `<select class="pl-gear-mod" data-slot="${slot.key}" data-idx="${i}">
 									<option value="">- none -</option>
-									${opts.map(m => `<option value="${escapeHtml(m.name)}" ${m.name===current?'selected':''}>${escapeHtml(m.name)}</option>`).join('')}
+									${opts.map(m =>
+										`<option value="${escapeHtml(m.name)}" title="${escapeHtml(m.effect)}" ${m.name===current?'selected':''}>${escapeHtml(m.name)}</option>`
+									).join('')}
 								</select>`;
 							}).join(' ');
 
 							enchantHtml = `<select class="pl-gear-enchant" data-slot="${slot.key}">
 								<option value="">- none -</option>
-								${enchants.map(en => `<option value="${escapeHtml(en.name)}" ${g.enchant===en.name?'selected':''}>${escapeHtml(en.name)}</option>`).join('')}
+								${enchants.map(en =>
+									`<option value="${escapeHtml(en.name)}" title="${escapeHtml(en.effect)}" ${g.enchant===en.name?'selected':''}>${escapeHtml(en.name)}</option>`
+								).join('')}
 							</select>`;
 
 							legendaryHtml = isMasterwork(item)
 								? `<select class="pl-gear-legendary" data-slot="${slot.key}">
 									<option value="">- none -</option>
-									${legendaries.map(le => `<option value="${escapeHtml(le.name)}" ${g.legendary===le.name?'selected':''}>${escapeHtml(le.name)}</option>`).join('')}
+									${legendaries.map(le =>
+										`<option value="${escapeHtml(le.name)}" title="${escapeHtml(le.effect)}" ${g.legendary===le.name?'selected':''}>${escapeHtml(le.name)}</option>`
+									).join('')}
 								</select>`
 								: `<span class="tag">requires Masterwork</span>`
 							;
@@ -4971,6 +5000,26 @@
 					;
 				}
 
+				function techniqueTooltipText(t) {
+					const lines = [
+						['Action',			t.action],
+						['Stamina',			t.stamina],
+						['Magicka',			t.magicka],
+						['Potential',		t.potential],
+						['Targets',			t.targets],
+						['Range',			t.range],
+						['Damage',			t.damage],
+						['Healing',			t.healing],
+						['Hit Skill',		t.hitskill],
+						['DC Type',			t.dctype],
+						['Damage Type',		t.damagetype],
+						['Resistance',		t.resistance],
+						['Conditions',		t.conditions],
+						['Chance',			t.chance]
+					].filter(([, value]) => value && value !== '-');
+					return lines.map(([label, value]) => `${label}: ${value}`).join('\n');
+				}
+
 				function renderSpells() {
 					const search = (el('plSpellSearch').value || '').toLowerCase();
 					const skillFilter = el('plSpellSkillFilter').value;
@@ -4989,19 +5038,20 @@
 					});
 
 					el('plSpellsBody').innerHTML = rows.map(t => {
-						const parentIds	= TECHNIQUE_PARENTS_BY_CHILD[t.id] || [];
-						const isChild	= parentIds.length > 0;
-						const known		= isChild ? parentIds.some(pid => !!pState.knownSpells[pid]) : !!pState.knownSpells[t.id];
-						const skillIdx	= skillFinalLevelIdx(t.skill);
-						const reqIdx	= levelIndex(t.proficiency);
-						const meetsReq	= skillIdx >= reqIdx;
-						const viaTag	= isChild ? ` <span class="tag" title="Included automatically by ${escapeHtml(parentIds.join(', '))}">via ${escapeHtml(parentIds.join(', '))}</span>` : '';
-						const locked	= isChild || !meetsReq;
-						return `<tr style="${meetsReq ? '' : 'opacity:.5;'}">
+						const parentIds		= TECHNIQUE_PARENTS_BY_CHILD[t.id] || [];
+						const isChild		= parentIds.length > 0;
+						const known			= isChild ? parentIds.some(pid => !!pState.knownSpells[pid]) : !!pState.knownSpells[t.id];
+						const skillIdx		= skillFinalLevelIdx(t.skill);
+						const reqIdx		= levelIndex(t.proficiency);
+						const meetsReq		= skillIdx >= reqIdx;
+						const viaTag		= isChild ? ` <span class="tag" title="Included automatically by ${escapeHtml(parentIds.join(', '))}">via ${escapeHtml(parentIds.join(', '))}</span>` : '';
+						const locked		= isChild || !meetsReq;
+						const statsTitle	= techniqueTooltipText(t);
+						return `<tr style="${meetsReq ? '' : 'opacity:.5;'}" title="${escapeHtml(statsTitle)}">
 							<td><input type="checkbox" class="pl-spell-check" data-id="${t.id}" ${known?'checked':''} ${locked?'disabled':''}></td>
 							<td class="row-name">${escapeHtml(t.name)}${viaTag}</td>
 							<td>${escapeHtml(t.skill)}</td>
-							<td>${escapeHtml(t.proficiency)}${meetsReq ? '' : ' <span class="tag">not yet met</span>'}</td>
+							<td>${escapeHtml(t.proficiency)}</td>
 							<td>${escapeHtml(t.attribute)}</td>
 							<td>${t.lp}</td>
 						</tr>`;
