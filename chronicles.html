@@ -916,6 +916,17 @@
 							'Master':		{ cost: '3',	value: '+1',	effect: '' },
 						},
 					},
+					'Slashing': {
+						attribute: 'Strength',
+						levels: {
+							'Novice':		{ cost: '1',	value: '+1',	effect: '' },
+							'Apprentice':	{ cost: '1',	value: '',		effect: '' },
+							'Journeyman':	{ cost: '2',	value: '+1',	effect: '' },
+							'Adept':		{ cost: '2',	value: '+1',	effect: 'Gives FIRE as a permanent damage type in Encounter Battles' },
+							'Expert':		{ cost: '3',	value: '+1',	effect: '' },
+							'Master':		{ cost: '3',	value: '+2',	effect: '' },
+						},
+					},
 					'Blunt': {
 						attribute: 'Strength',
 						levels: {
@@ -934,17 +945,6 @@
 							'Apprentice':	{ cost: '1',	value: '',		effect: '' },
 							'Journeyman':	{ cost: '2',	value: '+1',	effect: '' },
 							'Adept':		{ cost: '2',	value: '+1',	effect: 'Gives SHOCK as a permanent damage type in Encounter Battles' },
-							'Expert':		{ cost: '3',	value: '+1',	effect: '' },
-							'Master':		{ cost: '3',	value: '+2',	effect: '' },
-						},
-					},
-					'Slashing': {
-						attribute: 'Strength',
-						levels: {
-							'Novice':		{ cost: '1',	value: '+1',	effect: '' },
-							'Apprentice':	{ cost: '1',	value: '',		effect: '' },
-							'Journeyman':	{ cost: '2',	value: '+1',	effect: '' },
-							'Adept':		{ cost: '2',	value: '+1',	effect: 'Gives FIRE as a permanent damage type in Encounter Battles' },
 							'Expert':		{ cost: '3',	value: '+1',	effect: '' },
 							'Master':		{ cost: '3',	value: '+2',	effect: '' },
 						},
@@ -2134,12 +2134,9 @@
 					'Master':				6
 				},
 				DAMAGES: {
-					'Slashing Damage':		'Slashing',
-					'Piercing Damage':		'Piercing',
-					'Blunt Damage':			'Blunt',
-					'Fire Damage':			'Destruction',
-					'Frost Damage':			'Destruction',
-					'Shock Damage':			'Destruction'
+					'Fire Damage':			'Spell Potency',
+					'Frost Damage':			'Spell Potency',
+					'Shock Damage':			'Spell Potency'
 				},
 				SCALE: {
 					'Block':				0.5,
@@ -2226,7 +2223,11 @@
 					'All Spell Schools': [
 						'Destruction',	'Conjuration',	'Illusion',
 						'Restoration',	'Alteration',	'Mysticism'
-					]
+					],
+
+					'Blunt Damage':			['Blunt'],
+					'Slashing Damage':		['Slashing'],
+					'Piercing Damage':		['Piercing']
 				}
 			};
 
@@ -4541,7 +4542,9 @@
 						+ raceStat(skill)
 						+ subraceStat(skill)
 						+ birthsignStat(skill)
+						+ traitsStat(skill)
 						+ gearStat(skill)
+						+ newJourneyStat(skill)
 					;
 				}
 
@@ -4624,7 +4627,7 @@
 							const bgIdx		= levelIndex(bgLevel);
 							const chosen	= pState.skillLevels[skill] || noneDisplay;
 							const finalIdx	= Math.max(bgIdx, levelIndex(chosen));
-							const value		= skillCumulativeValue(skill, finalIdx) + skillAttrBonus(skill, attr) + raceStat(skill) + subraceStat(skill) + birthsignStat(skill) + gearStat(skill);
+							const value		= skillTotalValue(skill);
 							const cost		= skillCostFrom(skill, bgIdx, finalIdx);
 							const opts		= tierOptionsHtml(SKILL.TIERS, tierNameFromIndex(finalIdx), i => i >= bgIdx);
 							const finalTier	= tierNameFromIndex(finalIdx);
@@ -4737,6 +4740,8 @@
 					});
 
 					Object.entries(STAT.ROWS).forEach(([label, row]) => {
+						const aliasTargets = STAT.ALIASES[label];
+						if (aliasTargets && aliasTargets.length === 1) totals[label] += skillTotalValue(aliasTargets[0]);
 						if (typeof row.cap === 'number') totals[label] = Math.min(totals[label], row.cap);
 					});
 
@@ -4763,9 +4768,9 @@
 					];
 
 					el('plStatsGrid').innerHTML = groupOrder.map(g => {
-						const cols		= (STAT.LAYOUT.columns	&& STAT.LAYOUT.columns[g])	|| 1;
-						const rowsHtml	= groups[g].map(row => {
-							const total		= totals[row.label];
+						const cols = (STAT.LAYOUT.columns && STAT.LAYOUT.columns[g]) || 1;
+						const rowsHtml = groups[g].map(row => {
+							const total = totals[row.label];
 							return `<div class="field">
 								<label>${escapeHtml(row.label)}</label>
 								<div class="stat-group-cell padding-top-fix">
