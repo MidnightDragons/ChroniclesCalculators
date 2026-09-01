@@ -2103,7 +2103,7 @@
 			const AP = {
 				START:	12,
 				BONUS:	2
-			}
+			};
 
 			// Perk Points
 			const PP = {
@@ -2111,12 +2111,12 @@
 				NJ:		2,
 				BG:		0,
 				LEVEL:	2
-			}
+			};
 
 			// Levels
 			const LEVEL = {
 				MAX: 20
-			}
+			};
 
 			// Total AP & PP
 			AP.TOTAL = AP.START + AP.BONUS;
@@ -2125,172 +2125,174 @@
 			// Skills
 			const SKILL = {
 				TIERS: {
-					[noneDisplay]:	0,
-					'Novice':		1,
-					'Apprentice':	2,
-					'Journeyman':	3,
-					'Adept':		4,
-					'Expert':		5,
-					'Master':		6
+					[noneDisplay]:			0,
+					'Novice':				1,
+					'Apprentice':			2,
+					'Journeyman':			3,
+					'Adept':				4,
+					'Expert':				5,
+					'Master':				6
+				},
+				DAMAGES: {
+					'Slashing Damage':		'Slashing',
+					'Piercing Damage':		'Piercing',
+					'Blunt Damage':			'Blunt',
+					'Fire Damage':			'Destruction',
+					'Frost Damage':			'Destruction',
+					'Shock Damage':			'Destruction'
+				},
+				SCALE: {
+					'Block':				0.5,
+					'Dodge':				0.5
+				},
+				START: {
+					'Vampirism':			4,
+					'Lycanthropy':			4
+				},
+				MIN: {
+					'Accuracy':				-5,
+					'Damage':				-5,
+					'Fire Damage':			-5,
+					'Frost Damage':			-5,
+					'Shock Damage':			-5,
+					'Physical Resistance':	-5,
+					'Magic Resistance':		-5,
+					'Fire Resistance':		-5,
+					'Frost Resistance':		-5,
+					'Shock Resistance':		-5,
+					'Defense':				-5,
+					'Resilience':			-3,
+					'Speed':				-3
 				}
-			}
-
-			const ATTR_START = 0;
-			const ATTR_NAMES = ['Strength', 'Endurance', 'Agility', 'Intelligence', 'Willpower', 'Personality'];
-			const ATTR_TICK_COST = [1, 1, 2];
-
-			const SKILL_ATTR_SCALE = {
-				'Block': 0.5,
-				'Dodge': 0.5
 			};
 
-			const SKILL_ATTR_START = {
-				'Vampirism':	4,
-				'Lycanthropy':	4
+			const ATTR = {
+				NAMES: ['Strength', 'Endurance', 'Agility', 'Intelligence', 'Willpower', 'Personality'],
+				TICK: [1, 1, 2],
+				START: 0
 			};
 
-			const SKILL_ATTR_MIN = {
-				'Accuracy':				-5,
-				'Damage':				-5,
-				'Fire Damage':			-5,
-				'Frost Damage':			-5,
-				'Shock Damage':			-5,
-				'Physical Resistance':	-5,
-				'Magic Resistance':		-5,
-				'Fire Resistance':		-5,
-				'Frost Resistance':		-5,
-				'Shock Resistance':		-5,
-				'Defense':				-5,
-				'Resilience':			-3,
-				'Speed':				-3
+			const STAT = {
+				LAYOUT: {
+					order: [
+						'Resources',				'Offense / Defense',
+						'Physical Resistances',		'Magic Resistances',
+						'Physical Damages',			'Magic Damages',
+						'Mobility',					'Misc'
+					],
+					columns: {
+						'Resources': 2,				'Offense / Defense': 2,
+						'Physical Resistances': 1,	'Magic Resistances': 1,
+						'Physical Damages': 1,		'Magic Damages': 1,
+						'Mobility': 2,				'Misc': 2
+					}
+				},
+				ROWS: {
+					'Health':				{ group: 'Resources',				default: 60,	attrBonus: [['Endurance', 5], ['Willpower', 2]] },
+					'Stamina':				{ group: 'Resources',				default: 50,	attrBonus: [['Endurance', 5]] },
+					'Magicka':				{ group: 'Resources',				default: 50,	attrBonus: [['Willpower', 5]] },
+					'Potential':			{ group: 'Resources',				default: 9,		attrBonus: [['Personality', 2]] },
+
+					'Damage':				{ group: 'Offense / Defense',		default: 0 },
+					'Accuracy':				{ group: 'Offense / Defense',		default: 0 },
+					'Defense':				{ group: 'Offense / Defense',		default: 11 },
+					'Resilience':			{ group: 'Offense / Defense',		default: 0 },
+
+					'Physical Resistance':	{ group: 'Physical Resistances',	default: 0,		attrBonus: [['Strength', 1]] },
+					'Slashing Resistance':	{ group: 'Physical Resistances',	default: 0 },
+					'Piercing Resistance':	{ group: 'Physical Resistances',	default: 0 },
+					'Blunt Resistance':		{ group: 'Physical Resistances',	default: 0 },
+
+					'Magic Resistance':		{ group: 'Magic Resistances',		default: 0,		attrBonus: [['Intelligence', 1]] },
+					'Fire Resistance':		{ group: 'Magic Resistances',		default: 0 },
+					'Frost Resistance':		{ group: 'Magic Resistances',		default: 0 },
+					'Shock Resistance':		{ group: 'Magic Resistances',		default: 0 },
+
+					'Slashing Damage':		{ group: 'Physical Damages',		default: 0 },
+					'Piercing Damage':		{ group: 'Physical Damages',		default: 0 },
+					'Blunt Damage':			{ group: 'Physical Damages',		default: 0 },
+
+					'Fire Damage':			{ group: 'Magic Damages',			default: 0 },
+					'Frost Damage':			{ group: 'Magic Damages',			default: 0 },
+					'Shock Damage':			{ group: 'Magic Damages',			default: 0 },
+
+					'Movement':				{ group: 'Mobility',				default: 3,		speedBonus: 1 },
+					'Speed':				{ group: 'Mobility',				default: 0 },
+
+					'Luck':					{ group: 'Misc',					default: 1 },
+					'Fate':					{ group: 'Misc',					default: 1 }
+				},
+				ALIASES: {
+					'All Spell Schools': [
+						'Destruction',	'Conjuration',	'Illusion',
+						'Restoration',	'Alteration',	'Mysticism'
+					]
+				}
 			};
 
-			const SKILL_DAMAGES = {
-				'Slashing Damage':	'Slashing',
-				'Piercing Damage':	'Piercing',
-				'Blunt Damage':		'Blunt',
-				'Fire Damage':		'Destruction',
-				'Frost Damage':		'Destruction',
-				'Shock Damage':		'Destruction'
+			const GEAR = {
+				SLOTS: [
+					{key: 'mainHand',	label: 'Main-Hand',	types: [
+						{label: '1H Slashing',	category: '1H Weapons',		subtype: 'slashing'},
+						{label: '1H Piercing',	category: '1H Weapons',		subtype: 'piercing'},
+						{label: '1H Blunt',		category: '1H Weapons',		subtype: 'blunt'},
+						{label: '2H Slashing',	category: '2H Weapons',		subtype: 'slashing'},
+						{label: '2H Piercing',	category: '2H Weapons',		subtype: 'piercing'},
+						{label: '2H Blunt',		category: '2H Weapons',		subtype: 'blunt'},
+						{label: 'Bow',			category: 'Bows',			subtype: ''},
+						{label: 'Staff',		category: 'Staves',			subtype: ''}
+					]},
+					{key: 'offHand',	label: 'Off-Hand',	types: [
+						{label: 'Shield',		category: 'Shields',		subtype: ''},
+						{label: 'Talisman',		category: 'Talismans',		subtype: ''}
+					]},
+					{key: 'armor',		label: 'Armor',		types: [
+						{label: 'Light',		category: 'Light Armor',	subtype: ''},
+						{label: 'Medium',		category: 'Medium Armor',	subtype: ''},
+						{label: 'Heavy',		category: 'Heavy Armor',	subtype: ''}
+					]},
+					{key: 'clothing',	label: 'Clothing',	types: [
+						{label: 'Clothes',		category: 'Clothes',		subtype: ''},
+						{label: 'Robes',		category: 'Robes',			subtype: ''}
+					]},
+					{key: 'ring',		label: 'Ring',		types: [
+						{label: 'Ring',			category: 'Rings',			subtype: ''}
+					]},
+					{key: 'amulet',		label: 'Amulet',	types: [
+						{label: 'Amulet',		category: 'Amulets',		subtype: ''}
+					]},
+					{key: 'flask1',		label: 'Flask 1',	types: [
+						{label: 'Flask',		category: 'Potion Flasks',	subtype: ''}
+					]},
+					{key: 'flask2',		label: 'Flask 2',	types: [
+						{label: 'Flask',		category: 'Potion Flasks',	subtype: ''}
+					]}
+				]
 			};
 
-			const STAT_GROUP_LAYOUT = {
-				order: [
-					'Resources',				'Offense / Defense',
-					'Physical Resistances',		'Magic Resistances',
-					'Physical Damages',			'Magic Damages',
-					'Mobility',					'Misc'
+			const XP = {
+				THRESHOLDS: [
+					{ min: 19,	xp: 1000 },
+					{ min: 18,	xp: 700 },
+					{ min: 17,	xp: 450 },
+					{ min: 15,	xp: 300 },
+					{ min: 10,	xp: 150 },
+					{ min: 0,	xp: 100 }
 				],
-				columns: {
-					'Resources': 2,				'Offense / Defense': 2,
-					'Physical Resistances': 1,	'Magic Resistances': 1,
-					'Physical Damages': 1,		'Magic Damages': 1,
-					'Mobility': 2,				'Misc': 2
-				}
+				DIFFICULTIES: {
+					Easy:		{ dr: -2,	hp: 0 },
+					Medium:		{ dr: 0,	hp: 0 },
+					Hard:		{ dr: 2,	hp: 1 },
+					Perilous:	{ dr: 4,	hp: 2 },
+					Lethal:		{ dr: 6,	hp: 3 }
+				},
+				BIOMES: [
+					"Mountains",	"Jungle",		"Desert",
+					"Cave",			"Tundra",		"Forest",
+					"Plains",		"Urban",		"Ayleid",
+					"Dwemer",		"Oblivion",		"Aquatic"
+				]
 			};
-
-			const STAT_ROWS = {
-				'Health':				{ group: 'Resources',				default: 60,	attrBonus: [['Endurance', 5], ['Willpower', 2]] },
-				'Stamina':				{ group: 'Resources',				default: 50,	attrBonus: [['Endurance', 5]] },
-				'Magicka':				{ group: 'Resources',				default: 50,	attrBonus: [['Willpower', 5]] },
-				'Potential':			{ group: 'Resources',				default: 9,		attrBonus: [['Personality', 2]] },
-
-				'Damage':				{ group: 'Offense / Defense',		default: 0 },
-				'Accuracy':				{ group: 'Offense / Defense',		default: 0 },
-				'Defense':				{ group: 'Offense / Defense',		default: 11 },
-				'Resilience':			{ group: 'Offense / Defense',		default: 0 },
-
-				'Physical Resistance':	{ group: 'Physical Resistances',	default: 0,		attrBonus: [['Strength', 1]] },
-				'Slashing Resistance':	{ group: 'Physical Resistances',	default: 0 },
-				'Piercing Resistance':	{ group: 'Physical Resistances',	default: 0 },
-				'Blunt Resistance':		{ group: 'Physical Resistances',	default: 0 },
-
-				'Magic Resistance':		{ group: 'Magic Resistances',		default: 0,		attrBonus: [['Intelligence', 1]] },
-				'Fire Resistance':		{ group: 'Magic Resistances',		default: 0 },
-				'Frost Resistance':		{ group: 'Magic Resistances',		default: 0 },
-				'Shock Resistance':		{ group: 'Magic Resistances',		default: 0 },
-
-				'Slashing Damage':		{ group: 'Physical Damages',		default: 0 },
-				'Piercing Damage':		{ group: 'Physical Damages',		default: 0 },
-				'Blunt Damage':			{ group: 'Physical Damages',		default: 0 },
-
-				'Fire Damage':			{ group: 'Magic Damages',			default: 0 },
-				'Frost Damage':			{ group: 'Magic Damages',			default: 0 },
-				'Shock Damage':			{ group: 'Magic Damages',			default: 0 },
-
-				'Movement':				{ group: 'Mobility',				default: 3,		speedBonus: 1 },
-				'Speed':				{ group: 'Mobility',				default: 0 },
-
-				'Luck':					{ group: 'Misc',					default: 1 },
-				'Fate':					{ group: 'Misc',					default: 1 }
-			};
-
-			const GEAR_STAT_ALIASES = {'All Spell Schools': [
-				'Destruction',	'Conjuration',	'Illusion',
-				'Restoration',	'Alteration',	'Mysticism'
-			]};
-
-			const GEAR_SLOTS = [
-				{key: 'mainHand',	label: 'Main-Hand',	types: [
-					{label: '1H Slashing',	category: '1H Weapons',		subtype: 'slashing'},
-					{label: '1H Piercing',	category: '1H Weapons',		subtype: 'piercing'},
-					{label: '1H Blunt',		category: '1H Weapons',		subtype: 'blunt'},
-					{label: '2H Slashing',	category: '2H Weapons',		subtype: 'slashing'},
-					{label: '2H Piercing',	category: '2H Weapons',		subtype: 'piercing'},
-					{label: '2H Blunt',		category: '2H Weapons',		subtype: 'blunt'},
-					{label: 'Bow',			category: 'Bows',			subtype: ''},
-					{label: 'Staff',		category: 'Staves',			subtype: ''}
-				]},
-				{key: 'offHand',	label: 'Off-Hand',	types: [
-					{label: 'Shield',		category: 'Shields',		subtype: ''},
-					{label: 'Talisman',		category: 'Talismans',		subtype: ''}
-				]},
-				{key: 'armor',		label: 'Armor',		types: [
-					{label: 'Light',		category: 'Light Armor',	subtype: ''},
-					{label: 'Medium',		category: 'Medium Armor',	subtype: ''},
-					{label: 'Heavy',		category: 'Heavy Armor',	subtype: ''}
-				]},
-				{key: 'clothing',	label: 'Clothing',	types: [
-					{label: 'Clothes',		category: 'Clothes',		subtype: ''},
-					{label: 'Robes',		category: 'Robes',			subtype: ''}
-				]},
-				{key: 'ring',		label: 'Ring',		types: [
-					{label: 'Ring',			category: 'Rings',			subtype: ''}
-				]},
-				{key: 'amulet',		label: 'Amulet',	types: [
-					{label: 'Amulet',		category: 'Amulets',		subtype: ''}
-				]},
-				{key: 'flask1',		label: 'Flask 1',	types: [
-					{label: 'Flask',		category: 'Potion Flasks',	subtype: ''}
-				]},
-				{key: 'flask2',		label: 'Flask 2',	types: [
-					{label: 'Flask',		category: 'Potion Flasks',	subtype: ''}
-				]}
-			];
-
-			const XP_THRESHOLDS = [
-				{ min: 19,	xp: 1000 },
-				{ min: 18,	xp: 700 },
-				{ min: 17,	xp: 450 },
-				{ min: 15,	xp: 300 },
-				{ min: 10,	xp: 150 },
-				{ min: 0,	xp: 100 },
-			];
-
-			const DIFFICULTY_MODIFIERS = {
-				Easy:		{ dr: -2,	hp: 0 },
-				Medium:		{ dr: 0,	hp: 0 },
-				Hard:		{ dr: 2,	hp: 1 },
-				Perilous:	{ dr: 4,	hp: 2 },
-				Lethal:		{ dr: 6,	hp: 3 },
-			};
-
-			const BIOMES = [
-				"Mountains",	"Jungle",		"Desert",
-				"Cave",			"Tundra",		"Forest",
-				"Plains",		"Urban",		"Ayleid",
-				"Dwemer",		"Oblivion",		"Aquatic"
-			];
 		</script>
 
 		<script>
@@ -4010,7 +4012,7 @@
 			}
 
 			function getXPForLevel(level) {
-				for (const t of XP_THRESHOLDS) {
+				for (const t of XP.THRESHOLDS) {
 					if (level >= t.min) return t.xp;
 				}
 
@@ -4093,7 +4095,7 @@
 				});
 
 				const biomeSel = document.getElementById('biome');
-				BIOMES.forEach(b => {
+				XP.BIOMES.forEach(b => {
 					const opt = document.createElement('option');
 					opt.value		= b;
 					opt.textContent	= b;
@@ -4117,7 +4119,7 @@
 
 					const matching		= getMatchingEnemies(biome);
 					const warningEl		= document.getElementById('biomeWarning');
-					const modifier		= DIFFICULTY_MODIFIERS[tierName];
+					const modifier		= XP.DIFFICULTIES[tierName];
 
 					let xpLow = 0, xpAvg = 0, xpHigh = 0;
 
@@ -4487,7 +4489,7 @@
 						while ((match = re.exec(text)) !== null) {
 							const value = parseInt(match[1].replace(/\s+/g, ''), 10);
 							const name = match[2].trim();
-							const targets = GEAR_STAT_ALIASES[name] || [name];
+							const targets = STAT.ALIASES[name] || [name];
 							targets.forEach(t => a.push({ name: t, value }));
 						}
 					});
@@ -4525,10 +4527,10 @@
 				function skillAttrBonus(skill, attr) {
 					if (!attr) return 0;
 
-					const scale	= (skill in SKILL_ATTR_SCALE)	? SKILL_ATTR_SCALE[skill]	: 1;
-					const start	= (skill in SKILL_ATTR_START)	? SKILL_ATTR_START[skill]	: 0;
-					const min	= (skill in SKILL_ATTR_MIN)		? SKILL_ATTR_MIN[skill]		: 0;
-					return Math.max(Math.floor(attrTotal(attr) * scale + start + ATTR_START), min);
+					const scale	= (skill in SKILL.SCALE)	? SKILL.SCALE[skill]	: 1;
+					const start	= (skill in SKILL.START)	? SKILL.START[skill]	: 0;
+					const min	= (skill in SKILL.MIN)		? SKILL.MIN[skill]		: 0;
+					return Math.max(Math.floor(attrTotal(attr) * scale + start + ATTR.START), min);
 				}
 
 				function skillTotalValue(skill) {
@@ -4545,7 +4547,7 @@
 
 				function attrCostTo(level) {
 					let total = 0;
-					for (let i = 0; i < level; i++) total += ATTR_TICK_COST[i];
+					for (let i = 0; i < level; i++) total += ATTR.TICK[i];
 					return total;
 				}
 
@@ -4563,7 +4565,7 @@
 
 				/* ---------- Attributes ---------- */
 				function renderAttributes() {
-					el('plAttrGrid').innerHTML = ATTR_NAMES.map(attr => {
+					el('plAttrGrid').innerHTML = ATTR.NAMES.map(attr => {
 						const level		= attrLevel(attr);
 						const race		= raceStat(attr);
 						const subrace	= subraceStat(attr);
@@ -4717,7 +4719,7 @@
 
 				function renderStats() {
 					const totals = {};
-					Object.entries(STAT_ROWS).forEach(([label, row]) => {
+					Object.entries(STAT.ROWS).forEach(([label, row]) => {
 						const bonus = bonusFor([label]) + attrBonusFor(row);
 						pState.baseStats[label] = row.default;
 
@@ -4726,25 +4728,25 @@
 					});
 
 					const speedTotal = totals['Speed'] || 0;
-					Object.entries(STAT_ROWS).forEach(([label, row]) => {
+					Object.entries(STAT.ROWS).forEach(([label, row]) => {
 						if (row.speedBonus) totals[label] += speedTotal * row.speedBonus;
 					});
 
-					Object.entries(SKILL_DAMAGES).forEach(([label, skill]) => {
+					Object.entries(SKILL.DAMAGES).forEach(([label, skill]) => {
 						totals[label] += skillTotalValue(skill);
 					});
 
-					Object.entries(STAT_ROWS).forEach(([label, row]) => {
+					Object.entries(STAT.ROWS).forEach(([label, row]) => {
 						if (typeof row.cap === 'number') totals[label] = Math.min(totals[label], row.cap);
 					});
 
 					const dodgeVal = skillTotalValue('Dodge');
 					const blockVal = skillTotalValue('Block');
-					totals['Defense'] = Math.max(dodgeVal, blockVal) + STAT_ROWS.Defense.default + bonusFor(['Defense']);
+					totals['Defense'] = Math.max(dodgeVal, blockVal) + STAT.ROWS.Defense.default + bonusFor(['Defense']);
 
 					const groups			= {};
 					const discoveredOrder	= [];
-					Object.entries(STAT_ROWS).forEach(([label, row]) => {
+					Object.entries(STAT.ROWS).forEach(([label, row]) => {
 						const g = row.group || 'Other';
 						if (!groups[g]) {
 							groups[g] = [];
@@ -4754,14 +4756,14 @@
 						groups[g].push({ label, ...row });
 					});
 					
-					const explicitOrder = STAT_GROUP_LAYOUT.order || [];
+					const explicitOrder = STAT.LAYOUT.order || [];
 					const groupOrder = [
 						...explicitOrder.filter(g	=> groups[g]),
 						...discoveredOrder.filter(g	=> !explicitOrder.includes(g))
 					];
 
 					el('plStatsGrid').innerHTML = groupOrder.map(g => {
-						const cols		= (STAT_GROUP_LAYOUT.columns	&& STAT_GROUP_LAYOUT.columns[g])	|| 1;
+						const cols		= (STAT.LAYOUT.columns	&& STAT.LAYOUT.columns[g])	|| 1;
 						const rowsHtml	= groups[g].map(row => {
 							const total		= totals[row.label];
 							return `<div class="field">
@@ -4792,7 +4794,7 @@
 				/* ---------- Points totals ---------- */
 				function renderPoints() {
 					let attrSpent = 0;
-					ATTR_NAMES.forEach(attr => {
+					ATTR.NAMES.forEach(attr => {
 						attrSpent += attrCostTo(attrLevel(attr));
 					});
 
@@ -4830,7 +4832,7 @@
 
 				function renderGear() {
 					const mainHandBlocksOffHand = isTwoHanded((pState.gear.mainHand || {}).typeLabel);
-					el('plGearBody').innerHTML = GEAR_SLOTS.map(slot => {
+					el('plGearBody').innerHTML = GEAR.SLOTS.map(slot => {
 						const g = pState.gear[slot.key] || (pState.gear[slot.key] = {});
 						if (slot.key === 'offHand' && mainHandBlocksOffHand) {
 							pState.gear.offHand = {};
