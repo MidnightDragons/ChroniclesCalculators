@@ -2921,19 +2921,22 @@
 						const item = ITEMS[n];
 						const expanded = expandedInvItems.has(n);
 						const mainRow = `
-						<tr>
-							<td class="row-name">${escapeHtml(n)}${item?customSummary(state.invCustomizations[n]):''}</td>
-							<td><input type="number" class="qty-input inv-qty" data-name="${escapeHtml(n)}" value="${state.inventory[n]}" min="0"></td>
-							<td>
-								${item ? `<button class="secondary small customize-toggle-inv" data-name="${escapeHtml(n)}" title="Modifications / Enchantments / Legendary">${expanded?'▲':'▼'}</button>` : ''}
-								<button class="danger small inv-remove" data-name="${escapeHtml(n)}">X</button>
-							</td>
-						</tr>`;
+							<tr>
+								<td class="row-name">${escapeHtml(n)}${item?customSummary(state.invCustomizations[n]):''}</td>
+								<td><input type="number" class="qty-input inv-qty" data-name="${escapeHtml(n)}" value="${state.inventory[n]}" min="0"></td>
+								<td>
+									${item ? `<button class="secondary small customize-toggle-inv" data-name="${escapeHtml(n)}" title="Modifications / Enchantments / Legendary">${expanded?'▲':'▼'}</button>` : ''}
+									<button class="danger small inv-remove" data-name="${escapeHtml(n)}">X</button>
+								</td>
+							</tr>
+						`;
 
 						const detailRow = (item && expanded) ? `
-						<tr class="customize-row">
-							<td colspan="3">${renderCustomizePanel(n, item, getCustom(n, state.invCustomizations))}</td>
-						</tr>` : '';
+							<tr class="customize-row">
+								<td colspan="3">${renderCustomizePanel(n, item, getCustom(n, state.invCustomizations))}</td>
+							</tr>
+						` : '';
+
 						return mainRow + detailRow;
 					}).join('');
 
@@ -3035,19 +3038,22 @@
 						const item = ITEMS[n];
 						const expanded = expandedCraftItems.has(n);
 						const mainRow = `
-						<tr>
-							<td class="row-name">${escapeHtml(n)}<span class="tag">${escapeHtml(item.category)}${item.tier ? ' · T'+escapeHtml(item.tier) : ''}</span>${customSummary(state.customizations[n])}</td>
-							<td><input type="number" class="qty-input craft-qty" data-name="${escapeHtml(n)}" value="${state.craftList[n]}" min="1"></td>
-							<td>
-								<button class="secondary small customize-toggle" data-name="${escapeHtml(n)}" title="Modifications / Enchantments / Legendary">${expanded?'▲':'▼'}</button>
-								<button class="danger small craft-remove" data-name="${escapeHtml(n)}">X</button>
-							</td>
-						</tr>`;
+							<tr>
+								<td class="row-name">${escapeHtml(n)}<span class="tag">${escapeHtml(item.category)}${item.tier ? ' · T'+escapeHtml(item.tier) : ''}</span>${customSummary(state.customizations[n])}</td>
+								<td><input type="number" class="qty-input craft-qty" data-name="${escapeHtml(n)}" value="${state.craftList[n]}" min="1"></td>
+								<td>
+									<button class="secondary small customize-toggle" data-name="${escapeHtml(n)}" title="Modifications / Enchantments / Legendary">${expanded?'▲':'▼'}</button>
+									<button class="danger small craft-remove" data-name="${escapeHtml(n)}">X</button>
+								</td>
+							</tr>
+						`;
 
 						const detailRow = expanded ? `
-						<tr class="customize-row">
-							<td colspan="3">${renderCustomizePanel(n, item, getCustom(n))}</td>
-						</tr>` : '';
+							<tr class="customize-row">
+								<td colspan="3">${renderCustomizePanel(n, item, getCustom(n))}</td>
+							</tr>
+						` : '';
+
 						return mainRow + detailRow;
 					}).join('');
 
@@ -3316,18 +3322,22 @@
 						const expanded	= expandedFavItems.has(entry.id);
 						const custom	= getCustom(entry.id, state.favCustomizations);
 						const mainRow	= `
-						<tr>
-							<td class="row-name">${escapeHtml(entry.name)}<span class="tag">${escapeHtml(item ? item.category : '')}</span>${item?customSummary(custom):''}</td>
-							<td>
-								<button class="small fav-add-craft" data-id="${escapeHtml(entry.id)}" data-name="${escapeHtml(entry.name)}" title="Add to craft">+</button>
-								${item ? `<button class="secondary small customize-toggle-fav" data-id="${escapeHtml(entry.id)}" title="Modifications / Enchantments / Legendary">${expanded?'▲':'▼'}</button>` : ''}
-								<button class="danger small fav-remove" data-id="${escapeHtml(entry.id)}">X</button>
-							</td>
-						</tr>`;
+							<tr>
+								<td class="row-name">${escapeHtml(entry.name)}<span class="tag">${escapeHtml(item ? item.category : '')}</span>${item?customSummary(custom):''}</td>
+								<td>
+									<button class="small fav-add-craft" data-id="${escapeHtml(entry.id)}" data-name="${escapeHtml(entry.name)}" title="Add to craft">+</button>
+									${item ? `<button class="secondary small customize-toggle-fav" data-id="${escapeHtml(entry.id)}" title="Modifications / Enchantments / Legendary">${expanded?'▲':'▼'}</button>` : ''}
+									<button class="danger small fav-remove" data-id="${escapeHtml(entry.id)}">X</button>
+								</td>
+							</tr>
+						`;
+
 						const detailRow = (item && expanded) ? `
-						<tr class="customize-row">
-							<td colspan="2">${renderCustomizePanel(entry.id, item, custom)}</td>
-						</tr>` : '';
+							<tr class="customize-row">
+								<td colspan="2">${renderCustomizePanel(entry.id, item, custom)}</td>
+							</tr>
+						` : '';
+
 						return mainRow + detailRow;
 					}).join('');
 
@@ -4505,9 +4515,9 @@
 				}
 
 				function fillSelect(sel, names, placeholder, titleFn) {
-					sel.innerHTML = `<option value="">${placeholder}</option>` + names.map(n =>
-						`<option value="${escapeHtml(n)}" title="${escapeHtml(titleFn ? titleFn(n) : '')}">${escapeHtml(n)}</option>`
-					).join('');
+					sel.innerHTML = `<option value="">${placeholder}</option>` + names.map(n => `
+						<option value="${escapeHtml(n)}" title="${escapeHtml(titleFn ? titleFn(n) : '')}">${escapeHtml(n)}</option>
+					`).join('');
 				}
 
 				fillSelect(el('plRace'),		RACE_NAMES,			noneDisplay,	n => statBonusTooltipText(RACES[n]));
@@ -5091,12 +5101,14 @@
 								return true;
 							});
 
-							variantSel = `<select class="pl-gear-variant" data-slot="${slot.key}">
-								<option value="">- pick -</option>
-								${cands.map(n =>
-									`<option value="${escapeHtml(n)}" title="${escapeHtml(ITEMS[n].stats)}" ${g.itemName===n?'selected':''}>${escapeHtml(n)}</option>`
-								).join('')}
-							</select>`;
+							variantSel = `
+								<select class="pl-gear-variant" data-slot="${slot.key}">
+									<option value="">- pick -</option>
+									${cands.map(n =>
+										`<option value="${escapeHtml(n)}" title="${escapeHtml(ITEMS[n].stats)}" ${g.itemName===n?'selected':''}>${escapeHtml(n)}</option>`
+									).join('')}
+								</select>
+							`;
 
 							item = g.itemName ? ITEMS[g.itemName] : null;
 						}
