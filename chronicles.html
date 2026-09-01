@@ -2108,6 +2108,7 @@
 			// Perk Points
 			const PP = {
 				START:	5,
+				NJ:		2,
 				BG:		0,
 				LEVEL:	2
 			}
@@ -2116,6 +2117,10 @@
 			const LEVEL = {
 				MAX: 20
 			}
+
+			// Total AP & PP
+			AP.TOTAL = AP.START + AP.BONUS;
+			PP.TOTAL = PP.START + PP.BG + PP.LEVEL * LEVEL.MAX;
 
 			// Skills
 			const SKILL = {
@@ -4340,6 +4345,7 @@
 
 				el('plNewJourneyCount').addEventListener('change', () => {
 					pState.newJourneyCount = parseInt(el('plNewJourneyCount').value, 10) || 0;
+					pState.perkPointsAvail = PP.TOTAL + getNewJourneyPP();
 					saveState();
 					renderAll();
 				});
@@ -4419,8 +4425,13 @@
 					return 0;
 				}
 
-				pState.attrPointsAvail = AP.START + AP.BONUS;
-				pState.perkPointsAvail = PP.START + PP.BG + PP.LEVEL * LEVEL.MAX;
+				function getNewJourneyPP() {
+					if (newJourneyCount() > 0) return PP.NJ;
+					return 0;
+				}
+
+				pState.attrPointsAvail = AP.TOTAL;
+				pState.perkPointsAvail = PP.TOTAL + getNewJourneyPP();
 
 				function raceStat(stat)			{ return pState.race		? lookupStat(RACES[pState.race],			stat) : 0; }
 				function subraceStat(stat)		{ return pState.subrace		? lookupStat(SUBRACE_ATTRS[pState.subrace],	stat) : 0; }
