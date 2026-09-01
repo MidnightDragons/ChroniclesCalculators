@@ -2968,7 +2968,7 @@
 						});
 					});
 
-					bindCustomizePanelEvents(tbody, n => getCustom(n, 'inv'));
+					bindCustomizePanelEvents(tbody, n => getCustom(n, state.invCustomizations));
 				}
 
 				/* ---------- Craft list UI ---------- */
@@ -3371,7 +3371,7 @@
 						});
 					});
 
-					bindCustomizePanelEvents(tbody, n => getCustom(n, 'fav'));
+					bindCustomizePanelEvents(tbody, n => getCustom(n, state.favCustomizations));
 				}
 
 				/* ---------- Resolver ---------- */
@@ -3804,7 +3804,37 @@
 				}
 
 				document.getElementById('exportAllBtn').addEventListener('click', () => {
-					const hasAnything = Object.keys(state.inventory).length || Object.keys(state.craftList).length || Object.keys(state.repairList).length || state.favorites.length;
+					let plannerRaw, xpRaw, chroRaw;
+					try { plannerRaw	= localStorage.getItem('plannerState_v1'); }	catch (e) {}
+					try { xpRaw			= localStorage.getItem('xpCalcState_v1'); }		catch (e) {}
+					try { chroRaw		= localStorage.getItem('chroniclesChroMode'); }	catch (e) {}
+
+					let plannerState = null;
+					try { if (plannerRaw) plannerState = JSON.parse(plannerRaw); } catch (e) {}
+					if (plannerState && typeof plannerState === 'object') delete plannerState.baseStats;
+
+					let xpState = null;
+					try { if (xpRaw) xpState = JSON.parse(xpRaw); } catch (e) {}
+
+					const hasPlannerData = plannerState && typeof plannerState === 'object' && (
+						plannerState.race || plannerState.subrace || plannerState.birthsign || plannerState.background || plannerState.trait1 || plannerState.trait2 || plannerState.newJourneyCount
+
+						|| Object.keys(plannerState.skillLevels	|| {}).length
+						|| Object.keys(plannerState.crafting	|| {}).length
+						|| Object.keys(plannerState.attrLevels	|| {}).length
+						|| Object.keys(plannerState.gear		|| {}).length
+						|| Object.keys(plannerState.knownSpells	|| {}).length
+					);
+
+					const hasXpData = xpState && typeof xpState === 'object' && Object.keys(xpState).length > 0;
+					const hasAnything = (
+						Object.keys(state.inventory).length || Object.keys(state.craftList).length || Object.keys(state.repairList).length
+
+						|| state.favorites.length
+						|| hasPlannerData
+						|| hasXpData
+					);
+
 					if (!hasAnything) {
 						alert('Nothing to export yet - add some items first.');
 						return;
@@ -3817,6 +3847,20 @@
 						const enchants	= (c.enchants	|| []).filter(Boolean);
 						if (mods.length || enchants.length || c.legendary) {
 							customizations[n] = {
+								mods,
+								enchants,
+								legendary:	c.legendary	|| null
+							};
+						}
+					});
+
+					const invCustomizations = {};
+					Object.keys(state.invCustomizations || {}).forEach(n => {
+						const c			= state.invCustomizations[n];
+						const mods		= (c.mods		|| []).filter(Boolean);
+						const enchants	= (c.enchants	|| []).filter(Boolean);
+						if (mods.length || enchants.length || c.legendary) {
+							invCustomizations[n] = {
 								mods,
 								enchants,
 								legendary:	c.legendary	|| null
@@ -3837,21 +3881,26 @@
 					});
 
 					const payload = {
-						type:		'crafting-calc-full-backup',
-						version:	1,
-						exportedAt:	new Date().toISOString(),
-						inventory:	{...state.inventory},
-						craftList:	{...state.craftList},
-						repairList:	{...state.repairList},
+						type:				'chronicles-full-backup',
+						version:			2,
+						exportedAt:			new Date().toISOString(),
+						inventory:			{...state.inventory},
+						craftList:			{...state.craftList},
+						repairList:			{...state.repairList},
 						customizations,
-						favorites
+						invCustomizations,
+						favorites,
+						costToggles:		{...(state.costToggles || {})},
+						planner:			plannerState,
+						xpCalc:				xpState,
+						chroMode:			chroRaw || null
 					};
 
 					const blob = new Blob([JSON.stringify(payload, null, 2)], {type: 'application/json'});
 					const url = URL.createObjectURL(blob);
 					const a = document.createElement('a');
 					a.href = url;
-					a.download = 'chro-calc-settings-backup.json';
+					a.download = 'chronicles-full-backup.json';
 					document.body.appendChild(a);
 					a.click();
 					document.body.removeChild(a);
@@ -3909,7 +3958,7 @@
 							});
 						}
 
-						// Customizations
+						// Craft-List Customizations
 						const cleanCustomizations = {};
 						if (parsed.customizations && typeof parsed.customizations === 'object') {
 							Object.entries(parsed.customizations).forEach(([name, raw]) => {
@@ -3918,6 +3967,26 @@
 
 								const c = cleanCustomForItem(item, raw);
 								if (c.mods.length || c.enchants.length || c.legendary) cleanCustomizations[name] = c;
+							});
+						}
+
+						// Inventory Customizations
+						const cleanInvCustomizations = {};
+						if (parsed.invCustomizations && typeof parsed.invCustomizations === 'object') {
+							Object.entries(parsed.invCustomizations).forEach(([name, raw]) => {
+								const item = ITEMS[name];
+								if (!item) return;
+
+								const c = cleanCustomForItem(item, raw);
+								if (c.mods.length || c.enchants.length || c.legendary) cleanInvCustomizations[name] = c;
+							});
+						}
+
+						// Cost Toggles
+						const cleanCostToggles = {};
+						if (parsed.costToggles && typeof parsed.costToggles === 'object') {
+							['includeMods', 'includeEnchant', 'includeLegendary'].forEach(k => {
+								if (typeof parsed.costToggles[k] === 'boolean') cleanCostToggles[k] = parsed.costToggles[k];
 							});
 						}
 
@@ -3933,7 +4002,35 @@
 							});
 						}
 
-						const totalCount = Object.keys(cleanInventory).length + Object.keys(cleanCraftList).length + Object.keys(cleanRepairList).length + cleanFavorites.length;
+						// Build Planner
+						const PLANNER_DICT_FIELDS	= ['skillLevels', 'crafting', 'attrLevels', 'gear', 'knownSpells'];
+						const PLANNER_SCALAR_FIELDS	= ['race', 'subrace', 'birthsign', 'background', 'trait1', 'trait2'];
+						const PLANNER_NUMBER_FIELDS	= ['newJourneyCount'];
+						let cleanPlanner = null;
+						if (parsed.planner && typeof parsed.planner === 'object' && !Array.isArray(parsed.planner)) {
+							cleanPlanner = {};
+							PLANNER_SCALAR_FIELDS.forEach(k => { cleanPlanner[k] = typeof parsed.planner[k] === 'string' ? parsed.planner[k] : ''; });
+							PLANNER_DICT_FIELDS.forEach(k => { cleanPlanner[k] = (parsed.planner[k] && typeof parsed.planner[k] === 'object') ? parsed.planner[k] : {}; });
+							PLANNER_NUMBER_FIELDS.forEach(k => { cleanPlanner[k] = typeof parsed.planner[k] === 'number' ? parsed.planner[k] : 0; });
+						}
+
+						// Experience Calculator
+						let cleanXpCalc = null;
+						if (parsed.xpCalc && typeof parsed.xpCalc === 'object' && !Array.isArray(parsed.xpCalc)) {
+							cleanXpCalc = {...parsed.xpCalc};
+						}
+
+						// Chro Mode
+						const cleanChroMode = (parsed.chroMode === 'enabled' || parsed.chroMode === 'disabled') ? parsed.chroMode : null;
+
+						const totalCount = Object.keys(cleanInventory).length
+							+ Object.keys(cleanCraftList).length
+							+ Object.keys(cleanRepairList).length
+							+ cleanFavorites.length
+							+ (cleanPlanner ? 1 : 0)
+							+ (cleanXpCalc ? 1 : 0)
+						;
+
 						if (!totalCount) {
 							alert('No recognizable data found in that file.');
 							e.target.value='';
@@ -3942,8 +4039,10 @@
 
 						const merge = confirm(
 							`Found: ${Object.keys(cleanInventory).length} inventory item(s), ${Object.keys(cleanCraftList).length} craft list item(s), ` +
-							`${Object.keys(cleanRepairList).length} repair list item(s), ${cleanFavorites.length} Desired Gear item(s).\n\n` +
-							`Click OK to MERGE with what you currently have, or Cancel to REPLACE everything entirely.`
+							`${Object.keys(cleanRepairList).length} repair list item(s), ${cleanFavorites.length} Desired Gear item(s)` +
+							`${cleanPlanner ? ', Build Planner data' : ''}${cleanXpCalc ? ', XP Calculator data' : ''}.\n\n` +
+							`Click OK to MERGE with what you currently have, or Cancel to REPLACE everything entirely.\n\n` +
+							`The page will reload after import to apply everything.`
 						);
 
 						if (!merge) {
@@ -3972,6 +4071,14 @@
 							state.customizations[n] = c;
 						});
 
+						Object.entries(cleanInvCustomizations).forEach(([n, c]) => {
+							state.invCustomizations[n] = c;
+						});
+
+						if (Object.keys(cleanCostToggles).length) {
+							state.costToggles = merge ? {...state.costToggles, ...cleanCostToggles} : {...cleanCostToggles};
+						}
+
 						cleanFavorites.forEach(f => {
 							state.favorites.push({id: f.id, name: f.name});
 							if (f.mods.length || f.enchants.length || f.legendary) {
@@ -3984,12 +4091,42 @@
 						});
 
 						saveState();
-						renderInventory();
-						renderCraftList();
-						renderRepairList();
-						renderFavorites();
-						refreshRepairSelect();
-						e.target.value = '';
+
+						if (cleanPlanner) {
+							try {
+								let current = {};
+								try { current = JSON.parse(localStorage.getItem('plannerState_v1') || '{}') || {}; } catch (err) {}
+
+								let finalPlanner = merge ? {...current} : {...cleanPlanner};
+								if (merge) {
+									PLANNER_SCALAR_FIELDS.forEach(k => { if (cleanPlanner[k]) finalPlanner[k] = cleanPlanner[k]; });
+									PLANNER_DICT_FIELDS.forEach(k => { finalPlanner[k] = {...(current[k] || {}), ...cleanPlanner[k]}; });
+									PLANNER_NUMBER_FIELDS.forEach(k => { if (cleanPlanner[k]) finalPlanner[k] = cleanPlanner[k]; });
+								}
+
+								finalPlanner.baseStats = current.baseStats || {};
+
+								localStorage.setItem('plannerState_v1', JSON.stringify(finalPlanner));
+							} catch (err) {}
+						}
+
+						if (cleanXpCalc) {
+							try {
+								let finalXp = cleanXpCalc;
+								if (merge) {
+									let current = {};
+									try { current = JSON.parse(localStorage.getItem('xpCalcState_v1') || '{}') || {}; } catch (err) {}
+									finalXp = {...current, ...cleanXpCalc};
+								}
+
+								localStorage.setItem('xpCalcState_v1', JSON.stringify(finalXp));
+							} catch (err) {}
+						}
+
+						if (cleanChroMode) try { localStorage.setItem('chroniclesChroMode', cleanChroMode); } catch (err) {}
+
+						alert('Import complete - reloading to apply everything.');
+						location.reload();
 					};
 
 					reader.readAsText(file);
@@ -4925,6 +5062,7 @@
 								overflowTypeHtml	= (mhModSlots > 1 || mhEnchantSlots > 1) ? `<span class="tag"></span>` : `<select disabled><option value="">${noneDisplay}</option></select>`;
 								overflowOtherHtml	= (mhModSlots > 1 || mhEnchantSlots > 1) ? '<span class="tag"></span>' : '<span class="tag">N/A</span>';
 							}
+
 							return `<tr class=>
 								<td class="row-name"></td>
 								<td class="center-text">${overflowTypeHtml}</td>
