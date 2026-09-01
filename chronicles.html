@@ -378,6 +378,12 @@
 
 		<footer><span class="block-line">Meow :3</span></footer>
 
+		<!-- GLOBALS -->
+		<script>
+			const noneDisplay = '- none -';
+		</script>
+
+		<!-- RPR AND STATS -->
 		<script>
 			let CATEGORY_EVERYTHING				= ['Light Armor', 'Medium Armor', 'Heavy Armor', 'Robes', 'Clothes', 'Rings', 'Amulets', 'Shields', 'Talismans', 'Flasks'];
 			let CATEGORY_ALLWEAPONS				= ['1H Weapons, 2H Weapons, Bows, Staves'];
@@ -2029,7 +2035,7 @@
 
 				craftingKnowledge: {
 					'Weaponsmith': {
-						'- none -':		{ cost: '0',	lp: '0',	desc: '' },
+						[noneDisplay]:	{ cost: '0',	lp: '0',	desc: '' },
 						'Novice':		{ cost: '1',	lp: '50',	desc: 'Craft up to T1 weaponry' },
 						'Apprentice':	{ cost: '1',	lp: '0',	desc: '' },
 						'Journeyman':	{ cost: '1',	lp: '100',	desc: 'Craft up to T2 weaponry' },
@@ -2038,7 +2044,7 @@
 						'Master':		{ cost: '2',	lp: '200',	desc: 'Craft up to T4 weaponry' },
 					},
 					'Armorer': {
-						'- none -':		{ cost: '0',	lp: '0',	desc: '' },
+						[noneDisplay]:	{ cost: '0',	lp: '0',	desc: '' },
 						'Novice':		{ cost: '1',	lp: '50',	desc: 'Craft up to T1 armour and shields' },
 						'Apprentice':	{ cost: '1',	lp: '0',	desc: '' },
 						'Journeyman':	{ cost: '1',	lp: '100',	desc: 'Craft up to T2 armour and shields' },
@@ -2047,7 +2053,7 @@
 						'Master':		{ cost: '2',	lp: '200',	desc: 'Craft up to T4 armour and shields' },
 					},
 					'Clothier': {
-						'- none -':		{ cost: '0',	lp: '0',	desc: '' },
+						[noneDisplay]:	{ cost: '0',	lp: '0',	desc: '' },
 						'Novice':		{ cost: '1',	lp: '50',	desc: 'Craft up to T1 robes and clothes' },
 						'Apprentice':	{ cost: '1',	lp: '0',	desc: '' },
 						'Journeyman':	{ cost: '1',	lp: '100',	desc: 'Craft up to T2 robes and clothes' },
@@ -2056,7 +2062,7 @@
 						'Master':		{ cost: '2',	lp: '200',	desc: 'Craft up to T4 robes and clothes' },
 					},
 					'Arcanist': {
-						'- none -':		{ cost: '0',	lp: '0',	desc: '' },
+						[noneDisplay]:	{ cost: '0',	lp: '0',	desc: '' },
 						'Novice':		{ cost: '1',	lp: '50',	desc: 'Craft up to T1 staves, talismans, and enchantments' },
 						'Apprentice':	{ cost: '1',	lp: '0',	desc: '' },
 						'Journeyman':	{ cost: '1',	lp: '100',	desc: 'Craft up to T2 staves, talismans, and enchantments' },
@@ -2065,7 +2071,7 @@
 						'Master':		{ cost: '2',	lp: '200',	desc: 'Craft up to T4 staves, talismans, and enchantments' },
 					},
 					'Steward': {
-						'- none -':		{ cost: '0',	lp: '0',	desc: '' },
+						[noneDisplay]:	{ cost: '0',	lp: '0',	desc: '' },
 						'Novice':		{ cost: '1',	lp: '50',	desc: 'Craft up to T1 food, flasks, poultices, and elixirs' },
 						'Apprentice':	{ cost: '1',	lp: '0',	desc: '' },
 						'Journeyman':	{ cost: '1',	lp: '100',	desc: 'Craft up to T2 food, flasks, poultices, and elixirs' },
@@ -2075,6 +2081,23 @@
 					},
 				},
 			};
+
+			const ALL_ITEM_CATEGORIES = [
+				'Light Armor',
+				'Medium Armor',
+				'Heavy Armor',
+				'Robes',
+				'Clothes',
+				'Staves',
+				'Shields',
+				'1H Weapons',
+				'2H Weapons',
+				'Bows',
+				'Rings',
+				'Amulets',
+				'Talismans',
+				'Potion Flasks'
+			];
 
 			// Attribute Points
 			const AP = {
@@ -2097,7 +2120,7 @@
 			// Skills
 			const SKILL = {
 				TIERS: {
-					'- none -':		0,
+					[noneDisplay]:	0,
 					'Novice':		1,
 					'Apprentice':	2,
 					'Journeyman':	3,
@@ -2106,6 +2129,163 @@
 					'Master':		6
 				}
 			}
+
+			const ATTR_START = 0;
+			const ATTR_NAMES = ['Strength', 'Endurance', 'Agility', 'Intelligence', 'Willpower', 'Personality'];
+			const ATTR_TICK_COST = [1, 1, 2];
+
+			const SKILL_ATTR_SCALE = {
+				'Block': 0.5,
+				'Dodge': 0.5
+			};
+
+			const SKILL_ATTR_START = {
+				'Vampirism':	4,
+				'Lycanthropy':	4
+			};
+
+			const SKILL_ATTR_MIN = {
+				'Accuracy':				-5,
+				'Damage':				-5,
+				'Fire Damage':			-5,
+				'Frost Damage':			-5,
+				'Shock Damage':			-5,
+				'Physical Resistance':	-5,
+				'Magic Resistance':		-5,
+				'Fire Resistance':		-5,
+				'Frost Resistance':		-5,
+				'Shock Resistance':		-5,
+				'Defense':				-5,
+				'Resilience':			-3,
+				'Speed':				-3
+			};
+
+			const SKILL_DAMAGES = {
+				'Slashing Damage':	'Slashing',
+				'Piercing Damage':	'Piercing',
+				'Blunt Damage':		'Blunt',
+				'Fire Damage':		'Destruction',
+				'Frost Damage':		'Destruction',
+				'Shock Damage':		'Destruction'
+			};
+
+			const STAT_GROUP_LAYOUT = {
+				order: [
+					'Resources',				'Offense / Defense',
+					'Physical Resistances',		'Magic Resistances',
+					'Physical Damages',			'Magic Damages',
+					'Mobility',					'Misc'
+				],
+				columns: {
+					'Resources': 2,				'Offense / Defense': 2,
+					'Physical Resistances': 1,	'Magic Resistances': 1,
+					'Physical Damages': 1,		'Magic Damages': 1,
+					'Mobility': 2,				'Misc': 2
+				}
+			};
+
+			const STAT_ROWS = {
+				'Health':				{ group: 'Resources',				default: 60,	attrBonus: [['Endurance', 5], ['Willpower', 2]] },
+				'Stamina':				{ group: 'Resources',				default: 50,	attrBonus: [['Endurance', 5]] },
+				'Magicka':				{ group: 'Resources',				default: 50,	attrBonus: [['Willpower', 5]] },
+				'Potential':			{ group: 'Resources',				default: 9,		attrBonus: [['Personality', 2]] },
+
+				'Damage':				{ group: 'Offense / Defense',		default: 0 },
+				'Accuracy':				{ group: 'Offense / Defense',		default: 0 },
+				'Defense':				{ group: 'Offense / Defense',		default: 11 },
+				'Resilience':			{ group: 'Offense / Defense',		default: 0 },
+
+				'Physical Resistance':	{ group: 'Physical Resistances',	default: 0,		attrBonus: [['Strength', 1]] },
+				'Slashing Resistance':	{ group: 'Physical Resistances',	default: 0 },
+				'Piercing Resistance':	{ group: 'Physical Resistances',	default: 0 },
+				'Blunt Resistance':		{ group: 'Physical Resistances',	default: 0 },
+
+				'Magic Resistance':		{ group: 'Magic Resistances',		default: 0,		attrBonus: [['Intelligence', 1]] },
+				'Fire Resistance':		{ group: 'Magic Resistances',		default: 0 },
+				'Frost Resistance':		{ group: 'Magic Resistances',		default: 0 },
+				'Shock Resistance':		{ group: 'Magic Resistances',		default: 0 },
+
+				'Slashing Damage':		{ group: 'Physical Damages',		default: 0 },
+				'Piercing Damage':		{ group: 'Physical Damages',		default: 0 },
+				'Blunt Damage':			{ group: 'Physical Damages',		default: 0 },
+
+				'Fire Damage':			{ group: 'Magic Damages',			default: 0 },
+				'Frost Damage':			{ group: 'Magic Damages',			default: 0 },
+				'Shock Damage':			{ group: 'Magic Damages',			default: 0 },
+
+				'Movement':				{ group: 'Mobility',				default: 3,		speedBonus: 1 },
+				'Speed':				{ group: 'Mobility',				default: 0 },
+
+				'Luck':					{ group: 'Misc',					default: 1 },
+				'Fate':					{ group: 'Misc',					default: 1 }
+			};
+
+			const GEAR_STAT_ALIASES = {'All Spell Schools': [
+				'Destruction',	'Conjuration',	'Illusion',
+				'Restoration',	'Alteration',	'Mysticism'
+			]};
+
+			const GEAR_SLOTS = [
+				{key: 'mainHand',	label: 'Main-Hand',	types: [
+					{label: '1H Slashing',	category: '1H Weapons',		subtype: 'slashing'},
+					{label: '1H Piercing',	category: '1H Weapons',		subtype: 'piercing'},
+					{label: '1H Blunt',		category: '1H Weapons',		subtype: 'blunt'},
+					{label: '2H Slashing',	category: '2H Weapons',		subtype: 'slashing'},
+					{label: '2H Piercing',	category: '2H Weapons',		subtype: 'piercing'},
+					{label: '2H Blunt',		category: '2H Weapons',		subtype: 'blunt'},
+					{label: 'Bow',			category: 'Bows',			subtype: ''},
+					{label: 'Staff',		category: 'Staves',			subtype: ''}
+				]},
+				{key: 'offHand',	label: 'Off-Hand',	types: [
+					{label: 'Shield',		category: 'Shields',		subtype: ''},
+					{label: 'Talisman',		category: 'Talismans',		subtype: ''}
+				]},
+				{key: 'armor',		label: 'Armor',		types: [
+					{label: 'Light',		category: 'Light Armor',	subtype: ''},
+					{label: 'Medium',		category: 'Medium Armor',	subtype: ''},
+					{label: 'Heavy',		category: 'Heavy Armor',	subtype: ''}
+				]},
+				{key: 'clothing',	label: 'Clothing',	types: [
+					{label: 'Clothes',		category: 'Clothes',		subtype: ''},
+					{label: 'Robes',		category: 'Robes',			subtype: ''}
+				]},
+				{key: 'ring',		label: 'Ring',		types: [
+					{label: 'Ring',			category: 'Rings',			subtype: ''}
+				]},
+				{key: 'amulet',		label: 'Amulet',	types: [
+					{label: 'Amulet',		category: 'Amulets',		subtype: ''}
+				]},
+				{key: 'flask1',		label: 'Flask 1',	types: [
+					{label: 'Flask',		category: 'Potion Flasks',	subtype: ''}
+				]},
+				{key: 'flask2',		label: 'Flask 2',	types: [
+					{label: 'Flask',		category: 'Potion Flasks',	subtype: ''}
+				]}
+			];
+
+			const XP_THRESHOLDS = [
+				{ min: 19,	xp: 1000 },
+				{ min: 18,	xp: 700 },
+				{ min: 17,	xp: 450 },
+				{ min: 15,	xp: 300 },
+				{ min: 10,	xp: 150 },
+				{ min: 0,	xp: 100 },
+			];
+
+			const DIFFICULTY_MODIFIERS = {
+				Easy:		{ dr: -2,	hp: 0 },
+				Medium:		{ dr: 0,	hp: 0 },
+				Hard:		{ dr: 2,	hp: 1 },
+				Perilous:	{ dr: 4,	hp: 2 },
+				Lethal:		{ dr: 6,	hp: 3 },
+			};
+
+			const BIOMES = [
+				"Mountains",	"Jungle",		"Desert",
+				"Cave",			"Tundra",		"Forest",
+				"Plains",		"Urban",		"Ayleid",
+				"Dwemer",		"Oblivion",		"Aquatic"
+			];
 		</script>
 
 		<script>
@@ -2192,24 +2372,6 @@
 					};
 				});
 			}
-
-			/* ---------- Modifications / Enchantments / Legendary Effects ---------- */
-			const ALL_ITEM_CATEGORIES = [
-				'Light Armor',
-				'Medium Armor',
-				'Heavy Armor',
-				'Robes',
-				'Clothes',
-				'Staves',
-				'Shields',
-				'1H Weapons',
-				'2H Weapons',
-				'Bows',
-				'Rings',
-				'Amulets',
-				'Talismans',
-				'Potion Flasks'
-			];
 
 			function expandCategories(str) {
 				const out = new Set();
@@ -2609,9 +2771,9 @@
 				}
 
 				loadState();
-				if (!state.favCustomizations || typeof state.favCustomizations !== 'object') state.favCustomizations = {};
-				if (!state.invCustomizations || typeof state.invCustomizations !== 'object') state.invCustomizations = {};
-				if (!state.costToggles || typeof state.costToggles !== 'object') state.costToggles = {includeMods: true, includeEnchant: true, includeLegendary: true};
+				if (!state.favCustomizations	|| typeof state.favCustomizations	!== 'object') state.favCustomizations	= {};
+				if (!state.invCustomizations	|| typeof state.invCustomizations	!== 'object') state.invCustomizations	= {};
+				if (!state.costToggles			|| typeof state.costToggles			!== 'object') state.costToggles			= {includeMods: true, includeEnchant: true, includeLegendary: true};
 
 				document.getElementById('toggleMods').checked		= state.costToggles.includeMods			!== false;
 				document.getElementById('toggleEnchant').checked	= state.costToggles.includeEnchant		!== false;
@@ -2925,7 +3087,7 @@
 							<div class="cz-row">
 								<label>Mod slot ${i + 1}:</label>
 								<select class="cz-mod-select" data-key="${escapeHtml(key)}" data-slot="${i}">
-									<option value="">- none -</option>
+									<option value="">${noneDisplay}</option>
 									${options.map(m => `<option value="${escapeHtml(m.name)}" ${m.name === current ? 'selected' : ''}>${escapeHtml(m.name)} - ${escapeHtml(m.effect)}</option>`).join('')}
 								</select>
 							</div>`
@@ -2936,7 +3098,7 @@
 						<div class="cz-row">
 							<label>Enchantment:</label>
 							<select class="cz-enchant-select" data-key="${escapeHtml(key)}">
-								<option value="">- none -</option>
+								<option value="">${noneDisplay}</option>
 								${enchants.map(en => `<option value="${escapeHtml(en.name)}" ${custom.enchant === en.name ? 'selected' : ''}>${escapeHtml(en.name)} - ${escapeHtml(en.effect)}</option>`).join('')}
 							</select>
 						</div>` : `<div class="cz-row"><span class="tag">No enchantments apply to this item's category.</span></div>`;
@@ -2946,7 +3108,7 @@
 							<div class="cz-row">
 								<label>Legendary:</label>
 								<select class="cz-legendary-select" data-key="${escapeHtml(key)}">
-									<option value="">- none -</option>
+									<option value="">${noneDisplay}</option>
 									${legendaries.map(le => `<option value="${escapeHtml(le.name)}" ${custom.legendary === le.name ? 'selected' : ''}>${escapeHtml(le.name)} - ${escapeHtml(le.effect)}</option>`).join('')}
 								</select>
 							</div>` : `<div class="cz-row"><span class="tag">No legendary effects apply to this item's category.</span></div>`)
@@ -3831,38 +3993,6 @@
 				});
 			}
 
-			const XP_THRESHOLDS = [
-				{ min: 19,	xp: 1000 },
-				{ min: 18,	xp: 700 },
-				{ min: 17,	xp: 450 },
-				{ min: 15,	xp: 300 },
-				{ min: 10,	xp: 150 },
-				{ min: 0,	xp: 100 },
-			];
-
-			const DIFFICULTY_MODIFIERS = {
-				Easy:		{ dr: -2,	hp: 0 },
-				Medium:		{ dr: 0,	hp: 0 },
-				Hard:		{ dr: 2,	hp: 1 },
-				Perilous:	{ dr: 4,	hp: 2 },
-				Lethal:		{ dr: 6,	hp: 3 },
-			};
-
-			const BIOMES = [
-				"Mountains",
-				"Jungle",
-				"Desert",
-				"Cave",
-				"Tundra",
-				"Forest",
-				"Plains",
-				"Urban",
-				"Ayleid",
-				"Dwemer",
-				"Oblivion",
-				"Aquatic"
-			];
-
 			// Extracted from EnemyDatabase.csv - Bosses are excluded
 			let ENEMIES = [];
 			function buildEnemies(data) {
@@ -4183,7 +4313,7 @@
 					const lines = [];
 					SKILL_NAMES.forEach(skill => {
 						const level = (BACKGROUND_GRANTS[skill] || {})[bg];
-						if (level && level !== '- none -') lines.push(`${skill}: ${level}`);
+						if (level && level !== noneDisplay) lines.push(`${skill}: ${level}`);
 					});
 
 					return lines.join('\n');
@@ -4195,11 +4325,11 @@
 					).join('');
 				}
 
-				fillSelect(el('plRace'),		RACE_NAMES,			'- none -',	n => statBonusTooltipText(RACES[n]));
-				fillSelect(el('plBirthsign'),	BIRTHSIGN_NAMES,	'- none -',	n => statBonusTooltipText(BIRTHSIGNS[n]));
-				fillSelect(el('plBackground'),	BACKGROUND_NAMES,	'- none -',	n => backgroundTooltipText(n));
-				fillSelect(el('plTrait1'),		TRAIT_NAMES,		'- none -',	n => statBonusTooltipText(TRAITS[n]));
-				fillSelect(el('plTrait2'),		TRAIT_NAMES,		'- none -',	n => statBonusTooltipText(TRAITS[n]));
+				fillSelect(el('plRace'),		RACE_NAMES,			noneDisplay,	n => statBonusTooltipText(RACES[n]));
+				fillSelect(el('plBirthsign'),	BIRTHSIGN_NAMES,	noneDisplay,	n => statBonusTooltipText(BIRTHSIGNS[n]));
+				fillSelect(el('plBackground'),	BACKGROUND_NAMES,	noneDisplay,	n => backgroundTooltipText(n));
+				fillSelect(el('plTrait1'),		TRAIT_NAMES,		noneDisplay,	n => statBonusTooltipText(TRAITS[n]));
+				fillSelect(el('plTrait2'),		TRAIT_NAMES,		noneDisplay,	n => statBonusTooltipText(TRAITS[n]));
 
 				el('plRace').value				= pState.race					|| '';
 				el('plBirthsign').value			= pState.birthsign				|| '';
@@ -4231,7 +4361,7 @@
 
 				function refreshSubraceOptions() {
 					const list = SUBRACES[pState.race] || [];
-					fillSelect(el('plSubrace'), list, '- none -', n => statBonusTooltipText(SUBRACE_ATTRS[n]));
+					fillSelect(el('plSubrace'), list, noneDisplay, n => statBonusTooltipText(SUBRACE_ATTRS[n]));
 					el('plSubrace').value = pState.subrace || '';
 					if (el('plSubrace')._cselRefresh) el('plSubrace')._cselRefresh();
 				}
@@ -4242,13 +4372,13 @@
 				}
 
 				function tierNameFromIndex(idx) {
-					return Object.keys(SKILL.TIERS)[idx] || '- none -';
+					return Object.keys(SKILL.TIERS)[idx] || noneDisplay;
 				}
 
 				function backgroundLevelFor(skill) {
 					const grants = BACKGROUND_GRANTS[skill];
-					if (!grants || !pState.background) return '- none -';
-					return grants[pState.background] || '- none -';
+					if (!grants || !pState.background) return noneDisplay;
+					return grants[pState.background] || noneDisplay;
 				}
 
 				function skillCumulativeValue(skill, uptoIdx) {
@@ -4338,10 +4468,6 @@
 					return texts;
 				}
 
-				const GEAR_STAT_ALIASES = {
-					'All Spell Schools': ['Destruction', 'Conjuration', 'Illusion', 'Restoration', 'Alteration', 'Mysticism']
-				};
-
 				function gearEffects() {
 					const a = [];
 					equippedGearEffectTexts().forEach(text => {
@@ -4371,45 +4497,9 @@
 
 				function skillFinalLevelIdx(skill) {
 					const bgIdx = levelIndex(backgroundLevelFor(skill));
-					const chosenIdx = levelIndex(pState.skillLevels[skill] || '- none -');
+					const chosenIdx = levelIndex(pState.skillLevels[skill] || noneDisplay);
 					return Math.max(bgIdx, chosenIdx);
 				}
-
-				const ATTR_START = 0;
-				const ATTR_NAMES = ['Strength', 'Endurance', 'Agility', 'Intelligence', 'Willpower', 'Personality'];
-				const ATTR_TICK_COST = [1, 1, 2];
-
-				const SKILL_ATTR_SCALE = {
-					'Block': 0.5,
-					'Dodge': 0.5
-				};
-				const SKILL_ATTR_START = {
-					'Vampirism':	4,
-					'Lycanthropy':	4
-				};
-				const SKILL_ATTR_MIN = {
-					'Accuracy':				-5,
-					'Damage':				-5,
-					'Fire Damage':			-5,
-					'Frost Damage':			-5,
-					'Shock Damage':			-5,
-					'Physical Resistance':	-5,
-					'Magic Resistance':		-5,
-					'Fire Resistance':		-5,
-					'Frost Resistance':		-5,
-					'Shock Resistance':		-5,
-					'Defense':				-5,
-					'Resilience':			-3,
-					'Speed':				-3
-				};
-				const SKILL_DAMAGES = {
-					'Slashing Damage':	'Slashing',
-					'Piercing Damage':	'Piercing',
-					'Blunt Damage':		'Blunt',
-					'Fire Damage':		'Destruction',
-					'Frost Damage':		'Destruction',
-					'Shock Damage':		'Destruction'
-				};
 
 				function attrLevel(attr) { return pState.attrLevels[attr] || 0; }
 				function attrTotal(attr) {
@@ -4519,14 +4609,14 @@
 						const rows = groups[attr].map(skill => {
 							const bgLevel	= backgroundLevelFor(skill);
 							const bgIdx		= levelIndex(bgLevel);
-							const chosen	= pState.skillLevels[skill] || '- none -';
+							const chosen	= pState.skillLevels[skill] || noneDisplay;
 							const finalIdx	= Math.max(bgIdx, levelIndex(chosen));
 							const value		= skillCumulativeValue(skill, finalIdx) + skillAttrBonus(skill, attr) + raceStat(skill) + subraceStat(skill) + birthsignStat(skill) + gearStat(skill);
 							const cost		= skillCostFrom(skill, bgIdx, finalIdx);
 							const opts		= tierOptionsHtml(SKILL.TIERS, tierNameFromIndex(finalIdx), i => i >= bgIdx);
 							const finalTier	= tierNameFromIndex(finalIdx);
 							return `<tr>
-								<td class="row-name center-text">${escapeHtml(skill)}${bgLevel !== '- none -' ? `<span class="tag tier-${escapeHtml(bgLevel)}">bg: ${escapeHtml(bgLevel)}</span>` : ''}</td>
+								<td class="row-name center-text">${escapeHtml(skill)}${bgLevel !== noneDisplay ? `<span class="tag tier-${escapeHtml(bgLevel)}">bg: ${escapeHtml(bgLevel)}</span>` : ''}</td>
 								<td><select class="pl-skill-select tier-${escapeHtml(finalTier)}" data-skill="${escapeHtml(skill)}">${opts}</select></td>
 								<td class="center-text">${value >= 0 ? '+' : ''}${value}</td>
 								<td class="center-text">${cost}pp</td>
@@ -4571,7 +4661,7 @@
 
 				function renderCrafting() {
 					el('plCraftingBody').innerHTML = CRAFTING_PROFESSIONS.map(prof => {
-						const chosen	= pState.crafting[prof] || '- none -';
+						const chosen	= pState.crafting[prof] || noneDisplay;
 						const opts		= tierOptionsHtml(SKILL.TIERS, chosen);
 						const idx		= levelIndex(chosen);
 						const entry		= CRAFTING_KNOWLEDGE[prof][idx];
@@ -4593,58 +4683,6 @@
 						});
 					});
 				}
-
-				/* ---------- Derived Stats ---------- */
-				const STAT_GROUP_LAYOUT = {
-					order: [
-						'Resources',			'Offense / Defense',
-						'Physical Resistances',	'Magic Resistances',
-						'Physical Damages',		'Magic Damages',
-						'Mobility',				'Misc'
-					],
-					columns: {
-						'Resources': 2,				'Offense / Defense': 2,
-						'Physical Resistances': 1,	'Magic Resistances': 1,
-						'Physical Damages': 1,		'Magic Damages': 1,
-						'Mobility': 2,				'Misc': 2
-					}
-				};
-
-				const STAT_ROWS = {
-					'Health':				{ group: 'Resources',				default: 60,	attrBonus: [['Endurance', 5], ['Willpower', 2]] },
-					'Stamina':				{ group: 'Resources',				default: 50,	attrBonus: [['Endurance', 5]] },
-					'Magicka':				{ group: 'Resources',				default: 50,	attrBonus: [['Willpower', 5]] },
-					'Potential':			{ group: 'Resources',				default: 9,		attrBonus: [['Personality', 2]] },
-
-					'Damage':				{ group: 'Offense / Defense',		default: 0 },
-					'Accuracy':				{ group: 'Offense / Defense',		default: 0 },
-					'Defense':				{ group: 'Offense / Defense',		default: 11 },
-					'Resilience':			{ group: 'Offense / Defense',		default: 0 },
-
-					'Physical Resistance':	{ group: 'Physical Resistances',	default: 0,		attrBonus: [['Strength', 1]] },
-					'Slashing Resistance':	{ group: 'Physical Resistances',	default: 0 },
-					'Piercing Resistance':	{ group: 'Physical Resistances',	default: 0 },
-					'Blunt Resistance':		{ group: 'Physical Resistances',	default: 0 },
-
-					'Magic Resistance':		{ group: 'Magic Resistances',		default: 0,		attrBonus: [['Intelligence', 1]] },
-					'Fire Resistance':		{ group: 'Magic Resistances',		default: 0 },
-					'Frost Resistance':		{ group: 'Magic Resistances',		default: 0 },
-					'Shock Resistance':		{ group: 'Magic Resistances',		default: 0 },
-
-					'Slashing Damage':		{ group: 'Physical Damages',		default: 0 },
-					'Piercing Damage':		{ group: 'Physical Damages',		default: 0 },
-					'Blunt Damage':			{ group: 'Physical Damages',		default: 0 },
-
-					'Fire Damage':			{ group: 'Magic Damages',			default: 0 },
-					'Frost Damage':			{ group: 'Magic Damages',			default: 0 },
-					'Shock Damage':			{ group: 'Magic Damages',			default: 0 },
-
-					'Movement':				{ group: 'Mobility',				default: 3,		speedBonus: 1 },
-					'Speed':				{ group: 'Mobility',				default: 0 },
-
-					'Luck':					{ group: 'Misc',					default: 1 },
-					'Fate':					{ group: 'Misc',					default: 1 }
-				};
 
 				function bonusFor(keys) {
 					let total = 0;
@@ -4751,13 +4789,13 @@
 					SKILL_NAMES.forEach(skill => {
 						if (skill === 'Performance (Retired)') return;
 						const bgIdx = levelIndex(backgroundLevelFor(skill));
-						const chosenIdx = levelIndex(pState.skillLevels[skill] || '- none -');
+						const chosenIdx = levelIndex(pState.skillLevels[skill] || noneDisplay);
 						perkSpent += skillCostFrom(skill, bgIdx, Math.max(bgIdx, chosenIdx));
 					});
 
 					let craftPerk = 0, craftLp = 0;
 					CRAFTING_PROFESSIONS.forEach(prof => {
-						const idx = levelIndex(pState.crafting[prof] || '- none -');
+						const idx = levelIndex(pState.crafting[prof] || noneDisplay);
 						const info = craftingTierInfo(prof, idx);
 						craftPerk += info.ppCumulative;
 						craftLp += info.lpCumulative;
@@ -4775,45 +4813,6 @@
 					el('plLPRemaining').textContent		= craftLp + spellsLp;
 				}
 
-				/* ---------- Gear ---------- */
-				const GEAR_SLOTS = [
-					{key: 'mainHand',	label: 'Main-Hand',	types: [
-						{label: '1H Slashing',	category: '1H Weapons',		subtype: 'slashing'},
-						{label: '1H Piercing',	category: '1H Weapons',		subtype: 'piercing'},
-						{label: '1H Blunt',		category: '1H Weapons',		subtype: 'blunt'},
-						{label: '2H Slashing',	category: '2H Weapons',		subtype: 'slashing'},
-						{label: '2H Piercing',	category: '2H Weapons',		subtype: 'piercing'},
-						{label: '2H Blunt',		category: '2H Weapons',		subtype: 'blunt'},
-						{label: 'Bow',			category: 'Bows',			subtype: ''},
-						{label: 'Staff',		category: 'Staves',			subtype: ''}
-					]},
-					{key: 'offHand',	label: 'Off-Hand',	types: [
-						{label: 'Shield',		category: 'Shields',		subtype: ''},
-						{label: 'Talisman',		category: 'Talismans',		subtype: ''}
-					]},
-					{key: 'armor',		label: 'Armor',		types: [
-						{label: 'Light',		category: 'Light Armor',	subtype: ''},
-						{label: 'Medium',		category: 'Medium Armor',	subtype: ''},
-						{label: 'Heavy',		category: 'Heavy Armor',	subtype: ''}
-					]},
-					{key: 'clothing',	label: 'Clothing',	types: [
-						{label: 'Clothes',		category: 'Clothes',		subtype: ''},
-						{label: 'Robes',		category: 'Robes',			subtype: ''}
-					]},
-					{key: 'ring',		label: 'Ring',		types: [
-						{label: 'Ring',			category: 'Rings',			subtype: ''}
-					]},
-					{key: 'amulet',		label: 'Amulet',	types: [
-						{label: 'Amulet',		category: 'Amulets',		subtype: ''}
-					]},
-					{key: 'flask1',		label: 'Flask 1',	types: [
-						{label: 'Flask',		category: 'Potion Flasks',	subtype: ''}
-					]},
-					{key: 'flask2',		label: 'Flask 2',	types: [
-						{label: 'Flask',		category: 'Potion Flasks',	subtype: ''}
-					]}
-				];
-
 				function isTwoHanded(typeLabel) {
 					return !!typeLabel && (typeLabel.startsWith('2H') || typeLabel === 'Bow');
 				}
@@ -4826,7 +4825,7 @@
 							pState.gear.offHand = {};
 							return `<tr class=>
 								<td class="row-name">${escapeHtml(slot.label)}</td>
-								<td><select disabled><option value="">- none -</option></select></td>
+								<td><select disabled><option value="">${noneDisplay}</option></select></td>
 								<td><span class="tag">N/A</span></td>
 								<td><span class="tag">N/A</span></td>
 								<td><span class="tag">N/A</span></td>
@@ -4838,7 +4837,7 @@
 							`<option value="${escapeHtml(t.label)}" ${g.typeLabel===t.label?'selected':''}>${escapeHtml(t.label)}</option>`
 						).join('');
 
-						const typeSel = `<select class="pl-gear-type" data-slot="${slot.key}"><option value="">- none -</option>${typeOpts}</select>`;
+						const typeSel = `<select class="pl-gear-type" data-slot="${slot.key}"><option value="">${noneDisplay}</option>${typeOpts}</select>`;
 						const typeDef = slot.types.find(t => t.label === g.typeLabel);
 						let variantSel = `<span class="tag">pick a type</span>`;
 						let item = null;
@@ -4876,7 +4875,7 @@
 								const current = chosenMods[i] || '';
 								const opts = mods.filter(m => !chosenMods.some((v, idx) => v===m.name && idx!==i));
 								return `<select class="pl-gear-mod" data-slot="${slot.key}" data-idx="${i}">
-									<option value="">- none -</option>
+									<option value="">${noneDisplay}</option>
 									${opts.map(m =>
 										`<option value="${escapeHtml(m.name)}" title="${escapeHtml(m.effect)}" ${m.name===current?'selected':''}>${escapeHtml(m.name)}</option>`
 									).join('')}
@@ -4884,7 +4883,7 @@
 							}).join(' ');
 
 							enchantHtml = `<select class="pl-gear-enchant" data-slot="${slot.key}">
-								<option value="">- none -</option>
+								<option value="">${noneDisplay}</option>
 								${enchants.map(en =>
 									`<option value="${escapeHtml(en.name)}" title="${escapeHtml(en.effect)}" ${g.enchant===en.name?'selected':''}>${escapeHtml(en.name)}</option>`
 								).join('')}
@@ -4892,7 +4891,7 @@
 
 							legendaryHtml = isMasterwork(item)
 								? `<select class="pl-gear-legendary" data-slot="${slot.key}">
-									<option value="">- none -</option>
+									<option value="">${noneDisplay}</option>
 									${legendaries.map(le =>
 										`<option value="${escapeHtml(le.name)}" title="${escapeHtml(le.effect)}" ${g.legendary===le.name?'selected':''}>${escapeHtml(le.name)}</option>`
 									).join('')}
