@@ -114,7 +114,6 @@
 						<div class="scrollbox" id="favBox">
 							<div class="list-empty" id="favEmpty">EMPTY</div>
 							<table id="favTable" style="display: none;">
-								<thead><tr><th>Item</th><th></th></tr></thead>
 								<tbody></tbody>
 							</table>
 						</div>
@@ -343,7 +342,7 @@
 				<div class="panel full">
 					<div class="actions-top">
 						<h2 style="margin:0;">Gear</h2>
-						<button class="small" id="plSyncGearBtn">Sync Gear to Crafting Calculator</button>
+						<button class="small" id="plSyncGearBtn" style="display: none;">Sync Gear to Crafting Calculator</button>
 					</div>
 					<table>
 						<thead><tr>
@@ -2634,14 +2633,16 @@
 					return;
 				}
 
+				const isLocked = !!selectEl.disabled;
+
 				const wrap = document.createElement('div');
-				wrap.className = 'csel-wrap';
+				wrap.className = 'csel-wrap' + (isLocked ? ' is-disabled' : '');
 				selectEl.insertAdjacentElement('afterend', wrap);
 				selectEl.classList.add('csel-native');
 
-				const btn = document.createElement('button');
-				btn.type = 'button';
-				btn.className = 'csel-btn';
+				const btn = document.createElement(isLocked ? 'div' : 'button');
+				if (!isLocked) btn.type = 'button';
+				btn.className = 'csel-btn' + (isLocked ? ' csel-dummy' : '');
 
 				const label = document.createElement('span');
 				label.className = 'csel-label';
@@ -2668,14 +2669,21 @@
 					label.textContent = opt ? opt.textContent : '';
 					btn.title = opt ? (opt.title || '') : '';
 
-					btn.className = 'csel-btn';
+					btn.className = 'csel-btn' + (isLocked ? ' csel-dummy' : '');
 					const tierClass = opt ? tierClassOf(opt) : null;
 					if (tierClass) btn.classList.add(tierClass);
+				}
+
+				if (isLocked) {
+					selectEl._cselRefresh = updateLabel;
+					updateLabel();
+					return;
 				}
 
 				function makeOptionEl(opt) {
 					const item = document.createElement('div');
 					item.className = 'csel-option';
+
 					const tierClass = tierClassOf(opt);
 					if (tierClass) item.classList.add(tierClass);
 					item.textContent = opt.textContent;
@@ -2683,8 +2691,9 @@
 
 					if (opt.value === selectEl.value) item.classList.add('is-selected');
 					item.addEventListener('click', () => {
+						if (selectEl.disabled) return;
 						selectEl.value = opt.value;
-						selectEl.dispatchEvent(new Event('change', {bubbles:true}));
+						selectEl.dispatchEvent(new Event('change', {bubbles: true}));
 						updateLabel();
 						closePanel();
 					});
@@ -2720,6 +2729,7 @@
 
 				btn.addEventListener('click', (e) => {
 					e.stopPropagation();
+					if (selectEl.disabled) return;
 					panel.hidden ? openPanel() : closePanel();
 				});
 
@@ -2760,13 +2770,10 @@
 				/* ---------- Persistent state ---------- */
 				const STORE_KEY = 'craftCalcState_v1';
 				let state = {
-					inventory:			{},
-					craftList:			{},
-					repairList:			{},
+					inventory:			[],
+					craftList:			[],
+					repairList:			[],
 					favorites:			[],
-					customizations:		{},
-					invCustomizations:	{},
-					favCustomizations:	{},
 					costToggles:		{includeMods: true, includeEnchant: true, includeLegendary: true}
 				};
 
@@ -2783,36 +2790,98 @@
 					} catch(e) {}
 				}
 
+				function genId() {
+					return 'f_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2,9);
+				}
+
+				function migrateOldState() {
+					let migrated = false;
+
+					if (state.inventory && !Array.isArray(state.inventory)) {
+						const oldInv		= state.inventory;
+						const oldInvCustom	= state.invCustomizations || {};
+						const newInv		= [];
+						Object.keys(oldInv).forEach(name => {
+							const qty = oldInv[name];
+							if (!(qty > 0)) return;
+
+							const c = ITEMS[name] ? cleanCustomForItem(ITEMS[name], oldInvCustom[name]) : {mods: [], enchants: [], legendary: null};
+							newInv.push({id: genId(), name, qty, mods: c.mods, enchants: c.enchants, legendary: c.legendary});
+						});
+
+						state.inventory = newInv;
+						migrated = true;
+					}
+
+					if (state.craftList && !Array.isArray(state.craftList)) {
+						const oldCraft	= state.craftList;
+						const oldCustom	= state.customizations || {};
+						const newCraft	= [];
+						Object.keys(oldCraft).forEach(name => {
+							const qty = oldCraft[name];
+							if (!(qty > 0) || !ITEMS[name]) return;
+
+							const c = cleanCustomForItem(ITEMS[name], oldCustom[name]);
+							newCraft.push({id: genId(), name, qty, mods: c.mods, enchants: c.enchants, legendary: c.legendary});
+						});
+
+						state.craftList = newCraft;
+						migrated = true;
+					}
+
+					if (state.repairList && !Array.isArray(state.repairList)) {
+						const oldRepair	= state.repairList;
+						const newRepair	= [];
+						Object.keys(oldRepair).forEach(name => {
+							const times = oldRepair[name];
+							if (!(times > 0) || !ITEMS[name]) return;
+
+							const invRow = state.inventory.find(r => r.name === name);
+							if (invRow) newRepair.push({id: genId(), invId: invRow.id, qty: times});
+						});
+
+						state.repairList = newRepair;
+						migrated = true;
+					}
+
+					if (Array.isArray(state.favorites) && state.favorites.length && typeof state.favorites[0] === 'string') {
+						state.favorites = state.favorites.map(n => {
+							const item = ITEMS[n];
+							const c = item ? cleanCustomForItem(item, state.customizations && state.customizations[n]) : {mods: [], enchants: [], legendary: null};
+							return {id: genId(), name: n, mods: c.mods, enchants: c.enchants, legendary: c.legendary};
+						});
+						migrated = true;
+					} else if (Array.isArray(state.favorites) && state.favorites.length && !('mods' in state.favorites[0])) {
+						const favCustom = state.favCustomizations || {};
+						state.favorites = state.favorites.map(f => {
+							const item	= ITEMS[f.name];
+							const raw	= favCustom[f.id] || {};
+							if (raw.enchant && !raw.enchants) raw.enchants = [raw.enchant];
+							const c = item ? cleanCustomForItem(item, raw) : {mods: [], enchants: [], legendary: null};
+							return {id: f.id, name: f.name, mods: c.mods, enchants: c.enchants, legendary: c.legendary};
+						});
+						migrated = true;
+					}
+
+					if (migrated) {
+						delete state.customizations;
+						delete state.invCustomizations;
+						delete state.favCustomizations;
+						saveState();
+					}
+				}
+
 				loadState();
-				if (!state.favCustomizations	|| typeof state.favCustomizations	!== 'object') state.favCustomizations	= {};
-				if (!state.invCustomizations	|| typeof state.invCustomizations	!== 'object') state.invCustomizations	= {};
+				migrateOldState();
+				if (!Array.isArray(state.inventory))	state.inventory		= [];
+				if (!Array.isArray(state.craftList))	state.craftList		= [];
+				if (!Array.isArray(state.repairList))	state.repairList	= [];
+				if (!Array.isArray(state.favorites))	state.favorites		= [];
 				if (!state.costToggles			|| typeof state.costToggles			!== 'object') state.costToggles			= {includeMods: true, includeEnchant: true, includeLegendary: true};
 
 				document.getElementById('toggleMods').checked		= state.costToggles.includeMods			!== false;
 				document.getElementById('toggleEnchant').checked	= state.costToggles.includeEnchant		!== false;
 				document.getElementById('toggleLegendary').checked	= state.costToggles.includeLegendary	!== false;
-
-				function genId() {
-					return 'f_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2,9);
-				}
-
-				if (Array.isArray(state.favorites) && state.favorites.length && typeof state.favorites[0] === 'string') {
-					state.favorites = state.favorites.map(n => {
-						const id = genId();
-						const c = state.customizations[n];
-						if (c && ((c.mods || []).filter(Boolean).length || c.enchant || c.legendary)) {
-							state.favCustomizations[id] = {
-								mods:		(c.mods		|| []).filter(Boolean),
-								enchant:	c.enchant	|| null,
-								legendary:	c.legendary	|| null
-							};
-						}
-
-						return {id, name:n};
-					});
-
-					saveState();
-				}
 
 				function escapeHtml(s) {
 					return s.replace(/[&<>"']/g, c => ({
@@ -2904,7 +2973,18 @@
 					if (!name) return;
 
 					const qty = Math.max(0, parseInt(invQty.value, 10) || 0);
-					state.inventory[name] = (state.inventory[name] || 0) + qty;
+					if (qty <= 0) return;
+
+					if (MATERIALS[name] && !ITEMS[name]) {
+						const row = state.inventory.find(r => r.name === name);
+						if (row) row.qty += qty;
+						else state.inventory.push({id: genId(), name, qty, mods: [], enchants: [], legendary: null});
+					} else if (ITEMS[name]) {
+						state.inventory.push({id: genId(), name, qty, mods: [], enchants: [], legendary: null});
+					} else {
+						return;
+					}
+
 					invQty.value = 1;
 					saveState();
 					renderInventory();
@@ -2913,27 +2993,27 @@
 				});
 
 				function renderInventory() {
-					const tbody	= document.querySelector('#invTable tbody');
-					const names	= Object.keys(state.inventory).filter(n => state.inventory[n] > 0).sort();
-					document.getElementById('invEmpty').style.display	= names.length	? 'none'	: 'block';
-					document.getElementById('invTable').style.display	= names.length	? 'table'	: 'none';
-					tbody.innerHTML = names.map(n => {
-						const item = ITEMS[n];
-						const expanded = expandedInvItems.has(n);
-						const mainRow = `
+					const tbody = document.querySelector('#invTable tbody');
+					const rows	= state.inventory.filter(r => r.qty > 0).slice().sort((a, b) => a.name.localeCompare(b.name));
+					document.getElementById('invEmpty').style.display	= rows.length	? 'none'	: 'block';
+					document.getElementById('invTable').style.display	= rows.length	? 'table'	: 'none';
+					tbody.innerHTML = rows.map(row => {
+						const item		= ITEMS[row.name];
+						const expanded	= expandedInvItems.has(row.id);
+						const mainRow	= `
 							<tr>
-								<td class="row-name">${escapeHtml(n)}${item?customSummary(state.invCustomizations[n]):''}</td>
-								<td><input type="number" class="qty-input inv-qty" data-name="${escapeHtml(n)}" value="${state.inventory[n]}" min="0"></td>
+								<td class="row-name">${escapeHtml(row.name)}${item ? customSummary(row) : ''}</td>
+								<td><input type="number" class="qty-input inv-qty" data-id="${escapeHtml(row.id)}" value="${row.qty}" min="0"></td>
 								<td>
-									${item ? `<button class="secondary small customize-toggle-inv" data-name="${escapeHtml(n)}" title="Modifications / Enchantments / Legendary">${expanded?'▲':'▼'}</button>` : ''}
-									<button class="danger small inv-remove" data-name="${escapeHtml(n)}">X</button>
+									${item ? `<button class="secondary small customize-toggle-inv" data-id="${escapeHtml(row.id)}" title="Modifications / Enchantments / Legendary">${expanded?'▲':'▼'}</button>` : ''}
+									<button class="danger small inv-remove" data-id="${escapeHtml(row.id)}">X</button>
 								</td>
 							</tr>
 						`;
 
 						const detailRow = (item && expanded) ? `
 							<tr class="customize-row">
-								<td colspan="3">${renderCustomizePanel(n, item, getCustom(n, state.invCustomizations))}</td>
+								<td colspan="3">${renderCustomizePanel(row.id, item, row)}</td>
 							</tr>
 						` : '';
 
@@ -2942,8 +3022,10 @@
 
 					tbody.querySelectorAll('.inv-qty').forEach(inp => {
 						inp.addEventListener('change', () => {
-							const v = Math.max(0, parseInt(inp.value, 10) || 0);
-							state.inventory[inp.dataset.name] = v;
+							const row = state.inventory.find(r => r.id === inp.dataset.id);
+							if (!row) return;
+
+							row.qty = Math.max(0, parseInt(inp.value, 10) || 0);
 							saveState();
 							refreshRepairSelect();
 							renderResults();
@@ -2952,46 +3034,45 @@
 
 					tbody.querySelectorAll('.inv-remove').forEach(btn => {
 						btn.addEventListener('click', () => {
-							delete state.inventory[btn.dataset.name];
-							delete state.invCustomizations[btn.dataset.name];
-							expandedInvItems.delete(btn.dataset.name);
+							state.inventory = state.inventory.filter(r => r.id !== btn.dataset.id);
+							expandedInvItems.delete(btn.dataset.id);
 							saveState();
 							renderInventory();
 							refreshRepairSelect();
+							renderRepairList();
 							renderResults();
 						});
 					});
 
 					tbody.querySelectorAll('.customize-toggle-inv').forEach(btn => {
 						btn.addEventListener('click', () => {
-							const n = btn.dataset.name;
-							if (expandedInvItems.has(n)) expandedInvItems.delete(n);
-							else expandedInvItems.add(n);
+							const id = btn.dataset.id;
+							if (expandedInvItems.has(id)) expandedInvItems.delete(id);
+							else expandedInvItems.add(id);
 							renderInventory();
 						});
 					});
 
-					bindCustomizePanelEvents(tbody, n => getCustom(n, state.invCustomizations));
+					bindCustomizePanelEvents(tbody, id => state.inventory.find(r => r.id === id));
 				}
 
 				/* ---------- Craft list UI ---------- */
 				document.getElementById('clearCraftBtn').addEventListener('click', () => {
-					state.craftList = {};
+					state.craftList = [];
 					saveState();
 					renderCraftList();
 				});
 
 				document.getElementById('loadFavsBtn').addEventListener('click', () => {
 					state.favorites.forEach(entry => {
-						state.craftList[entry.name] = (state.craftList[entry.name] || 0) + 1;
-						const fc = state.favCustomizations[entry.id];
-						if (fc && ((fc.mods || []).filter(Boolean).length || (fc.enchants || []).filter(Boolean).length || fc.enchant || fc.legendary)) {
-							state.customizations[entry.name] = {
-								mods:		(fc.mods		|| []).filter(Boolean).slice(),
-								enchants:	(fc.enchants	|| []).filter(Boolean).slice(),
-								legendary:	fc.legendary	|| null
-							};
-						}
+						state.craftList.push({
+							id:			genId(),
+							name:		entry.name,
+							qty:		1,
+							mods:		entry.mods.slice(),
+							enchants:	entry.enchants.slice(),
+							legendary:	entry.legendary
+						});
 					});
 
 					saveState();
@@ -3002,55 +3083,40 @@
 				const expandedInvItems		= new Set();
 				const expandedFavItems		= new Set();
 
-				function getCustom(name, store) {
-					store = store || state.customizations;
-
-					if (!store[name]) store[name] = {
-						mods:		[],
-						enchants:	[],
-						legendary:	null
-					};
-
-					const c = store[name];
-					if (!Array.isArray(c.mods))		c.mods		= [];
-					if (!Array.isArray(c.enchants))	c.enchants	= [];
-					return c;
-				}
-
-				function customSummary(custom) {
-					if (!custom) return '';
+				function customSummary(row) {
+					if (!row) return '';
 
 					const bits			= [];
-					const modCount		= (custom.mods		|| []).filter(Boolean).length;
-					const enchantCount	= (custom.enchants	|| []).filter(Boolean).length;
-					if (modCount)			bits.push(`${modCount} mod${modCount > 1 ? 's' : ''}`);
-					if (enchantCount)		bits.push(`${enchantCount} enchant${enchantCount > 1 ? 's' : ''}`);
-					if (custom.legendary)	bits.push('legendary');
+					const modCount		= (row.mods		|| []).filter(Boolean).length;
+					const enchantCount	= (row.enchants	|| []).filter(Boolean).length;
+					if (modCount)		bits.push(`${modCount} mod${modCount > 1 ? 's' : ''}`);
+					if (enchantCount)	bits.push(`${enchantCount} enchant${enchantCount > 1 ? 's' : ''}`);
+					if (row.legendary)	bits.push('legendary');
 					return bits.length ? ` <span class="tag">${bits.join(', ')}</span>` : '';
 				}
 
 				function renderCraftList() {
 					const tbody = document.querySelector('#craftTable tbody');
-					const names = Object.keys(state.craftList).filter(n => state.craftList[n] > 0).sort();
-					document.getElementById('craftEmpty').style.display	= names.length	? 'none'	: 'block';
-					document.getElementById('craftTable').style.display	= names.length	? 'table'	: 'none';
-					tbody.innerHTML = names.map(n => {
-						const item = ITEMS[n];
-						const expanded = expandedCraftItems.has(n);
-						const mainRow = `
+					const rows	= state.craftList.filter(r => r.qty > 0 && ITEMS[r.name]).slice().sort((a, b) => a.name.localeCompare(b.name));
+					document.getElementById('craftEmpty').style.display	= rows.length	? 'none'	: 'block';
+					document.getElementById('craftTable').style.display	= rows.length	? 'table'	: 'none';
+					tbody.innerHTML = rows.map(row => {
+						const item		= ITEMS[row.name];
+						const expanded	= expandedCraftItems.has(row.id);
+						const mainRow	= `
 							<tr>
-								<td class="row-name">${escapeHtml(n)}<span class="tag">${escapeHtml(item.category)}${item.tier ? ' · T'+escapeHtml(item.tier) : ''}</span>${customSummary(state.customizations[n])}</td>
-								<td><input type="number" class="qty-input craft-qty" data-name="${escapeHtml(n)}" value="${state.craftList[n]}" min="1"></td>
+								<td class="row-name">${escapeHtml(row.name)}<span class="tag">${escapeHtml(item.category)}${item.tier ? ' · T'+escapeHtml(item.tier) : ''}</span>${customSummary(row)}</td>
+								<td><input type="number" class="qty-input craft-qty" data-id="${escapeHtml(row.id)}" value="${row.qty}" min="1"></td>
 								<td>
-									<button class="secondary small customize-toggle" data-name="${escapeHtml(n)}" title="Modifications / Enchantments / Legendary">${expanded?'▲':'▼'}</button>
-									<button class="danger small craft-remove" data-name="${escapeHtml(n)}">X</button>
+									<button class="secondary small customize-toggle" data-id="${escapeHtml(row.id)}" title="Modifications / Enchantments / Legendary">${expanded?'▲':'▼'}</button>
+									<button class="danger small craft-remove" data-id="${escapeHtml(row.id)}">X</button>
 								</td>
 							</tr>
 						`;
 
 						const detailRow = expanded ? `
 							<tr class="customize-row">
-								<td colspan="3">${renderCustomizePanel(n, item, getCustom(n))}</td>
+								<td colspan="3">${renderCustomizePanel(row.id, item, row)}</td>
 							</tr>
 						` : '';
 
@@ -3059,8 +3125,9 @@
 
 					tbody.querySelectorAll('.craft-qty').forEach(inp => {
 						inp.addEventListener('change', () => {
-							const v = Math.max(1, parseInt(inp.value, 10) || 1);
-							state.craftList[inp.dataset.name] = v;
+							const row = state.craftList.find(r => r.id === inp.dataset.id);
+							if (!row) return;
+							row.qty = Math.max(1, parseInt(inp.value, 10) || 1);
 							saveState();
 							renderResults();
 						});
@@ -3068,9 +3135,8 @@
 
 					tbody.querySelectorAll('.craft-remove').forEach(btn => {
 						btn.addEventListener('click', () => {
-							delete state.craftList[btn.dataset.name];
-							delete state.customizations[btn.dataset.name];
-							expandedCraftItems.delete(btn.dataset.name);
+							state.craftList = state.craftList.filter(r => r.id !== btn.dataset.id);
+							expandedCraftItems.delete(btn.dataset.id);
 							saveState();
 							renderCraftList();
 						});
@@ -3078,41 +3144,53 @@
 
 					tbody.querySelectorAll('.customize-toggle').forEach(btn => {
 						btn.addEventListener('click', () => {
-							const n = btn.dataset.name;
-							if (expandedCraftItems.has(n)) expandedCraftItems.delete(n);
-							else expandedCraftItems.add(n);
+							const id = btn.dataset.id;
+							if (expandedCraftItems.has(id)) expandedCraftItems.delete(id);
+							else expandedCraftItems.add(id);
 							renderCraftList();
 						});
 					});
 
-					bindCustomizePanelEvents(tbody);
+					bindCustomizePanelEvents(tbody, id => state.craftList.find(r => r.id === id));
 					renderResults();
 				}
 
 				/* ---------- Customizations (modifications / enchantment / legendary) ---------- */
-				function renderCustomizePanel(key, item, custom) {
+				function renderCustomizePanel(key, item, custom, locked = false) {
 					const slots			= modSlotsForItem(item);
 					const mods			= applicableEntries(MODIFICATIONS,	item).sort((a, b) => a.name.localeCompare(b.name));
 					const enchants		= applicableEntries(ENCHANTMENTS,	item).sort((a, b) => a.name.localeCompare(b.name));
 					const legendaries	= isMasterwork(item) ? applicableEntries(LEGENDARY_EFFECTS, item).sort((a, b) => a.name.localeCompare(b.name)) : [];
+					const disabledAttr	= locked ? 'disabled' : '';
 
 					const modRows = [];
-					for (let i = 0; i < slots; i++) {
-						const current = custom.mods[i] || '';
-						const options = mods.filter(m => {
-							const selectedElsewhere = custom.mods.some((v, idx) => v === m.name && idx !== i);
-							return !selectedElsewhere;
-						});
+					if (mods.length) {
+						for (let i = 0; i < slots; i++) {
+							const current = custom.mods[i] || '';
+							const options = mods.filter(m => {
+								const selectedElsewhere = custom.mods.some((v, idx) => v === m.name && idx !== i);
+								return !selectedElsewhere;
+							});
 
-						modRows.push(`
-							<div class="cz-row">
-								<label>Mod slot ${i + 1}:</label>
-								<select class="cz-mod-select" data-key="${escapeHtml(key)}" data-slot="${i}">
-									<option value="">${noneDisplay}</option>
-									${options.map(m => `<option value="${escapeHtml(m.name)}" ${m.name === current ? 'selected' : ''}>${escapeHtml(m.name)} - ${escapeHtml(m.effect)}</option>`).join('')}
-								</select>
-							</div>`
-						);
+							modRows.push(`
+								<div class="cz-row">
+									<label>Mod slot ${i + 1}:</label>
+									${disabledAttr ? `
+										<div class="csel-wrap">
+											${options.map(m => m.name === current ? `<div class="csel-btn fake">
+												<span class="csel-label">${escapeHtml(m.name)} - ${escapeHtml(m.effect)}</span>
+												<span class="csel-arrow">&nbsp;</span>
+											</div>` : '').join('')}
+										</div>
+									` : `
+										<select class="cz-mod-select" data-key="${escapeHtml(key)}" data-slot="${i} ${disabledAttr}">
+											<option value="">${noneDisplay}</option>
+											${options.map(m => `<option value="${escapeHtml(m.name)}" ${m.name === current ? 'selected' : ''}>${escapeHtml(m.name)} - ${escapeHtml(m.effect)}</option>`).join('')}
+										</select>
+									`}
+								</div>`
+							);
+						}
 					}
 
 					const enchantRows = [];
@@ -3128,10 +3206,19 @@
 							enchantRows.push(`
 								<div class="cz-row">
 									<label>Enchantment slot ${i + 1}:</label>
-									<select class="cz-enchant-select" data-key="${escapeHtml(key)}" data-slot="${i}">
-										<option value="">${noneDisplay}</option>
-										${options.map(en => `<option value="${escapeHtml(en.name)}" ${en.name === current ? 'selected' : ''}>${escapeHtml(en.name)} - ${escapeHtml(en.effect)}</option>`).join('')}
-									</select>
+									${disabledAttr ? `
+										<div class="csel-wrap">
+											${options.map(m => m.name === current ? `<div class="csel-btn fake">
+												<span class="csel-label">${escapeHtml(m.name)} - ${escapeHtml(m.effect)}</span>
+												<span class="csel-arrow">&nbsp;</span>
+											</div>` : '').join('')}
+										</div>
+									` : `
+										<select class="cz-enchant-select" data-key="${escapeHtml(key)}" data-slot="${i} ${disabledAttr}">
+											<option value="">${noneDisplay}</option>
+											${options.map(en => `<option value="${escapeHtml(en.name)}" ${en.name === current ? 'selected' : ''}>${escapeHtml(en.name)} - ${escapeHtml(en.effect)}</option>`).join('')}
+										</select>
+									`}
 								</div>`
 							);
 						}
@@ -3139,17 +3226,24 @@
 						enchantRows.push(`<div class="cz-row"><span class="tag">No enchantments apply to this item's category.</span></div>`);
 					}
 
-					const legendaryRow = isMasterwork(item)
-						? (legendaries.length ? `
-							<div class="cz-row">
-								<label>Legendary:</label>
-								<select class="cz-legendary-select" data-key="${escapeHtml(key)}">
+					const legendaryRow = isMasterwork(item) ? (legendaries.length ? `
+						<div class="cz-row">
+							<label>Legendary:</label>
+							${disabledAttr ? `
+								<div class="csel-wrap">
+									${legendaries.map(le => le.name === custom.legendary ? `<div class="csel-btn fake">
+										<span class="csel-label">${escapeHtml(le.name)} - ${escapeHtml(le.effect)}</span>
+										<span class="csel-arrow">&nbsp;</span>
+									</div>` : '').join('')}
+								</div>
+							` : `
+								<select class="cz-legendary-select" data-key="${escapeHtml(key)} ${disabledAttr}">
 									<option value="">${noneDisplay}</option>
 									${legendaries.map(le => `<option value="${escapeHtml(le.name)}" ${custom.legendary === le.name ? 'selected' : ''}>${escapeHtml(le.name)} - ${escapeHtml(le.effect)}</option>`).join('')}
 								</select>
-							</div>` : `<div class="cz-row"><span class="tag">No legendary effects apply to this item's category.</span></div>`)
-						: `<div class="cz-row"><span class="tag">Legendary effects require T4 gear.</span></div>`
-					;
+							`}
+						</div>` : `<div class="cz-row"><span class="tag">No legendary effects apply to this item's category.</span></div>`
+					) : `<div class="cz-row"><span class="tag">Legendary effects require T4 gear.</span></div>`;
 
 					return `
 						<div class="customize-panel">
@@ -3162,8 +3256,7 @@
 				}
 
 				function bindCustomizePanelEvents(root, resolveCustom) {
-					root			= root			|| document;
-					resolveCustom	= resolveCustom	|| getCustom;
+					root = root || document;
 
 					function refreshResultsIfShown() {
 						renderResults();
@@ -3174,6 +3267,8 @@
 							const key = sel.dataset.key;
 							const slot = parseInt(sel.dataset.slot, 10);
 							const custom = resolveCustom(key);
+							if (!custom) return;
+
 							custom.mods[slot] = sel.value || undefined;
 							saveState();
 							renderInventory();
@@ -3188,6 +3283,8 @@
 							const key = sel.dataset.key;
 							const slot = parseInt(sel.dataset.slot, 10);
 							const custom = resolveCustom(key);
+							if (!custom) return;
+
 							custom.enchants[slot] = sel.value || undefined;
 							saveState();
 							renderInventory();
@@ -3200,6 +3297,8 @@
 					root.querySelectorAll('.cz-legendary-select').forEach(sel => {
 						sel.addEventListener('change', () => {
 							const custom = resolveCustom(sel.dataset.key);
+							if (!custom) return;
+
 							custom.legendary = sel.value || null;
 							saveState();
 							renderInventory();
@@ -3215,10 +3314,13 @@
 				const repairQty		= document.getElementById('repairQty');
 				function refreshRepairSelect() {
 					const prevValue = repairSelect.value;
-					buildSelect(repairSelect, {
-						includeMaterials:false, includeItems:true,
-						itemFilter: it => it.repairIngredients.length > 0 && (state.inventory[it.name] || 0) > 0
-					});
+					const rows = state.inventory.filter(r => ITEMS[r.name] && ITEMS[r.name].repairIngredients.length > 0 && r.qty > 0);
+					repairSelect.innerHTML = rows
+						.slice()
+						.sort((a, b) => a.name.localeCompare(b.name))
+						.map(r => `<option value="${escapeHtml(r.id)}">${escapeHtml(r.name)}${customSummary(r)}</option>`)
+						.join('')
+					;
 
 					if ([...repairSelect.options].some(o => o.value === prevValue)) repairSelect.value = prevValue;
 				}
@@ -3226,49 +3328,53 @@
 				refreshRepairSelect();
 
 				document.getElementById('repairAddBtn').addEventListener('click', () => {
-					const name = repairSelect.value;
-					if (!name || !ITEMS[name]) return;
-					if ((state.inventory[name] || 0) <= 0) return;
+					const invId = repairSelect.value;
+					const invRow = state.inventory.find(r => r.id === invId);
+					if (!invRow || !ITEMS[invRow.name]) return;
+
 					const qty = Math.max(1, parseInt(repairQty.value, 10) || 1);
-					state.repairList[name] = (state.repairList[name] || 0) + qty;
+					const existing = state.repairList.find(r => r.invId === invId);
+					if (existing) existing.qty += qty;
+					else state.repairList.push({id: genId(), invId, qty});
+
 					repairQty.value = 1;
 					saveState();
 					renderRepairList();
 				});
 
 				document.getElementById('clearRepairBtn').addEventListener('click', () => {
-					state.repairList = {};
+					state.repairList = [];
 					saveState();
 					renderRepairList();
 				});
 
 				function renderRepairList() {
-					let pruned = false;
-					Object.keys(state.repairList).forEach(n => {
-						if ((state.inventory[n] || 0) <= 0) {
-							delete state.repairList[n];
-							pruned = true;
-						}
-					});
-
-					if (pruned) saveState();
+					const beforeCount = state.repairList.length;
+					state.repairList = state.repairList.filter(r => state.inventory.some(inv => inv.id === r.invId && inv.qty > 0));
+					if (state.repairList.length !== beforeCount) saveState();
 
 					const tbody = document.querySelector('#repairTable tbody');
-					const names = Object.keys(state.repairList).filter(n => state.repairList[n] > 0);
-					document.getElementById('repairEmpty').style.display = names.length ? 'none' : 'block';
-					document.getElementById('repairTable').style.display = names.length ? 'table' : 'none';
-					tbody.innerHTML = names.map(n => `
-						<tr>
-							<td class="row-name">${escapeHtml(n)}<span class="tag">${escapeHtml(ITEMS[n].category)}${ITEMS[n].tier ? ' · T' + escapeHtml(ITEMS[n].tier) : ''}</span></td>
-							<td><input type="number" class="qty-input repair-qty" data-name="${escapeHtml(n)}" value="${state.repairList[n]}" min="1"></td>
-							<td><button class="danger small repair-remove" data-name="${escapeHtml(n)}">X</button></td>
-						</tr>
-					`).join('');
+					const rows	= state.repairList.filter(r => r.qty > 0);
+					document.getElementById('repairEmpty').style.display = rows.length ? 'none' : 'block';
+					document.getElementById('repairTable').style.display = rows.length ? 'table' : 'none';
+					tbody.innerHTML = rows.map(r => {
+						const invRow	= state.inventory.find(inv => inv.id === r.invId);
+						const item		= invRow && ITEMS[invRow.name];
+						if (!invRow || !item) return '';
+						return `
+							<tr>
+								<td class="row-name">${escapeHtml(invRow.name)}<span class="tag">${escapeHtml(item.category)}${item.tier ? ' · T' + escapeHtml(item.tier) : ''}</span>${customSummary(invRow)}</td>
+								<td><input type="number" class="qty-input repair-qty" data-id="${escapeHtml(r.id)}" value="${r.qty}" min="1"></td>
+								<td><button class="danger small repair-remove" data-id="${escapeHtml(r.id)}">X</button></td>
+							</tr>
+						`;
+					}).join('');
 
 					tbody.querySelectorAll('.repair-qty').forEach(inp => {
 						inp.addEventListener('change', () => {
-							const v = Math.max(1, parseInt(inp.value, 10) || 1);
-							state.repairList[inp.dataset.name] = v;
+							const r = state.repairList.find(x => x.id === inp.dataset.id);
+							if (!r) return;
+							r.qty = Math.max(1, parseInt(inp.value, 10) || 1);
 							saveState();
 							renderResults();
 						});
@@ -3276,7 +3382,7 @@
 
 					tbody.querySelectorAll('.repair-remove').forEach(btn => {
 						btn.addEventListener('click', () => {
-							delete state.repairList[btn.dataset.name];
+							state.repairList = state.repairList.filter(r => r.id !== btn.dataset.id);
 							saveState();
 							renderRepairList();
 						});
@@ -3296,8 +3402,11 @@
 					const name = desiredSelect.value;
 					if (!name || !ITEMS[name]) return;
 					state.favorites.push({
-						id: genId(),
-						name
+						id:			genId(),
+						name,
+						mods:		[],
+						enchants:	[],
+						legendary:	null
 					});
 
 					saveState();
@@ -3308,7 +3417,7 @@
 					const box = document.getElementById('favTable');
 					const tbody = box.querySelector('tbody');
 					const empty = document.getElementById('favEmpty');
-					if (!state.favorites.length){
+					if (!state.favorites.length) {
 						empty.style.display	= 'block';
 						box.style.display	= 'none';
 						return;
@@ -3316,36 +3425,47 @@
 
 					empty.style.display	= 'none';
 					box.style.display	= 'table';
-					const sorted = state.favorites.slice().sort((a, b) => a.name.localeCompare(b.name));
-					tbody.innerHTML = sorted.map(entry => {
-						const item		= ITEMS[entry.name];
-						const expanded	= expandedFavItems.has(entry.id);
-						const custom	= getCustom(entry.id, state.favCustomizations);
-						const mainRow	= `
+
+					const plannerFavs	= state.favorites.filter(f => f.fromPlanner).slice().sort((a, b)	=> a.name.localeCompare(b.name));
+					const manualFavs	= state.favorites.filter(f => !f.fromPlanner).slice().sort((a, b)	=> a.name.localeCompare(b.name));
+
+					function renderRow(entry) {
+						const item			= ITEMS[entry.name];
+						const expanded		= expandedFavItems.has(entry.id);
+						const plannerTag	= entry.fromPlanner ? '<span class="tag planner-tag">Planner</span>' : '';
+						const mainRow = `
 							<tr>
-								<td class="row-name">${escapeHtml(entry.name)}<span class="tag">${escapeHtml(item ? item.category : '')}</span>${item?customSummary(custom):''}</td>
+								<td class="row-name">${escapeHtml(entry.name)}<span class="tag">${escapeHtml(item ? item.category : '')}</span>${plannerTag}${item ? customSummary(entry) : ''}</td>
 								<td>
-									<button class="small fav-add-craft" data-id="${escapeHtml(entry.id)}" data-name="${escapeHtml(entry.name)}" title="Add to craft">+</button>
+									<button class="small fav-add-craft" data-id="${escapeHtml(entry.id)}" title="Add to craft">+</button>
 									${item ? `<button class="secondary small customize-toggle-fav" data-id="${escapeHtml(entry.id)}" title="Modifications / Enchantments / Legendary">${expanded?'▲':'▼'}</button>` : ''}
-									<button class="danger small fav-remove" data-id="${escapeHtml(entry.id)}">X</button>
+									${entry.fromPlanner ? '' : `<button class="danger small fav-remove" data-id="${escapeHtml(entry.id)}">X</button>`}
 								</td>
 							</tr>
 						`;
 
 						const detailRow = (item && expanded) ? `
 							<tr class="customize-row">
-								<td colspan="2">${renderCustomizePanel(entry.id, item, custom)}</td>
+								<td colspan="2">${renderCustomizePanel(entry.id, item, entry, entry.fromPlanner)}</td>
 							</tr>
 						` : '';
 
 						return mainRow + detailRow;
-					}).join('');
+					}
+
+					const plannerSection = `
+						${!plannerFavs.length && !manualFavs.length ? `<th>Item</th>` : ''}
+						${plannerFavs.length ? `<th>Item - Planner</th>` : ''}
+						${plannerFavs.map(renderRow).join('')}
+						${manualFavs.length ? `<th>Item - Manual</th>` : ''}
+					`;
+
+					tbody.innerHTML = plannerSection + manualFavs.map(renderRow).join('');
 
 					tbody.querySelectorAll('.fav-remove').forEach(btn => {
 						btn.addEventListener('click', () => {
 							const id = btn.dataset.id;
 							state.favorites = state.favorites.filter(f => f.id !== id);
-							delete state.favCustomizations[id];
 							expandedFavItems.delete(id);
 							saveState();
 							renderFavorites();
@@ -3355,18 +3475,17 @@
 
 					tbody.querySelectorAll('.fav-add-craft').forEach(btn => {
 						btn.addEventListener('click', () => {
-							const id = btn.dataset.id;
-							const n = btn.dataset.name;
-							state.craftList[n] = (state.craftList[n] || 0) + 1;
+							const entry = state.favorites.find(f => f.id === btn.dataset.id);
+							if (!entry) return;
 
-							const fc = state.favCustomizations[id];
-							if (fc && ((fc.mods||[]).filter(Boolean).length || (fc.enchants||[]).filter(Boolean).length || fc.enchant || fc.legendary)) {
-								state.customizations[n] = {
-									mods:		(fc.mods		|| []).filter(Boolean).slice(),
-									enchants:	((fc.enchants	|| (fc.enchant ? [fc.enchant] : [])) || []).filter(Boolean).slice(),
-									legendary:	fc.legendary	|| null
-								};
-							}
+							state.craftList.push({
+								id:			genId(),
+								name:		entry.name,
+								qty:		1,
+								mods:		entry.mods.slice(),
+								enchants:	entry.enchants.slice(),
+								legendary:	entry.legendary
+							});
 
 							saveState();
 							renderCraftList();
@@ -3382,7 +3501,7 @@
 						});
 					});
 
-					bindCustomizePanelEvents(tbody, n => getCustom(n, state.favCustomizations));
+					bindCustomizePanelEvents(tbody, id => state.favorites.find(f => f.id === id));
 				}
 
 				/* ---------- Resolver ---------- */
@@ -3394,8 +3513,13 @@
 					const includeLegendary	= options.includeLegendary	!== false;
 
 					const have = {};
-					Object.keys(state.inventory).forEach(n => {
-						have[n] = state.inventory[n] || 0;
+					state.inventory.forEach(row => {
+						have[row.name] = (have[row.name] || 0) + row.qty;
+					});
+
+					const craftQtyByName = {};
+					state.craftList.forEach(row => {
+						craftQtyByName[row.name] = (craftQtyByName[row.name] || 0) + row.qty;
 					});
 
 					const craftedNeeded		= {};
@@ -3428,19 +3552,18 @@
 						}
 					}
 
-					Object.keys(state.craftList).forEach(n => {
-						resolve(n, state.craftList[n], rawNeeded);
+					Object.keys(craftQtyByName).forEach(n => {
+						resolve(n, craftQtyByName[n], rawNeeded);
 					});
 
 					// Modifications / Enchantments / Legendaries attached to craft-list items
-					Object.keys(state.craftList).forEach(n => {
-						const qty = state.craftList[n];
-						const custom = state.customizations[n];
-						if (!custom) return;
+					state.craftList.forEach(row => {
+						const qty	= row.qty;
+						const item	= ITEMS[row.name];
+						if (!item) return;
 
-						const item = ITEMS[n];
 						if (includeMods) {
-							(custom.mods || []).filter(Boolean).forEach(modName => {
+							(row.mods || []).filter(Boolean).forEach(modName => {
 								const mod = MODIFICATIONS[modName];
 								if (!mod) return;
 
@@ -3450,7 +3573,7 @@
 						}
 
 						if (includeEnchant) {
-							(custom.enchants || []).filter(Boolean).forEach(enchantName => {
+							(row.enchants || []).filter(Boolean).forEach(enchantName => {
 								const enchant = ENCHANTMENTS[enchantName];
 								if (!enchant) return;
 
@@ -3458,14 +3581,15 @@
 							});
 						}
 
-						if (includeLegendary && custom.legendary && isMasterwork(item) && LEGENDARY_EFFECTS[custom.legendary]) {
-							LEGENDARY_EFFECTS[custom.legendary].cost.forEach(ing => resolve(ing.name, ing.qty * qty, customRawNeeded));
+						if (includeLegendary && row.legendary && isMasterwork(item) && LEGENDARY_EFFECTS[row.legendary]) {
+							LEGENDARY_EFFECTS[row.legendary].cost.forEach(ing => resolve(ing.name, ing.qty * qty, customRawNeeded));
 						}
 					});
 
-					Object.keys(state.repairList).forEach(n => {
-						const item = ITEMS[n];
-						const times = state.repairList[n];
+					state.repairList.forEach(row => {
+						const invRow	= state.inventory.find(inv => inv.id === row.invId);
+						const item		= invRow && ITEMS[invRow.name];
+						const times		= row.qty;
 						if (!item || !item.repairIngredients.length) return;
 
 						item.repairIngredients.forEach(ing => {
@@ -3491,18 +3615,17 @@
 						}
 					}
 
-					Object.keys(state.craftList).forEach(n => {
-						resolveGross(n, state.craftList[n], grossRawNeeded);
+					Object.keys(craftQtyByName).forEach(n => {
+						resolveGross(n, craftQtyByName[n], grossRawNeeded);
 					});
 
-					Object.keys(state.craftList).forEach(n => {
-						const qty = state.craftList[n];
-						const custom = state.customizations[n];
-						if (!custom) return;
+					state.craftList.forEach(row => {
+						const qty	= row.qty;
+						const item	= ITEMS[row.name];
+						if (!item) return;
 
-						const item = ITEMS[n];
 						if (includeMods) {
-							(custom.mods||[]).filter(Boolean).forEach(modName => {
+							(row.mods||[]).filter(Boolean).forEach(modName => {
 								const mod = MODIFICATIONS[modName];
 								if (!mod) return;
 
@@ -3512,7 +3635,7 @@
 						}
 
 						if (includeEnchant) {
-							(custom.enchants || []).filter(Boolean).forEach(enchantName => {
+							(row.enchants || []).filter(Boolean).forEach(enchantName => {
 								const enchants = ENCHANTMENTS[enchantName];
 								if (!enchants) return;
 
@@ -3520,14 +3643,15 @@
 							});
 						}
 
-						if (includeLegendary && custom.legendary && isMasterwork(item) && LEGENDARY_EFFECTS[custom.legendary]) {
-							LEGENDARY_EFFECTS[custom.legendary].cost.forEach(ing => resolveGross(ing.name, ing.qty * qty, grossCustomRawNeeded));
+						if (includeLegendary && row.legendary && isMasterwork(item) && LEGENDARY_EFFECTS[row.legendary]) {
+							LEGENDARY_EFFECTS[row.legendary].cost.forEach(ing => resolveGross(ing.name, ing.qty * qty, grossCustomRawNeeded));
 						}
 					});
 
-					Object.keys(state.repairList).forEach(n => {
-						const item = ITEMS[n];
-						const times = state.repairList[n];
+					state.repairList.forEach(row => {
+						const invRow	= state.inventory.find(inv => inv.id === row.invId);
+						const item		= invRow && ITEMS[invRow.name];
+						const times		= row.qty;
 						if (!item || !item.repairIngredients.length) return;
 
 						item.repairIngredients.forEach(ing => {
@@ -3583,7 +3707,7 @@
 
 				function renderResults() {
 					const resultsEl = document.getElementById('results');
-					if (!Object.keys(state.craftList).length && !Object.keys(state.repairList).length) {
+					if (!state.craftList.length && !state.repairList.length) {
 						resultsEl.innerHTML = '<div class="list-empty">Not calculated yet!</div>';
 						return;
 					}
@@ -3594,10 +3718,15 @@
 						grossRawNeeded, grossRepairRawNeeded, grossCustomRawNeeded
 					} = resolveAll(toggles);
 
+					const craftQtyByName = {};
+					state.craftList.forEach(row => {
+						craftQtyByName[row.name] = (craftQtyByName[row.name] || 0) + row.qty;
+					});
+
 					let html = '';
-					if (Object.keys(state.craftList).length) {
-						const targetRows = Object.keys(state.craftList).sort().map(n => {
-							const qty			= state.craftList[n];
+					if (state.craftList.length) {
+						const targetRows = Object.keys(craftQtyByName).sort().map(n => {
+							const qty			= craftQtyByName[n];
 							const covered		= fromInventory[n] || 0;
 							const stillNeeded	= craftedNeeded[n] || 0;
 							const status		= stillNeeded > 0
@@ -3606,14 +3735,14 @@
 							return `<tr><td class="row-name">${escapeHtml(n)}</td><td>${qty}</td><td>${covered}</td><td>${status}</td></tr>`;
 						}).join('');
 
-						const intermediateNames	= Object.keys(craftedNeeded).filter(n => !(n in state.craftList)).sort();
+						const intermediateNames	= Object.keys(craftedNeeded).filter(n => !(n in craftQtyByName)).sort();
 						const intermediateRows	= intermediateNames.map(n => 
 							`<tr><td class="row-name">${escapeHtml(n)}</td><td>${craftedNeeded[n]}</td></tr>`
 						).join('');
 
-						const perItemNames	= Object.keys(state.craftList).sort();
+						const perItemNames	= Object.keys(craftQtyByName).sort();
 						const perItemRows	= perItemNames.map(n => {
-							const qty = state.craftList[n];
+							const qty = craftQtyByName[n];
 
 							// Build the crafting chain
 							const chain = [n];
@@ -3625,8 +3754,6 @@
 								chain.unshift(subItemIng.name);
 								current = ITEMS[subItemIng.name];
 							}
-
-							const chainStr = chain.map(escapeHtml).join(' &rarr; ');
 
 							// Flatten this item's full requirement tree down to raw materials
 							const flatIngredients = {};
@@ -3650,7 +3777,7 @@
 								.join(', ') || '-'
 							;
 
-							return `<tr><td class="row-name">${chainStr}</td><td>${qty}</td><td>${ingredientBits}</td></tr>`;
+							return `<tr><td class="row-name">${chain.map(escapeHtml).join(' &rarr; ')}</td><td>${qty}</td><td>${ingredientBits}</td></tr>`;
 						}).join('');
 
 						const perItemNamesOld = Object.keys(craftedNeeded).sort();
@@ -3679,46 +3806,49 @@
 						`;
 
 						// Modifications / Enchantments / Legendaries
-						const customEntries = Object.keys(state.craftList).sort().flatMap(n => {
-							const custom = state.customizations[n];
-							if (!custom) return [];
+						const customEntries = state.craftList
+							.slice()
+							.sort((a, b) => a.name.localeCompare(b.name))
+							.flatMap(row => {
+								const item = ITEMS[row.name];
+								if (!item) return [];
 
-							const qty = state.craftList[n];
-							const item = ITEMS[n];
-							const rows = [];
-							(custom.mods || []).filter(Boolean).forEach(modName => {
-								const modCost = mergeIngredientLists(item.modIngredients, MODIFICATIONS[modName] ? MODIFICATIONS[modName].cost : []);
-								rows.push({
-									item: n,
-									qty,
-									kind: 'Modification',
-									name: modName,
-									cost: modCost
+								const qty	= row.qty;
+								const rows	= [];
+								(row.mods || []).filter(Boolean).forEach(modName => {
+									const modCost = mergeIngredientLists(item.modIngredients, MODIFICATIONS[modName] ? MODIFICATIONS[modName].cost : []);
+									rows.push({
+										item: row.name,
+										qty,
+										kind: 'Modification',
+										name: modName,
+										cost: modCost
+									});
 								});
-							});
 
-							(custom.enchants || []).filter(Boolean).forEach(enchantName => {
-								rows.push({
-									item: n,
-									qty,
-									kind: 'Enchantment',
-									name: enchantName,
-									cost: ENCHANTMENTS[enchantName] ? ENCHANTMENTS[enchantName].cost : []
+								(row.enchants || []).filter(Boolean).forEach(enchantName => {
+									rows.push({
+										item: row.name,
+										qty,
+										kind: 'Enchantment',
+										name: enchantName,
+										cost: ENCHANTMENTS[enchantName] ? ENCHANTMENTS[enchantName].cost : []
+									});
 								});
-							});
 
-							if (custom.legendary) {
-								rows.push({
-									item: n,
-									qty,
-									kind: 'Legendary',
-									name: custom.legendary,
-									cost: LEGENDARY_EFFECTS[custom.legendary] ? LEGENDARY_EFFECTS[custom.legendary].cost : []
-								});
-							}
+								if (row.legendary) {
+									rows.push({
+										item: row.name,
+										qty,
+										kind: 'Legendary',
+										name: row.legendary,
+										cost: LEGENDARY_EFFECTS[row.legendary] ? LEGENDARY_EFFECTS[row.legendary].cost : []
+									});
+								}
 
-							return rows;
-						});
+								return rows;
+							})
+						;
 
 						if (customEntries.length) {
 							const kindIncluded = {
@@ -3742,23 +3872,32 @@
 						}
 					}
 
-					if (Object.keys(state.repairList).length) {
-						const repairPerItemNames = Object.keys(state.repairList).filter(n => state.repairList[n] > 0 && ITEMS[n]).sort();
-						const repairPerItemRows = repairPerItemNames.map(n => {
-							const item = ITEMS[n];
-							const times = state.repairList[n];
-							const ingredientBits = item.repairIngredients.map(ing => `${escapeHtml(ing.name)} x${ing.qty * times}`).join(', ') || '-';
-							return `<tr><td class="row-name">${escapeHtml(n)}</td><td>${times}</td><td>${ingredientBits}</td></tr>`;
-						}).join('');
+					if (state.repairList.length) {
+						const repairRows = state.repairList
+							.filter(r => r.qty > 0)
+							.map(r => {
+								const invRow	= state.inventory.find(inv => inv.id === r.invId);
+								const item		= invRow && ITEMS[invRow.name];
+								if (!item) return null;
+
+								const times = r.qty;
+								const ingredientBits = item.repairIngredients.map(ing => `${escapeHtml(ing.name)} x${ing.qty * times}`).join(', ') || '-';
+								return {name: invRow.name, html: `<tr><td class="row-name">${escapeHtml(invRow.name)}</td><td>${times}</td><td>${ingredientBits}</td></tr>`};
+							})
+							.filter(Boolean)
+							.sort((a, b) => a.name.localeCompare(b.name))
+							.map(r => r.html)
+							.join('')
+						;
 
 						html += `
 							<h3>Repair Costs</h3>
 							<table><thead><tr><th>Item</th><th>Times</th><th>Cost</th></tr></thead>
-							<tbody>${repairPerItemRows || '<tr><td colspan="3" class="list-empty">Nothing in the repair list.</td></tr>'}</tbody></table>
+							<tbody>${repairRows || '<tr><td colspan="3" class="list-empty">Nothing in the repair list.</td></tr>'}</tbody></table>
 						`;
 					}
 
-					const anySectionShown = Object.keys(rawNeeded).length || Object.keys(state.craftList).length || Object.keys(customRawNeeded).length || Object.keys(state.repairList).length;
+					const anySectionShown = Object.keys(rawNeeded).length || state.craftList.length || Object.keys(customRawNeeded).length || state.repairList.length;
 					if (anySectionShown) {
 						const totalForCrafting = {};
 						[grossRawNeeded, grossCustomRawNeeded, grossRepairRawNeeded].forEach(bucket => {
@@ -3837,67 +3976,31 @@
 						|| Object.keys(plannerState.knownSpells	|| {}).length
 					);
 
-					const hasXpData = xpState && typeof xpState === 'object' && Object.keys(xpState).length > 0;
-					const hasAnything = (
-						Object.keys(state.inventory).length || Object.keys(state.craftList).length || Object.keys(state.repairList).length
-
-						|| state.favorites.length
-						|| hasPlannerData
-						|| hasXpData
-					);
+					const hasXpData		= xpState && typeof xpState === 'object' && Object.keys(xpState).length > 0;
+					const hasAnything	= state.inventory.length || state.craftList.length || state.repairList.length || state.favorites.length || hasPlannerData || hasXpData;
 
 					if (!hasAnything) {
 						alert('Nothing to export yet - add some items first.');
 						return;
 					}
 
-					const customizations = {};
-					Object.keys(state.customizations).forEach(n => {
-						const c			= state.customizations[n];
-						const mods		= (c.mods		|| []).filter(Boolean);
-						const enchants	= (c.enchants	|| []).filter(Boolean);
-						if (mods.length || enchants.length || c.legendary) {
-							customizations[n] = {
-								mods,
-								enchants,
-								legendary:	c.legendary	|| null
-							};
-						}
-					});
+					const repairList = state.repairList.map(r => {
+						const invRow = state.inventory.find(inv => inv.id === r.invId);
+						return invRow ? {name: invRow.name, qty: r.qty} : null;
+					}).filter(Boolean);
 
-					const invCustomizations = {};
-					Object.keys(state.invCustomizations || {}).forEach(n => {
-						const c			= state.invCustomizations[n];
-						const mods		= (c.mods		|| []).filter(Boolean);
-						const enchants	= (c.enchants	|| []).filter(Boolean);
-						if (mods.length || enchants.length || c.legendary) {
-							invCustomizations[n] = {
-								mods,
-								enchants,
-								legendary:	c.legendary	|| null
-							};
-						}
-					});
-
-					const favorites = state.favorites.map(entry => {
-						const c			= state.favCustomizations[entry.id] || {};
-						const mods		= (c.mods		|| []).filter(Boolean);
-						const enchants	= (c.enchants	|| []).filter(Boolean);
-						return {
-							name: entry.name,
-							mods,
-							enchants,
-							legendary:	c.legendary	|| null
-						};
-					});
+					const favorites = state.favorites
+						.filter(f => !f.fromPlanner)
+						.map(f => ({name: f.name, mods: f.mods, enchants: f.enchants, legendary: f.legendary}))
+					;
 
 					const payload = {
 						type:				'chronicles-full-backup',
-						version:			2,
+						version:			3,
 						exportedAt:			new Date().toISOString(),
-						inventory:			{...state.inventory},
-						craftList:			{...state.craftList},
-						repairList:			{...state.repairList},
+						inventory:			state.inventory.map(r => ({name: r.name, qty: r.qty, mods: r.mods, enchants: r.enchants, legendary: r.legendary})),
+						craftList:			state.craftList.map(r => ({name: r.name, qty: r.qty, mods: r.mods, enchants: r.enchants, legendary: r.legendary})),
+						repairList,
 						customizations,
 						invCustomizations,
 						favorites,
@@ -3944,52 +4047,57 @@
 						}
 
 						// Inventory
-						const cleanInventory = {};
-						if (parsed.inventory && typeof parsed.inventory === 'object') {
+						const cleanInventory = [];
+						if (Array.isArray(parsed.inventory)) {
+							parsed.inventory.forEach(row => {
+								const name = row && row.name;
+								const qty = row && row.qty;
+								if (typeof name !== 'string' || !(MATERIALS[name] || ITEMS[name])) return;
+								if (typeof qty !== 'number' || !(qty > 0)) return;
+								const c = ITEMS[name] ? cleanCustomForItem(ITEMS[name], row) : {mods: [], enchants: [], legendary: null};
+								cleanInventory.push({name, qty: Math.floor(qty), mods: c.mods, enchants: c.enchants, legendary: c.legendary});
+							});
+						} else if (parsed.inventory && typeof parsed.inventory === 'object') {
+							const oldCustom = (parsed.invCustomizations && typeof parsed.invCustomizations === 'object') ? parsed.invCustomizations : {};
 							Object.entries(parsed.inventory).forEach(([name, qty]) => {
-								if ((MATERIALS[name] || ITEMS[name]) && typeof qty === 'number' && qty > 0) {
-									cleanInventory[name] = Math.floor(qty);
-								}
+								if (!(MATERIALS[name] || ITEMS[name]) || typeof qty !== 'number' || !(qty > 0)) return;
+								const c = ITEMS[name] ? cleanCustomForItem(ITEMS[name], oldCustom[name]) : {mods: [], enchants: [], legendary: null};
+								cleanInventory.push({name, qty: Math.floor(qty), mods: c.mods, enchants: c.enchants, legendary: c.legendary});
 							});
 						}
 
 						// Craft
-						const cleanCraftList = {};
-						if (parsed.craftList && typeof parsed.craftList === 'object') {
+						const cleanCraftList = [];
+						if (Array.isArray(parsed.craftList)) {
+							parsed.craftList.forEach(row => {
+								const name = row && row.name;
+								const qty = row && row.qty;
+								if (typeof name !== 'string' || !ITEMS[name] || typeof qty !== 'number' || !(qty > 0)) return;
+								const c = cleanCustomForItem(ITEMS[name], row);
+								cleanCraftList.push({name, qty: Math.floor(qty), mods: c.mods, enchants: c.enchants, legendary: c.legendary});
+							});
+						} else if (parsed.craftList && typeof parsed.craftList === 'object') {
+							const oldCustom = (parsed.customizations && typeof parsed.customizations === 'object') ? parsed.customizations : {};
 							Object.entries(parsed.craftList).forEach(([name, qty]) => {
-								if (ITEMS[name] && typeof qty === 'number' && qty > 0) cleanCraftList[name] = Math.floor(qty);
+								if (!ITEMS[name] || typeof qty !== 'number' || !(qty > 0)) return;
+								const c = cleanCustomForItem(ITEMS[name], oldCustom[name]);
+								cleanCraftList.push({name, qty: Math.floor(qty), mods: c.mods, enchants: c.enchants, legendary: c.legendary});
 							});
 						}
 
 						// Repair
-						const cleanRepairList = {};
-						if (parsed.repairList && typeof parsed.repairList === 'object') {
+						const cleanRepairList = [];
+						if (Array.isArray(parsed.repairList)) {
+							parsed.repairList.forEach(row => {
+								const name = row && row.name;
+								const qty = row && row.qty;
+								if (typeof name !== 'string' || !ITEMS[name] || typeof qty !== 'number' || !(qty > 0)) return;
+								cleanRepairList.push({name, qty: Math.floor(qty)});
+							});
+						} else if (parsed.repairList && typeof parsed.repairList === 'object') {
 							Object.entries(parsed.repairList).forEach(([name, qty]) => {
-								if (ITEMS[name] && typeof qty === 'number' && qty > 0) cleanRepairList[name] = Math.floor(qty);
-							});
-						}
-
-						// Craft-List Customizations
-						const cleanCustomizations = {};
-						if (parsed.customizations && typeof parsed.customizations === 'object') {
-							Object.entries(parsed.customizations).forEach(([name, raw]) => {
-								const item = ITEMS[name];
-								if (!item) return;
-
-								const c = cleanCustomForItem(item, raw);
-								if (c.mods.length || c.enchants.length || c.legendary) cleanCustomizations[name] = c;
-							});
-						}
-
-						// Inventory Customizations
-						const cleanInvCustomizations = {};
-						if (parsed.invCustomizations && typeof parsed.invCustomizations === 'object') {
-							Object.entries(parsed.invCustomizations).forEach(([name, raw]) => {
-								const item = ITEMS[name];
-								if (!item) return;
-
-								const c = cleanCustomForItem(item, raw);
-								if (c.mods.length || c.enchants.length || c.legendary) cleanInvCustomizations[name] = c;
+								if (!ITEMS[name] || typeof qty !== 'number' || !(qty > 0)) return;
+								cleanRepairList.push({name, qty: Math.floor(qty)});
 							});
 						}
 
@@ -4005,11 +4113,14 @@
 						const cleanFavorites = [];
 						if (Array.isArray(parsed.favorites)) {
 							parsed.favorites.forEach(entry => {
+								if (entry && entry.fromPlanner) return;
+
 								const name = typeof entry === 'string' ? entry : (entry && entry.name);
 								if (typeof name !== 'string' || !ITEMS[name]) return;
+
 								const item = ITEMS[name];
 								const c = cleanCustomForItem(item, typeof entry === 'object' ? entry : {});
-								cleanFavorites.push({id: genId(), name, ...c});
+								cleanFavorites.push({name, ...c});
 							});
 						}
 
@@ -4034,9 +4145,9 @@
 						// Chro Mode
 						const cleanChroMode = (parsed.chroMode === 'enabled' || parsed.chroMode === 'disabled') ? parsed.chroMode : null;
 
-						const totalCount = Object.keys(cleanInventory).length
-							+ Object.keys(cleanCraftList).length
-							+ Object.keys(cleanRepairList).length
+						const totalCount = cleanInventory.length
+							+ cleanCraftList.length
+							+ cleanRepairList.length
 							+ cleanFavorites.length
 							+ (cleanPlanner ? 1 : 0)
 							+ (cleanXpCalc ? 1 : 0)
@@ -4049,33 +4160,44 @@
 						}
 
 						const merge = confirm(
-							`Found: ${Object.keys(cleanInventory).length} inventory item(s), ${Object.keys(cleanCraftList).length} craft list item(s), ` +
-							`${Object.keys(cleanRepairList).length} repair list item(s), ${cleanFavorites.length} Desired Gear item(s)` +
+							`Found: ${cleanInventory.length} inventory item(s), ${cleanCraftList.length} craft list item(s), ` +
+							`${cleanRepairList.length} repair list item(s), ${cleanFavorites.length} Desired Gear item(s)` +
 							`${cleanPlanner ? ', Build Planner data' : ''}${cleanXpCalc ? ', XP Calculator data' : ''}.\n\n` +
 							`Click OK to MERGE with what you currently have, or Cancel to REPLACE everything entirely.\n\n` +
 							`The page will reload after import to apply everything.`
 						);
 
+						const keptPlannerFavorites = state.favorites.filter(f => f.fromPlanner);
 						if (!merge) {
-							state.inventory			= {};
-							state.craftList			= {};
-							state.repairList		= {};
-							state.favorites			= [];
-							state.favCustomizations	= {};
-							state.customizations	= {};
-							state.invCustomizations	= {};
+							state.inventory		= [];
+							state.craftList		= [];
+							state.repairList	= [];
+							state.favorites		= keptPlannerFavorites.slice();
 						}
 
-						Object.entries(cleanInventory).forEach(([n, q]) => {
-							state.inventory[n] = (state.inventory[n] || 0) + q;
+						cleanInventory.forEach(row => {
+							const existing = merge ? state.inventory.find(r =>
+								r.name === row.name
+								&& JSON.stringify(r.mods) === JSON.stringify(row.mods)
+								&& JSON.stringify(r.enchants) === JSON.stringify(row.enchants)
+								&& r.legendary === row.legendary
+							) : null;
+
+							if (existing) existing.qty += row.qty;
+							else state.inventory.push({id: genId(), ...row});
 						});
 
-						Object.entries(cleanCraftList).forEach(([n, q]) => {
-							state.craftList[n] = (state.craftList[n] || 0) + q;
+						cleanCraftList.forEach(row => {
+							state.craftList.push({id: genId(), ...row});
 						});
 
-						Object.entries(cleanRepairList).forEach(([n, q]) => {
-							if ((state.inventory[n] || 0) > 0) state.repairList[n] = (state.repairList[n] || 0) + q;
+						cleanRepairList.forEach(row => {
+							const invRow = state.inventory.find(inv => inv.name === row.name && inv.qty > 0);
+							if (!invRow) return;
+
+							const existing = merge ? state.repairList.find(r => r.invId === invRow.id) : null;
+							if (existing) existing.qty += row.qty;
+							else state.repairList.push({id: genId(), invId: invRow.id, qty: row.qty});
 						});
 
 						Object.entries(cleanCustomizations).forEach(([n, c]) => {
@@ -4091,14 +4213,13 @@
 						}
 
 						cleanFavorites.forEach(f => {
-							state.favorites.push({id: f.id, name: f.name});
-							if (f.mods.length || f.enchants.length || f.legendary) {
-								state.favCustomizations[f.id] = {
-									mods:		f.mods,
-									enchants:	f.enchants,
-									legendary:	f.legendary
-								};
-							}
+							state.favorites.push({
+								id:			genId(),
+								name:		f.name,
+								mods:		f.mods,
+								enchants:	f.enchants,
+								legendary:	f.legendary
+							});
 						});
 
 						saveState();
@@ -4151,19 +4272,23 @@
 
 				/* ---------- Bridge: let the Build Planner tab push its Gear picks in here ---------- */
 				window.__craftCalcLoadGear = function(gearItems) {
+					state.favorites = state.favorites.filter(f => !f.fromPlanner);
+
 					(gearItems || []).forEach(g => {
 						if (!g || !g.name || !ITEMS[g.name]) return;
-						state.craftList[g.name] = (state.craftList[g.name] || 0) + 1;
-						state.customizations[g.name] = {
-							mods:		(g.mods		|| []).filter(Boolean),
-							enchants:	(g.enchants	|| []).filter(Boolean),
-							legendary:	g.legendary	|| null
-						};
+						const c = cleanCustomForItem(ITEMS[g.name], g);
+						state.favorites.push({
+							id:				genId(),
+							name:			g.name,
+							mods:			c.mods,
+							enchants:		c.enchants,
+							legendary:		c.legendary,
+							fromPlanner:	true
+						});
 					});
 
 					saveState();
-					renderCraftList();
-					renderQuickStats();
+					renderFavorites();
 				};
 			}
 		</script>
@@ -5232,9 +5357,11 @@
 							renderSkills();
 						});
 					});
+
+					gearSync();
 				}
 
-				el('plSyncGearBtn').addEventListener('click', () => {
+				function gearSync(doAlert = false) {
 					const gearItems = Object.values(pState.gear)
 						.filter(g => g && g.itemName)
 						.map(g => ({
@@ -5246,16 +5373,20 @@
 					;
 
 					if (!gearItems.length) {
-						alert('No gear picked yet in the Build Planner.');
+						if (doAlert) alert('No gear picked yet in the Build Planner.');
 						return;
 					}
 
 					if (window.__craftCalcLoadGear) {
 						window.__craftCalcLoadGear(gearItems);
-						alert('Synced ' + gearItems.length + ' gear item(s) into the Crafting Cost Calculator craft list.');
+						if (doAlert) alert('Synced ' + gearItems.length + ' gear item(s) into the Crafting Cost Calculator craft list.');
 					} else {
-						alert('The Crafting Calculator isn\'t ready yet. Try again in a moment.');
+						if (doAlert) alert('The Crafting Calculator isn\'t ready yet. Try again in a moment.');
 					}
+				}
+
+				el('plSyncGearBtn').addEventListener('click', () => {
+					gearSync(true)
 				});
 
 				/* ---------- Spells / Techniques ---------- */
