@@ -3961,7 +3961,11 @@
 
 					let plannerState = null;
 					try { if (plannerRaw) plannerState = JSON.parse(plannerRaw); } catch (e) {}
-					if (plannerState && typeof plannerState === 'object') delete plannerState.baseStats;
+					if (plannerState && typeof plannerState === 'object') {
+						delete plannerState.baseStats;
+						delete plannerState.attrPointsAvail;
+						delete plannerState.perkPointsAvail;
+					}
 
 					let xpState = null;
 					try { if (xpRaw) xpState = JSON.parse(xpRaw); } catch (e) {}
@@ -4001,8 +4005,6 @@
 						inventory:			state.inventory.map(r => ({name: r.name, qty: r.qty, mods: r.mods, enchants: r.enchants, legendary: r.legendary})),
 						craftList:			state.craftList.map(r => ({name: r.name, qty: r.qty, mods: r.mods, enchants: r.enchants, legendary: r.legendary})),
 						repairList,
-						customizations,
-						invCustomizations,
 						favorites,
 						costToggles:		{...(state.costToggles || {})},
 						planner:			plannerState,
