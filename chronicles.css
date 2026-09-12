@@ -56,6 +56,9 @@
 	--img-bg:			url('https://static.wixstatic.com/media/1a6ccf_ff8375cd008b4fe39480cf8e3cd53bd1~mv2.png/v1/fill/w_1920,h_1080,al_c,q_95,usm_0.66_1.00_0.01,enc_avif,quality_auto/1a6ccf_ff8375cd008b4fe39480cf8e3cd53bd1~mv2.png');
 	--img-logo-left:	url('https://static.wixstatic.com/media/1a6ccf_f467680897ec41c5bb74791f7f4d819f~mv2.png/v1/crop/x_0,y_0,w_215,h_88/fill/w_82,h_30,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/SR-qico-Daedric-right.png');
 	--img-logo-right:	url('https://static.wixstatic.com/media/1a6ccf_185f9b0e4bde4837b3096a11ec0a270f~mv2.png/v1/crop/x_82,y_0,w_218,h_86/fill/w_89,h_30,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/SR-qico-Daedric-left.png');
+	--img-pagebtn-x:	url('https://x02.me/i/EF6ARK.png');
+	--img-pagebtn-y:	url('https://x02.me/i/HNMV6.png');
+	--img-fill-white:	url('https://x02.me/i/3TS4.png');
 }
 
 * {
@@ -85,9 +88,9 @@
 	font-family: 'Kingthings Petrock';
 	font-display: swap;
 	src:
-		url("https://static.wixstatic.com/ufonts/0c7ab2_853496e9be4a4a8b92f9dfb480d34b28/woff2/file.woff2") format("woff2"),
-		url("https://static.wixstatic.com/ufonts/0c7ab2_853496e9be4a4a8b92f9dfb480d34b28/woff/file.woff") format("woff"),
-		url("https://static.wixstatic.com/ufonts/0c7ab2_853496e9be4a4a8b92f9dfb480d34b28/ttf/file.ttf") format("ttf")
+		url('https://static.wixstatic.com/ufonts/0c7ab2_853496e9be4a4a8b92f9dfb480d34b28/woff2/file.woff2') format('woff2'),
+		url('https://static.wixstatic.com/ufonts/0c7ab2_853496e9be4a4a8b92f9dfb480d34b28/woff/file.woff') format('woff'),
+		url('https://static.wixstatic.com/ufonts/0c7ab2_853496e9be4a4a8b92f9dfb480d34b28/ttf/file.ttf') format('ttf')
 	;
 }
 @font-face {
@@ -102,9 +105,9 @@
 	font-family: 'Crimson Text Regular';
 	font-display: swap;
 	src:
-		url("https://static.wixstatic.com/ufonts/cc17d2_8b9fd51a4cb64333a1bbbfdb837d4696/woff2/file.woff2") format("woff2"),
-		url("https://static.wixstatic.com/ufonts/cc17d2_8b9fd51a4cb64333a1bbbfdb837d4696/woff/file.woff") format("woff"),
-		url("https://static.wixstatic.com/ufonts/cc17d2_8b9fd51a4cb64333a1bbbfdb837d4696/ttf/file.ttf") format("ttf")
+		url('https://static.wixstatic.com/ufonts/cc17d2_8b9fd51a4cb64333a1bbbfdb837d4696/woff2/file.woff2') format('woff2'),
+		url('https://static.wixstatic.com/ufonts/cc17d2_8b9fd51a4cb64333a1bbbfdb837d4696/woff/file.woff') format('woff'),
+		url('https://static.wixstatic.com/ufonts/cc17d2_8b9fd51a4cb64333a1bbbfdb837d4696/ttf/file.ttf') format('ttf')
 	;
 }
 
@@ -239,6 +242,7 @@ chro-logo {
 	margin: 0 auto 20px;
 }
 .page-tab {
+	position: relative;
 	color: var(--text);
 	background: var(--panel2);
 	border: 1px solid var(--border);
@@ -252,8 +256,8 @@ chro-logo {
 	color: var(--text-chro);
 	background: var(--panel2-chro);
 	border: 1px solid var(--border-chro);
-	border-radius: 4px;
 	box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+	border-radius: 0;
 }
 .page-tab:hover {
 	filter: brightness(1.15);
@@ -267,6 +271,48 @@ chro-logo {
 	color: var(--text-chro);
 	background: var(--button2-chro);
 	border-color: var(--button2-chro);
+}
+.page-btn-outline {
+	background-color: var(--panel2-chro);
+	pointer-events: none;
+	position: absolute;
+	z-index: 2;
+	inset: 3px;
+
+	--offset: -4px;
+	top: var(--offset);
+	left: var(--offset);
+	right: var(--offset);
+	bottom: var(--offset);
+}
+.page-tab.active .page-btn-outline {
+	background-color: var(--button2-chro);
+}
+.page-btn-outline.x {
+	-webkit-mask-image: var(--img-pagebtn-x), var(--img-pagebtn-x);
+	mask-image: var(--img-pagebtn-x), var(--img-pagebtn-x);
+
+	-webkit-mask-repeat: repeat-x, repeat-x;
+	mask-repeat: repeat-x, repeat-x;
+
+	-webkit-mask-position: 0 0, 0 100%;
+	mask-position: 0 0, 0 100%;
+
+	-webkit-mask-size: auto 10px, auto 10px;
+	mask-size: auto 10px, auto 10px;
+}
+.page-btn-outline.y {
+	-webkit-mask-image: var(--img-pagebtn-y), var(--img-pagebtn-y);
+	mask-image: var(--img-pagebtn-y), var(--img-pagebtn-y);
+
+	-webkit-mask-repeat: repeat-y, repeat-y;
+	mask-repeat: repeat-y, repeat-y;
+
+	-webkit-mask-position: 0 0, 100%;
+	mask-position: 0 0, 100%;
+
+	-webkit-mask-size: 10px auto, 10px auto;
+	mask-size: 10px auto, 10px auto;
 }
 .page {
 	display: none;

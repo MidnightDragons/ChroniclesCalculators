@@ -2332,9 +2332,30 @@
 				} catch (e) {}
 			}
 
+			let pageName = {};
 			document.querySelectorAll('.page-tab').forEach(btn => {
 				btn.addEventListener('click', () => showPage(btn.dataset.page));
+				pageName[btn.dataset.page] = btn.innerHTML;
 			});
+
+			function refreshPageButtons() {
+				document.querySelectorAll('.page-tab').forEach(btn => {
+					let fancyHTML = '';
+					if (localStorage.getItem('chroniclesChroMode') == 'disabled') {
+						fancyHTML = `
+							<div class="page-btn-outline x"></div>
+							<div class="page-btn-outline y"></div>
+						`;
+					}
+
+					btn.innerHTML = `
+						${fancyHTML}
+						${pageName[btn.dataset.page]}
+					`;
+				});
+			}
+
+			refreshPageButtons();
 		</script>
 
 		<script>
@@ -3695,12 +3716,14 @@
 					try {
 						if (document.body.classList.contains('chronicles')) localStorage.setItem('chroniclesChroMode', 'disabled');
 						else localStorage.setItem('chroniclesChroMode', 'enabled');
+						refreshPageButtons();
 					} catch (e) {}
 				}
 
 				function initChroMode() {
 					const saved = localStorage.getItem('chroniclesChroMode');
 					if (saved === 'disabled') chroMode();
+					refreshPageButtons();
 				}
 
 				initChroMode();
