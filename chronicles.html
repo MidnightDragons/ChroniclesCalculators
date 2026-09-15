@@ -5422,6 +5422,10 @@
 				refreshPageButtons();
 			}
 
+			function addStyleEvent() {
+				document.getElementById('styleBtn').addEventListener('click', styleMode);
+			}
+
 			// Number select spinners
 			function initCustomSpinners() {
 				document.querySelectorAll('input[type=number]').forEach(input => {
@@ -5610,8 +5614,6 @@
 					${displayNakedStyleSwap()}
 					${inner}
 				`;
-
-				document.getElementById('styleBtn').addEventListener('click', styleMode);
 			}
 		</script>
 
@@ -5690,7 +5692,7 @@
 
 				showPage(startPage);
 				displayH1();
-				document.getElementById('styleBtn').addEventListener('click', styleMode);
+				addStyleEvent();
 			} catch (err) {
 				replaceBody(html`
 					<img class="bg-image" alt="" data-ssr-src-done="true" fetchpriority="high">
@@ -5707,6 +5709,7 @@
 				`);
 
 				displayH1();
+				addStyleEvent();
 				throw err;
 			}
 		</script>
