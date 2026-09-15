@@ -352,7 +352,7 @@
 				<!-- GEAR -->
 				<div class="panel full">
 					<div class="actions-top">
-						<h2 style="margin: 0;">Gear</h2>
+						<h2 class="gear-title">Gear</h2>
 						<button class="small" id="plSyncGearBtn" style="display: none;">Sync Gear to Crafting Calculator</button>
 					</div>
 					<table>
@@ -376,7 +376,7 @@
 						<select id="plSpellSkillFilter"><option value="">- all skills -</option></select>
 						<label class="cz-include-checkbox"><input type="checkbox" id="plSpellBuyableOnly"> Only Show Available</label>
 					</div>
-					<div class="scrollbox" style="max-height: 420px;">
+					<div class="scrollbox spell-scrollbox">
 						<table>
 							<thead><tr><th></th><th>Name</th><th>Skill</th><th>Req. Level</th><th>Attribute</th><th>LP</th></tr></thead>
 							<tbody id="plSpellsBody"></tbody>
@@ -386,7 +386,7 @@
 			</div>
 		</div>
 
-		<footer><span class="block-line" id="debugToggleBtn" style="cursor: pointer;">Meow :3</span></footer>
+		<footer><span class="block-line debug-toggle" id="debugToggleBtn">Meow :3</span></footer>
 
 		<!-- HTML PREFIX -->
 		<script>
@@ -2351,6 +2351,8 @@
 				try {
 					localStorage.setItem('chroniclesActivePage', id);
 				} catch (e) {}
+
+				renderDebugLog();
 			}
 
 			let pageName = {};
@@ -2532,7 +2534,7 @@
 				let tier = '';
 				for (const t in levels) {
 					tier += html`<option value="${t}" class="tier-${t}" ${t === selected ? 'selected' : ''}>${t}</option>`;
-//					debugLog(t)
+					debugLog(t, 'page-planner');
 				}
 
 				return tier;
@@ -3761,7 +3763,7 @@
 								const costStr = r.cost.length ? r.cost.map(c => `${escapeHtml(c.name)} x${c.qty}`).join(', ') : '-';
 								const included = kindIncluded[r.kind];
 								const excludedTag = included ? '' : html`<span class="tag">excluded</span>`;
-								return html`<tr ${included ? '' : html` style="opacity: .55;"`}><td class="row-name">${escapeHtml(r.item)}</td><td>${escapeHtml(r.kind)}${excludedTag}</td><td>${escapeHtml(r.name)}</td><td>${r.qty}</td><td>${costStr}</td></tr>`;
+								return html`<tr class="${included ? '' : 'row-faded'}"><td class="row-name">${escapeHtml(r.item)}</td><td>${escapeHtml(r.kind)}${excludedTag}</td><td>${escapeHtml(r.name)}</td><td>${r.qty}</td><td>${costStr}</td></tr>`;
 							}).join('');
 
 							h += html`
@@ -4594,7 +4596,7 @@
 					let total = 0;
 					for (let i = fromIdxExclusive + 1; i <= toIdx && i <= levels.length; i++) {
 						total += levels[i - 1].cost;
-//						debugLog(skill + ' ' + levels[i - 1].level + ': ' + levels[i - 1].cost);
+						debugLog(skill + ' ' + levels[i - 1].level + ': ' + levels[i - 1].cost, 'page-planner');
 					}
 
 					return total;
@@ -5342,7 +5344,7 @@
 						const locked		= isChild || !meetsReq;
 						const statsTitle	= techniqueTooltipText(t);
 						return html`
-							<tr style="${meetsReq ? '' : 'opacity: .5;'}" title="${escapeHtml(statsTitle)}">
+							<tr class="${meetsReq ? '' : 'row-faded'}" title="${escapeHtml(statsTitle)}">
 								<td><input type="checkbox" class="pl-spell-check" data-id="${t.id}" ${known?'checked':''} ${locked?'disabled':''}></td>
 								<td class="row-name">${escapeHtml(t.name)}${viaTag}</td>
 								<td>${escapeHtml(t.skill)}</td>
@@ -5618,6 +5620,8 @@
 
 		<!-- DEBUGGING -->
 		<script>
+			const debugConsole = false;
+			
 			let debug = false;
 			try { debug = localStorage.getItem('enableDebug') === 'enabled'; } catch (e) {}
 
@@ -5635,27 +5639,37 @@
 			document.getElementById('debugToggleBtn').addEventListener('click', toggleDebug);
 
 			const debugLogs = [];
-			function debugLog(msg) {
-				console.log(msg);
+			function debugLog(msg, from) {
+				const page = from || '???';
+				if (debugConsole) console.log(`[${page}] ${msg}`);
 				if (!debug) return;
 
-				const time = new Date().toLocaleTimeString();
 				const text = (typeof msg === 'string') ? msg : JSON.stringify(msg);
-				debugLogs.push({ time, text });
+				debugLogs.push({ text, from });
 
+				renderDebugLog();
+			}
+
+			function renderDebugLog() {
 				const list = document.getElementById('debugLogList');
 				const empty = document.getElementById('debugLogEmpty');
-				if (empty) empty.style.display = 'none';
 
-				const line = document.createElement('div');
-				line.className = 'debug-line';
-				line.textContent = `[${time}] ${text}`;
-				list.appendChild(line);
+				const currentPage = document.body.dataset.activePage;
+				const visible = debugLogs.filter(l => l.from === currentPage);
+
+				list.innerHTML = '';
+				visible.forEach(l => {
+					const line = document.createElement('div');
+					line.className = 'debug-line';
+					line.textContent = `${l.text}`;
+					list.appendChild(line);
+				});
+
+				if (empty) empty.style.display = visible.length ? 'none' : '';
 
 				const box = document.getElementById('debugLogBox');
 				box.scrollTop = box.scrollHeight;
 			}
-
 		</script>
 
 		<!-- BOOT -->
@@ -5678,8 +5692,8 @@
 				} catch (e) {}
 
 				showPage(startPage);
-				document.getElementById('styleBtn').addEventListener('click', styleMode);
 				displayH1();
+				document.getElementById('styleBtn').addEventListener('click', styleMode);
 			} catch (err) {
 				replaceBody(html`
 					<img class="bg-image" alt="" data-ssr-src-done="true" fetchpriority="high">

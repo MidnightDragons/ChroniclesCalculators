@@ -531,6 +531,9 @@ body[data-active-page="page-planner"] #sideNewJourney {
 	margin-bottom: 10px;
 	gap: 8px;
 }
+.gear-title {
+	margin: 0;
+}
 
 /* ---------- Input ---------- */
 input[type=text], input[type=number], select {
@@ -956,6 +959,9 @@ tr:last-child td {
 td.row-name {
 	font-weight: 600;
 }
+.row-faded {
+	opacity: 0.5;
+}
 
 /* ---------- List Empty ---------- */
 .list-empty {
@@ -1036,6 +1042,9 @@ td.row-name {
 .scrollbox {
 	max-height: 280px;
 	overflow-y: auto;
+}
+.spell-scrollbox {
+	max-height: 420px;
 }
 
 ::-webkit-scrollbar {
@@ -1249,6 +1258,24 @@ td.row-name {
 }
 .chronicles .accented {
 	color: var(--accent-chro);
+}
+
+/* ---------- Debug ---------- */
+.debug-line {
+	font-size: 0.775rem;
+	font-weight: normal;
+	color: var(--text);
+	padding: 6px 8px;
+	border-bottom: 1px solid var(--panel2);
+}
+.chronicles .debug-line {
+	font-family: var(--font-text-chro);
+	font-size: 0.85rem;
+	color: var(--text-chro);
+	border-bottom-color: var(--panel2-chro);
+}
+.debug-toggle {
+	cursor: pointer;
 }
 
 /* ---------- Miscellaneous ---------- */
