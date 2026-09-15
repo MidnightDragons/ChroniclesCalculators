@@ -501,6 +501,12 @@ body[data-active-page="page-craft"] #sideIncludeCostsToggles {
 body[data-active-page="page-planner"] #sideNewJourney {
 	display: block;
 }
+#sideIncludeXP {
+	display: none;
+}
+body[data-active-page="page-xp"] #sideIncludeXP {
+	display: block;
+}
 
 /* ---------- Positioning ---------- */
 .full {
@@ -1090,11 +1096,15 @@ label.cz-title {
 	margin: 6px 0 10px;
 	gap: 4px;
 }
-.cz-include-checkbox {
+label.cz-include-checkbox {
+	font-size: 0.95rem;
 	display: flex;
 	align-items: center;
 	cursor: pointer;
 	gap: 6px;
+}
+.chronicles label.cz-include-checkbox {
+	font-size: 1.05rem;
 }
 .cz-row {
 	display: flex;
