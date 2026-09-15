@@ -196,7 +196,7 @@ h2 {
 	font-size: 1.05rem;
 	font-weight: 700;
 	margin: 0 0 12px;
-	color: var(--accent);
+	color: var(--accent2);
 	display: flex;
 	align-items: center;
 	gap: 8px;
@@ -523,9 +523,6 @@ body[data-active-page="page-planner"] #sideNewJourney {
 .field {
 	padding-bottom: 10px;
 }
-.field.faction {
-	margin-bottom: .75rem;
-}
 .search-row {
 	display: flex;
 	margin-bottom: 10px;
@@ -842,6 +839,7 @@ label {
 }
 .chronicles .field label {
 	font-size: 1.2rem;
+	color: var(--accent);
 }
 .padding-top-fix {
 	padding-top: 5px;
@@ -1071,25 +1069,20 @@ td.row-name {
 	gap: 8px;
 }
 
-.cz-title {
-	font-weight: 600;
-	color: var(--accent2);
-	font-size: .85rem;
+label.cz-title {
+	font-size: 0.85rem;
+	color: var(--accent);
 	display: flex;
 	align-items: center;
 	gap: 6px;
 }
-.chronicles .cz-title {
+.chronicles label.cz-title {
 	font-family: var(--font-text-chro);
-	font-size: 17px;
-	font-weight: normal;
-	color: var(--accent2-chro);
+	font-size: 0.95rem;
+	color: var(--accent);
 }
 .cz-backup {
 	margin-bottom: 5px;
-}
-.cz-include-title {
-	margin-top: 6px;
 }
 .cz-include-toggles {
 	display: flex;
@@ -1294,7 +1287,8 @@ td.row-name {
 }
 
 .xp-total {
-	padding: 6px 8px;
+	font-style: italic;
+	color: var(--muted-chro);
 }
 
 .warn-note {

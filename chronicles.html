@@ -27,15 +27,17 @@
 					<span>
 						<h2>Options</h2>
 
-						<div class="cz-title cz-backup">Backup</div>
-						<div class="pill-btns">
-							<button class="secondary small" id="importAllBtn">Import</button>
-							<button class="secondary small" id="exportAllBtn">Export</button>
-							<input type="file" id="importAllFile" accept="application/json" style="display: none;">
+						<div class="cz-include-toggles">
+							<div class="field"><label class="cz-title">Backup</label></div>
+							<div class="pill-btns">
+								<button class="secondary small" id="importAllBtn">Import</button>
+								<button class="secondary small" id="exportAllBtn">Export</button>
+								<input type="file" id="importAllFile" accept="application/json" style="display: none;">
+							</div>
 						</div>
 
 						<div class="cz-include-toggles" id="sideNewJourney">
-							<div class="cz-title">New Journey Count</div>
+							<div class="field"><label class="cz-title">New Journey Count</label></div>
 							<select id="plNewJourneyCount">
 								<option value="0">0</option>
 								<option value="1">1</option>
@@ -44,7 +46,7 @@
 						</div>
 
 						<div class="cz-include-toggles" id="sideIncludeCosts">
-							<label class="cz-title cz-include-title">Include in cost totals:</label>
+							<div class="field"><label class="cz-title">Cost Includes</label></div>
 							<label class="cz-include-checkbox"><input type="checkbox" id="toggleMods" checked> Modifications</label>
 							<label class="cz-include-checkbox"><input type="checkbox" id="toggleEnchant" checked> Enchantments</label>
 							<label class="cz-include-checkbox"><input type="checkbox" id="toggleLegendary" checked> Legendary Effects</label>
@@ -180,35 +182,37 @@
 		</div>
 
 		<div class="page" id="page-xp">
+			<!-- INPUT -->
 			<div class="panel panel-center">
+				<h2>Input</h2>
 				<span>
 					<div class="grid">
 						<div class="field">
-							<h2 for="curLevel">Current level</h2>
+							<label class="field" for="curLevel">Current level</label>
 							<input type="number" id="curLevel" min="0" max="19" value="0">
 						</div>
 						<div class="field">
-							<h2 for="desLevel">Desired level</h2>
+							<label class="field" for="desLevel">Desired level</label>
 							<input type="number" id="desLevel" min="1" max="20" value="20">
 						</div>
 						<div class="field">
-							<h2 for="curXP">Current experience</h2>
+							<label class="field" for="curXP">Current experience</label>
 							<input type="number" id="curXP" min="0" value="0">
 						</div>
 						<div class="field">
-							<h2 for="crisis">Crisis level</h2>
+							<label class="field" for="crisis">Crisis level</label>
 							<input type="number" id="crisis" min="0" value="0">
 						</div>
 						<div class="field">
-							<h2 for="energy">Energy per day</h2>
+							<label class="field" for="energy">Energy per day</label>
 							<input type="number" id="energy" min="1" max="10" value="3">
 						</div>
 						<div class="field">
-							<h2 for="wellfed">Well-fed modifier (%)</h2>
+							<label class="field" for="wellfed">Well-fed modifier (%)</label>
 							<input type="number" id="wellfed" min="50" max="150" value="95">
 						</div>
 						<div class="field">
-							<h2 for="encDifficulty">Encounter difficulty</h2>
+							<label class="field" for="encDifficulty">Encounter difficulty</label>
 							<select id="encDifficulty">
 								<option value="Easy">Easy (-2 Difficulty)</option>
 								<option value="Medium" selected>Medium (+0 Difficulty)</option>
@@ -218,7 +222,7 @@
 							</select>
 						</div>
 						<div class="field">
-							<h2 for="biome">Biome</h2>
+							<label class="field" for="biome">Biome</label>
 							<select id="biome"><option value="">- any biome -</option></select>
 						</div>
 					</div>
@@ -227,7 +231,7 @@
 
 					<div class="xp-grid">
 						<div class="field faction">
-							<h2 for="faction">Faction (optional)</h2>
+							<label class="field" for="faction">Faction (optional)</label>
 							<select id="faction"><option value="">- no faction -</option></select>
 						</div>
 
@@ -235,25 +239,24 @@
 							<input class="weekly" type="checkbox" id="weeklyXP" checked>
 							<label for="weeklyXP">Weekly experience bonus <span class="badge">+150 XP/week</span></label>
 						</div>
-
-						<div id="questInfo" style="display: none">
-							<div class="section">Faction quests</div>
-							<table class="quest-table">
-								<thead><tr><th>Quest</th><th>XP reward</th><th>Cooldown</th><th>XP/day avg</th></tr></thead>
-								<tbody id="questRows"></tbody>
-								<tfoot><tr>
-									<td class="xp-total">Total</td>
-									<td id="totalQuestXP" class="xp-total"></td>
-									<td></td>
-									<td id="totalQuestXPDay" class="xp-total"></td>
-								</tr></tfoot>
-							</table>
-						</div>
-
-						<div class="section">Results</div>
-						<div class="results" id="xpResults"></div>
 					</div>
 				</span>
+			</div>
+
+			<!-- FACTION INFO -->
+			<div class="panel panel-center" id="questInfo">
+				<h2>Faction Quests</h2>
+				<table class="quest-table">
+					<thead><tr><th>Quest</th><th>XP reward</th><th>Cooldown</th><th>XP/day avg</th></tr></thead>
+					<tbody id="questRows"></tbody>
+					<tfoot></tfoot>
+				</table>
+			</div>
+
+			<!-- RESULTS -->
+			<div class="panel panel-center">
+				<h2>Results</h2>
+				<div class="results" id="xpResults"></div>
 			</div>
 		</div>
 
@@ -3691,6 +3694,7 @@
 						}).join('');
 
 						h += html`
+							<div class="field padding-top-fix"><label>Status</label></div>
 							<table><thead><tr><th>Item</th><th>Quantity</th><th>Covered</th><th>Status</th></tr></thead>
 							<tbody>${targetRows}</tbody></table>
 
@@ -4390,10 +4394,27 @@
 							totalXPD += xpd;
 
 							const tr = document.createElement('tr');
-							tr.innerHTML = html`<td>${escapeHtml(q.name)}</td><td>${q.xp}</td><td>${q.cooldown}d</td><td>${xpd.toFixed(1)}/day</td>`;
+							tr.innerHTML = html`
+								<td>${escapeHtml(q.name)}</td>
+								<td>${q.xp}</td>
+								<td>${q.cooldown}d</td>
+								<td>${xpd.toFixed(1)}/day</td>
+							`;
+
 							tbody.appendChild(tr);
 						});
 
+						const tr = document.createElement('tr');
+						tr.innerHTML = html`
+							<tr>
+								<td class="xp-total">Total</td>
+								<td id="totalQuestXP" class="xp-total"></td>
+								<td></td>
+								<td id="totalQuestXPDay" class="xp-total"></td>
+							</tr>
+						`;
+
+						tbody.appendChild(tr);
 						document.getElementById('totalQuestXP').textContent		= totalXP;
 						document.getElementById('totalQuestXPDay').textContent	= totalXPD.toFixed(1) + '/day';
 					} else {
@@ -4440,9 +4461,10 @@
 					saveXpState();
 				}
 
-				const calcs = ['curLevel', 'desLevel', 'curXP', 'crisis', 'energy', 'wellfed', 'encDifficulty', 'biome', 'faction', 'weeklyXP'];
-				calcs.forEach(id => document.getElementById(id).addEventListener('input', calculateAndSave));
-				document.getElementById('weeklyXP').addEventListener('change', calculateAndSave);
+				['curLevel', 'desLevel', 'curXP', 'crisis', 'energy', 'wellfed', 'encDifficulty', 'biome', 'faction', 'weeklyXP'].forEach(id => {
+					document.getElementById(id).addEventListener('change', calculateAndSave);
+					document.getElementById(id).addEventListener('input', calculateAndSave);
+				});
 
 				calculate();
 			}
@@ -5283,9 +5305,7 @@
 					}
 				}
 
-				el('plSyncGearBtn').addEventListener('click', () => {
-					gearSync(true)
-				});
+				el('plSyncGearBtn').addEventListener('click', () => gearSync(true));
 
 				/* ---------- Spells / Techniques ---------- */
 				function renderSpellSkillFilter() {
