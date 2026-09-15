@@ -207,6 +207,12 @@ h2 {
 	font-size: 1.4rem;
 	color: var(--accent2-chro);
 }
+.error {
+	color: var(--bad);
+}
+.chronicles .error {
+	color: var(--bad-chro);
+}
 .result-section h3 {
 	margin: 14px 0 6px;
 	color: var(--accent2);

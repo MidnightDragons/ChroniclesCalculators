@@ -6,9 +6,67 @@
 		<link rel="stylesheet" href="chronicles.css">
 	</head>
 
-	<img class="bg-image" alt="" data-ssr-src-done="true" fetchpriority="high">
+	<!-- HTML FUNCTIONS - WIP -->
+	<script>
+		function createPageTab(id, display) {
+			return `<button class="page-tab" data-page="${id}">${display}</button>`;
+		}
+
+		function displayPageTabs() {
+			return `
+				<div class="page-tabs">
+					${createPageTab('page-planner',	'Build Planner')}
+					${createPageTab('page-craft',	'Crafting Cost Calculator')}
+					${createPageTab('page-xp',		'Experience Calculator')}
+				</div>
+			`;
+		}
+
+		function displayStyleSwap() {
+			return `
+				<div class="grid side">
+					<div class="grid side-align">
+						<div class="panel side-panel">
+							<button id="chroBtn">Change Style</button>
+						</div>
+					</div>
+				</div>
+			`;
+		}
+
+		// TODO: Make all the other stuff work with it <3
+		function createBody(inner, bFailed) {
+			if (bFailed) {
+				document.body.innerHTML = `
+					<img class="bg-image" alt="" data-ssr-src-done="true" fetchpriority="high">
+					${bFailed ? displayStyleSwap() : ''}
+					${inner}
+					${bFailed ? '' : '<footer><span class="block-line">Meow :3</span></footer>'}
+				`;
+			}
+
+			document.getElementById('chroBtn').addEventListener('click', chroMode);
+		}
+
+		function chroMode() {
+			document.body.classList.toggle("chronicles");
+			try {
+				if (document.body.classList.contains('chronicles')) localStorage.setItem('chroniclesChroMode', 'disabled');
+				else localStorage.setItem('chroniclesChroMode', 'enabled');
+				refreshPageButtons();
+			} catch (e) {}
+		}
+
+		function initChroMode() {
+			const saved = localStorage.getItem('chroniclesChroMode');
+			if (saved === 'disabled') chroMode();
+			refreshPageButtons();
+		}
+	</script>
 
 	<body>
+		<img class="bg-image" alt="" data-ssr-src-done="true" fetchpriority="high">
+
 		<div class="page-tabs">
 			<button class="page-tab" data-page="page-planner">Build Planner</button>
 			<button class="page-tab" data-page="page-craft">Crafting Cost Calculator</button>
@@ -377,12 +435,12 @@
 
 		<footer><span class="block-line">Meow :3</span></footer>
 
-		<!-- GLOBALS -->
+		<!-- GLOBAL CONSTANTS -->
 		<script>
 			const noneDisplay = '- none -';
 		</script>
 
-		<!-- RPR AND STATS -->
+		<!-- GLOBAL RPR AND STAT VARIABLES -->
 		<script>
 			let CATEGORY_EVERYTHING				= ['Light Armor', 'Medium Armor', 'Heavy Armor', 'Robes', 'Clothes', 'Rings', 'Amulets', 'Shields', 'Talismans', 'Flasks'];
 			let CATEGORY_ALLWEAPONS				= ['1H Weapons, 2H Weapons, Bows, Staves'];
@@ -2114,6 +2172,7 @@
 
 			// Levels
 			const LEVEL = {
+				MIN: 0,
 				MAX: 20
 			};
 
@@ -2295,8 +2354,8 @@
 			};
 		</script>
 
+		<!-- DATA & PAGE FUNCTIONS -->
 		<script>
-			/* ---------- Data loading ---------- */
 			function loadAllData() {
 				// Crafting
 				buildItems(EMBEDDED_DATA.items.gear);
@@ -2321,7 +2380,6 @@
 				buildCraftingKnowledge(EMBEDDED_DATA.craftingKnowledge);
 			}
 
-			/* ---------- Page (tab) switching ---------- */
 			function showPage(id) {
 				document.querySelectorAll('.page').forEach(p => p.classList.toggle('active', p.id === id));
 				document.querySelectorAll('.page-tab').forEach(t => t.classList.toggle('active', t.dataset.page === id));
@@ -2356,6 +2414,19 @@
 			}
 
 			refreshPageButtons();
+		</script>
+
+		<!-- UTILITY FUNCTIONS -->
+		<script>
+			function escapeHtml(s) {
+				return (s == null ? '' : String(s)).replace(/[&<>"']/g, c => ({
+					'&': '&amp;',
+					'<': '&lt;',
+					'>': '&gt;',
+					'"': '&quot;',
+					"'": '&#39;'
+				}[c]));
+			}
 		</script>
 
 		<script>
@@ -2648,145 +2719,6 @@
 				});
 			}
 
-			function makeCustomDropdown(selectEl) {
-				if (selectEl._cselRefresh) {
-					selectEl._cselRefresh();
-					return;
-				}
-
-				const isLocked = !!selectEl.disabled;
-
-				const wrap = document.createElement('div');
-				wrap.className = 'csel-wrap' + (isLocked ? ' is-disabled' : '');
-				selectEl.insertAdjacentElement('afterend', wrap);
-				selectEl.classList.add('csel-native');
-
-				const btn = document.createElement(isLocked ? 'div' : 'button');
-				if (!isLocked) btn.type = 'button';
-				btn.className = 'csel-btn' + (isLocked ? ' csel-dummy' : '');
-
-				const label = document.createElement('span');
-				label.className = 'csel-label';
-
-				const arrow = document.createElement('span');
-				arrow.className = 'csel-arrow';
-				arrow.textContent = '▼';
-				btn.appendChild(label);
-				btn.appendChild(arrow);
-
-				const panel = document.createElement('div');
-				panel.className = 'csel-panel';
-				panel.hidden = true;
-
-				wrap.appendChild(btn);
-				wrap.appendChild(panel);
-
-				function tierClassOf(opt) {
-					return Array.from(opt.classList || []).find(c => c.startsWith('tier-'));
-				}
-
-				function updateLabel() {
-					const opt = selectEl.options[selectEl.selectedIndex];
-					label.textContent = opt ? opt.textContent : '';
-					btn.title = opt ? (opt.title || '') : '';
-
-					btn.className = 'csel-btn' + (isLocked ? ' csel-dummy' : '');
-					const tierClass = opt ? tierClassOf(opt) : null;
-					if (tierClass) btn.classList.add(tierClass);
-				}
-
-				if (isLocked) {
-					selectEl._cselRefresh = updateLabel;
-					updateLabel();
-					return;
-				}
-
-				function makeOptionEl(opt) {
-					const item = document.createElement('div');
-					item.className = 'csel-option';
-
-					const tierClass = tierClassOf(opt);
-					if (tierClass) item.classList.add(tierClass);
-					item.textContent = opt.textContent;
-					item.title = opt.title || '';
-
-					if (opt.value === selectEl.value) item.classList.add('is-selected');
-					item.addEventListener('click', () => {
-						if (selectEl.disabled) return;
-						selectEl.value = opt.value;
-						selectEl.dispatchEvent(new Event('change', {bubbles: true}));
-						updateLabel();
-						closePanel();
-					});
-
-					return item;
-				}
-
-				function rebuildPanel() {
-					panel.innerHTML = '';
-					Array.from(selectEl.children).forEach(child => {
-						if (child.tagName === 'OPTGROUP') {
-							const groupLabel = document.createElement('div');
-							groupLabel.className = 'csel-group-label';
-							groupLabel.textContent = child.label;
-							panel.appendChild(groupLabel);
-							Array.from(child.children).forEach(opt => panel.appendChild(makeOptionEl(opt)));
-						} else if (child.tagName === 'OPTION') {
-							panel.appendChild(makeOptionEl(child));
-						}
-					});
-				}
-
-				function openPanel() {
-					rebuildPanel();
-					panel.hidden = false;
-					wrap.classList.add('is-open');
-				}
-
-				function closePanel() {
-					panel.hidden = true;
-					wrap.classList.remove('is-open');
-				}
-
-				btn.addEventListener('click', (e) => {
-					e.stopPropagation();
-					if (selectEl.disabled) return;
-					panel.hidden ? openPanel() : closePanel();
-				});
-
-				document.addEventListener('click', (e) => {
-					if (!wrap.contains(e.target)) closePanel();
-				});
-
-				document.addEventListener('keydown', (e) => {
-					if (e.key === 'Escape') closePanel();
-				});
-
-				selectEl._cselRefresh = updateLabel;
-				updateLabel();
-			}
-
-			function convertAllSelects(root) {
-				(root || document).querySelectorAll('select:not(.csel-native)').forEach(sel => {
-					makeCustomDropdown(sel);
-				});
-			}
-
-			const cselObserver = new MutationObserver(mutations => {
-				mutations.forEach(m => {
-					m.addedNodes.forEach(node => {
-						if (node.nodeType !== 1) return;
-						if (node.tagName === 'SELECT' && !node.classList.contains('csel-native')) {
-							makeCustomDropdown(node);
-						} else if (node.querySelectorAll) {
-							node.querySelectorAll('select:not(.csel-native)').forEach(sel => makeCustomDropdown(sel));
-						}
-					});
-				});
-			});
-
-			cselObserver.observe(document.body, { childList: true, subtree: true });
-
 			function initCraftCalc() {
 				/* ---------- Persistent state ---------- */
 				const STORE_KEY = 'craftCalcState_v1';
@@ -2878,9 +2810,11 @@
 							const item	= ITEMS[f.name];
 							const raw	= favCustom[f.id] || {};
 							if (raw.enchant && !raw.enchants) raw.enchants = [raw.enchant];
+
 							const c = item ? cleanCustomForItem(item, raw) : {mods: [], enchants: [], legendary: null};
 							return {id: f.id, name: f.name, mods: c.mods, enchants: c.enchants, legendary: c.legendary};
 						});
+
 						migrated = true;
 					}
 
@@ -2898,21 +2832,11 @@
 				if (!Array.isArray(state.craftList))	state.craftList		= [];
 				if (!Array.isArray(state.repairList))	state.repairList	= [];
 				if (!Array.isArray(state.favorites))	state.favorites		= [];
-				if (!state.costToggles			|| typeof state.costToggles			!== 'object') state.costToggles			= {includeMods: true, includeEnchant: true, includeLegendary: true};
+				if (!state.costToggles || typeof state.costToggles !== 'object') state.costToggles = {includeMods: true, includeEnchant: true, includeLegendary: true};
 
 				document.getElementById('toggleMods').checked		= state.costToggles.includeMods			!== false;
 				document.getElementById('toggleEnchant').checked	= state.costToggles.includeEnchant		!== false;
 				document.getElementById('toggleLegendary').checked	= state.costToggles.includeLegendary	!== false;
-
-				function escapeHtml(s) {
-					return s.replace(/[&<>"']/g, c => ({
-						'&': '&amp;',
-						'<': '&lt;',
-						'>': '&gt;',
-						'"': '&quot;',
-						"'": '&#39;'
-					}[c]));
-				}
 
 				/* Build the full pool of names for inventory */
 				function buildSelect(selectEl, {includeMaterials, includeItems, itemFilter}) {
@@ -3707,26 +3631,6 @@
 						renderResults();
 					});
 				});
-
-				document.getElementById('chroBtn').addEventListener('click', chroMode);
-
-				function chroMode() {
-					document.body.classList.toggle("chronicles");
-
-					try {
-						if (document.body.classList.contains('chronicles')) localStorage.setItem('chroniclesChroMode', 'disabled');
-						else localStorage.setItem('chroniclesChroMode', 'enabled');
-						refreshPageButtons();
-					} catch (e) {}
-				}
-
-				function initChroMode() {
-					const saved = localStorage.getItem('chroniclesChroMode');
-					if (saved === 'disabled') chroMode();
-					refreshPageButtons();
-				}
-
-				initChroMode();
 
 				function renderResults() {
 					const resultsEl = document.getElementById('results');
@@ -4567,38 +4471,10 @@
 
 				calculate();
 			}
-
-			function initCustomSpinners() {
-				document.querySelectorAll('input[type=number]').forEach(input => {
-					if (input.closest('.num-spin')) return;
-
-					const wrap = document.createElement('div');
-					wrap.className = 'num-spin';
-					input.parentNode.insertBefore(wrap, input);
-					wrap.appendChild(input);
-
-					const btns = document.createElement('div');
-					btns.className = 'spin-btns';
-					btns.innerHTML = '<div class="spin-btn up">▲</div><div class="spin-btn down">▼</div>';
-					wrap.appendChild(btns);
-
-					btns.querySelector('.up').addEventListener('click', () => {
-						input.stepUp();
-						input.dispatchEvent(new Event('input', { bubbles: true }));
-					});
-
-					btns.querySelector('.down').addEventListener('click', () => {
-						input.stepDown();
-						input.dispatchEvent(new Event('input', { bubbles: true }));
-					});
-				});
-			}
-
-			initCustomSpinners();
 		</script>
 
+		<!-- BUILD PLANNER -->
 		<script>
-			/* ---------- Build Planner ---------- */
 			function initPlanner() {
 				const STORE_KEY = 'plannerState_v1';
 				let pState = {
@@ -4637,11 +4513,6 @@
 				if (!pState.gear		|| typeof pState.gear			!== 'object') pState.gear			= {};
 				if (!pState.knownSpells	|| typeof pState.knownSpells	!== 'object') pState.knownSpells	= {};
 
-				function escapeHtml(s) {
-					return (s == null ? '' : String(s)).replace(/[&<>"']/g, c => ({
-						'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-					}[c]));
-				}
 				const el = id => document.getElementById(id);
 
 				/* ---------- Character selects ---------- */
@@ -5517,26 +5388,204 @@
 			}
 		</script>
 
+		<!-- CUSTOM STYLES -->
 		<script>
-			/* ---------- Boot ---------- */
+			// Number select spinners
+			function initCustomSpinners() {
+				document.querySelectorAll('input[type=number]').forEach(input => {
+					if (input.closest('.num-spin')) return;
+
+					const wrap = document.createElement('div');
+					wrap.className = 'num-spin';
+					input.parentNode.insertBefore(wrap, input);
+					wrap.appendChild(input);
+
+					const btns = document.createElement('div');
+					btns.className = 'spin-btns';
+					btns.innerHTML = '<div class="spin-btn up">▲</div><div class="spin-btn down">▼</div>';
+					wrap.appendChild(btns);
+
+					btns.querySelector('.up').addEventListener('click', () => {
+						input.stepUp();
+						input.dispatchEvent(new Event('input', { bubbles: true }));
+					});
+
+					btns.querySelector('.down').addEventListener('click', () => {
+						input.stepDown();
+						input.dispatchEvent(new Event('input', { bubbles: true }));
+					});
+				});
+			}
+
+			// Dropdowns
+			function makeCustomDropdown(selectEl) {
+				if (selectEl._cselRefresh) {
+					selectEl._cselRefresh();
+					return;
+				}
+
+				const isLocked = !!selectEl.disabled;
+
+				const wrap = document.createElement('div');
+				wrap.className = 'csel-wrap' + (isLocked ? ' is-disabled' : '');
+				selectEl.insertAdjacentElement('afterend', wrap);
+				selectEl.classList.add('csel-native');
+
+				const btn = document.createElement(isLocked ? 'div' : 'button');
+				if (!isLocked) btn.type = 'button';
+				btn.className = 'csel-btn' + (isLocked ? ' csel-dummy' : '');
+
+				const label = document.createElement('span');
+				label.className = 'csel-label';
+
+				const arrow = document.createElement('span');
+				arrow.className = 'csel-arrow';
+				arrow.textContent = '▼';
+				btn.appendChild(label);
+				btn.appendChild(arrow);
+
+				const panel = document.createElement('div');
+				panel.className = 'csel-panel';
+				panel.hidden = true;
+
+				wrap.appendChild(btn);
+				wrap.appendChild(panel);
+
+				function tierClassOf(opt) {
+					return Array.from(opt.classList || []).find(c => c.startsWith('tier-'));
+				}
+
+				function updateLabel() {
+					const opt = selectEl.options[selectEl.selectedIndex];
+					label.textContent = opt ? opt.textContent : '';
+					btn.title = opt ? (opt.title || '') : '';
+
+					btn.className = 'csel-btn' + (isLocked ? ' csel-dummy' : '');
+					const tierClass = opt ? tierClassOf(opt) : null;
+					if (tierClass) btn.classList.add(tierClass);
+				}
+
+				if (isLocked) {
+					selectEl._cselRefresh = updateLabel;
+					updateLabel();
+					return;
+				}
+
+				function makeOptionEl(opt) {
+					const item = document.createElement('div');
+					item.className = 'csel-option';
+
+					const tierClass = tierClassOf(opt);
+					if (tierClass) item.classList.add(tierClass);
+					item.textContent = opt.textContent;
+					item.title = opt.title || '';
+
+					if (opt.value === selectEl.value) item.classList.add('is-selected');
+					item.addEventListener('click', () => {
+						if (selectEl.disabled) return;
+						selectEl.value = opt.value;
+						selectEl.dispatchEvent(new Event('change', {bubbles: true}));
+						updateLabel();
+						closePanel();
+					});
+
+					return item;
+				}
+
+				function rebuildPanel() {
+					panel.innerHTML = '';
+					Array.from(selectEl.children).forEach(child => {
+						if (child.tagName === 'OPTGROUP') {
+							const groupLabel = document.createElement('div');
+							groupLabel.className = 'csel-group-label';
+							groupLabel.textContent = child.label;
+							panel.appendChild(groupLabel);
+							Array.from(child.children).forEach(opt => panel.appendChild(makeOptionEl(opt)));
+						} else if (child.tagName === 'OPTION') {
+							panel.appendChild(makeOptionEl(child));
+						}
+					});
+				}
+
+				function openPanel() {
+					rebuildPanel();
+					panel.hidden = false;
+					wrap.classList.add('is-open');
+				}
+
+				function closePanel() {
+					panel.hidden = true;
+					wrap.classList.remove('is-open');
+				}
+
+				btn.addEventListener('click', (e) => {
+					e.stopPropagation();
+					if (selectEl.disabled) return;
+					panel.hidden ? openPanel() : closePanel();
+				});
+
+				document.addEventListener('click', (e) => {
+					if (!wrap.contains(e.target)) closePanel();
+				});
+
+				document.addEventListener('keydown', (e) => {
+					if (e.key === 'Escape') closePanel();
+				});
+
+				selectEl._cselRefresh = updateLabel;
+				updateLabel();
+			}
+
+			function initCustomDropdowns(root) {
+				(root || document).querySelectorAll('select:not(.csel-native)').forEach(sel => {
+					makeCustomDropdown(sel);
+				});
+			}
+
+			const cselObserver = new MutationObserver(mutations => {
+				mutations.forEach(m => {
+					m.addedNodes.forEach(node => {
+						if (node.nodeType !== 1) return;
+						if (node.tagName === 'SELECT' && !node.classList.contains('csel-native')) {
+							makeCustomDropdown(node);
+						} else if (node.querySelectorAll) {
+							node.querySelectorAll('select:not(.csel-native)').forEach(sel => makeCustomDropdown(sel));
+						}
+					});
+				});
+			});
+
+			cselObserver.observe(document.body, { childList: true, subtree: true });
+		</script>
+
+		<!-- BOOT -->
+		<script>
+			initChroMode();
+
 			try {
 				loadAllData();
 				initCraftCalc();
 				initXpCalc();
 				initPlanner();
-				convertAllSelects();
+				initCustomSpinners();
+				initCustomDropdowns();
 
 				let startPage = 'page-planner';
 				try {
 					const saved = localStorage.getItem('chroniclesActivePage');
 					if (saved === 'page-craft' || saved === 'page-xp' || saved === 'page-planner') startPage = saved;
 				} catch (e) {}
+
 				showPage(startPage);
+				createBody(document.body.innerHTML, false);
 			} catch (err) {
-				document.body.innerHTML = '<div class="panel" style="max-width:700px;margin:60px auto;">' +
-					'<h2 style="color:var(--bad)">Something went wrong loading the calculators</h2>' +
-					'<p>' + (err && err.message ? err.message : err) + '</p>' +
-					'</div>';
+				createBody(`
+					<div class="panel" style="max-width: 700px; margin: 60px auto;">
+					<h2 class="error">Something went wrong loading the calculators</h2>
+					<p>${(err && err.message ? err.message : err)}</p>
+					</div>
+				`, true);
+
 				throw err;
 			}
 		</script>
