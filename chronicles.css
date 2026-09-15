@@ -355,7 +355,7 @@ chro-logo {
 #plStatsGrid {
 	display: grid;
 	justify-items: center;
-	width: 28%;
+	width: 40%;
 	gap: 16px;
 }
 .stat-group {
