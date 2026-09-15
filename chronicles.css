@@ -478,7 +478,7 @@ chro-logo {
 .side-panel {
 	justify-content: flex-start;
 }
-.side-panel #chroBtn {
+.side-panel #styleBtn {
 	margin-top: 8px;
 }
 
@@ -516,7 +516,7 @@ body[data-active-page="page-planner"] #sideNewJourney {
 	gap: 10px;
 	width: 25%;
 }
-.xp-center {
+.panel-center {
 	margin: 0 auto 18px;
 	width: 50%;
 }
@@ -1116,15 +1116,20 @@ td.row-name {
 .side {
 	position: fixed;
 	overflow-x: hidden;
+	overflow-y: auto;
 	align-items: center;
 	grid-template-columns: 1fr;
+	z-index: 10;
+	padding: 5px;
 	width: 260px;
 	height: 100%;
 	top: 0;
+}
+.side-left {
 	left: 0;
-	padding-left: 5px;
-	overflow-y: auto;
-	z-index: 10;
+}
+.side-right {
+	right: 0;
 }
 .side-align {
 	grid-auto-columns: min-content;
@@ -1236,6 +1241,14 @@ td.row-name {
 .chronicles .toggle-row label {
 	font-size: 0.95rem;
 	color: var(--secondary-chro);
+}
+
+/* ---------- Text Modifiers ---------- */
+.accented {
+	color: var(--accent);
+}
+.chronicles .accented {
+	color: var(--accent-chro);
 }
 
 /* ---------- Miscellaneous ---------- */
