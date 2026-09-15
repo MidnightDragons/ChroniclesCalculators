@@ -22,7 +22,7 @@
 			`;
 		}
 
-		function displayStyleSwap() {
+		function displayNakedStyleSwap() {
 			return `
 				<div class="grid side">
 					<div class="grid side-align">
@@ -39,7 +39,7 @@
 			if (bFailed) {
 				document.body.innerHTML = `
 					<img class="bg-image" alt="" data-ssr-src-done="true" fetchpriority="high">
-					${bFailed ? displayStyleSwap() : ''}
+					${bFailed ? displayNakedStyleSwap() : ''}
 					${inner}
 					${bFailed ? '' : '<footer><span class="block-line">Meow :3</span></footer>'}
 				`;
