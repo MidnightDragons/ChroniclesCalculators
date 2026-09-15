@@ -1112,11 +1112,11 @@ label.cz-include-checkbox {
 	font-size: .82rem;
 	gap: 8px;
 }
-.cz-row label {
+label.cz-row {
 	color: var(--muted);
 	min-width: 90px;
 }
-.chronicles .cz-row label {
+.chronicles label.cz-row {
 	color: var(--muted-chro);
 }
 .cz-row select {
@@ -1296,7 +1296,7 @@ label.cz-include-checkbox {
 	color: var(--accent2-chro);
 }
 
-.xp-total {
+td.xp-total {
 	font-style: italic;
 	color: var(--muted-chro);
 }
