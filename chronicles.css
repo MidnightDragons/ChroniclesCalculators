@@ -507,6 +507,26 @@ body[data-active-page="page-planner"] #sideNewJourney {
 body[data-active-page="page-xp"] #sideIncludeXP {
 	display: block;
 }
+#sideFaction {
+	display: none;
+}
+body[data-active-page="page-planner"] #sideFaction,
+body[data-active-page="page-xp"] #sideFaction {
+	display: block;
+}
+.faction-bonus-choices {
+	display: flex;
+	flex-direction: column;
+	justify-self: center;
+	height: fit-content;
+	margin-top: 6px;
+}
+div.faction-bonus-line {
+	padding: 0;
+}
+.faction-bonus-choices .faction-bonus-line .tag {
+	margin: 0;
+}
 
 /* ---------- Positioning ---------- */
 .full {
@@ -646,6 +666,47 @@ select {
 	font-family: var(--font-button-chro);
 	font-size: 0.95rem;
 	color: var(--text-chro);
+}
+
+.tag {
+	display: inline-block;
+	font-size: .7rem;
+	padding: 1px 6px;
+	border-radius: 4px;
+	background: var(--panel2);
+	color: var(--muted);
+	margin-left: 6px;
+}
+.chronicles .tag {
+	font-family: var(--font-text-chro);
+	font-size: 0.8rem;
+	font-weight: normal;
+	background: var(--panel2-chro);
+	color: var(--muted-chro);
+}
+
+.csel-btn.csel-btn-small {
+	padding: 1px 6px;
+	height: 14px;
+	gap: 4px;
+}
+.csel-btn.csel-btn-small .csel-label {
+	font-size: 0.7rem;
+	color: var(--muted);
+}
+.chronicles .csel-btn.csel-btn-small .csel-label {
+	font-family: var(--font-text-chro);
+	font-size: 0.8rem;
+	font-weight: normal;
+	color: var(--muted-chro);
+}
+.csel-btn.csel-btn-small .csel-arrow {
+	font-size: 0.5rem;
+	color: var(--muted);
+}
+.chronicles .csel-btn.csel-btn-small .csel-arrow {
+	font-size: 0.55rem;
+	color: var(--muted-chro);
 }
 .csel-btn.fake {
 	cursor: initial;

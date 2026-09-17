@@ -45,6 +45,12 @@
 							</select>
 						</div>
 
+						<div class="cz-include-toggles" id="sideFaction">
+							<div class="field"><label class="cz-title">Faction</label></div>
+							<select id="plFaction"><option value="">- no faction -</option></select>
+							<div id="plFactionBonusChoices" class="faction-bonus-choices"></div>
+						</div>
+
 						<div class="cz-include-toggles" id="sideIncludeCosts">
 							<div class="field"><label class="cz-title">Cost Includes</label></div>
 							<label class="cz-include-checkbox"><input type="checkbox" id="toggleMods" checked> Modifications</label>
@@ -233,13 +239,6 @@
 					</div>
 
 					<div id="biomeWarning" class="warn-note" style="display: none"></div>
-
-					<div class="xp-grid">
-						<div class="field faction">
-							<label class="field" for="faction">Faction (optional)</label>
-							<select id="faction"><option value="">- no faction -</option></select>
-						</div>
-					</div>
 				</span>
 			</div>
 
@@ -884,35 +883,77 @@
 
 				factions: {
 					'Fighters\' Guild': {
-						'Clearing the Road':		{ xp: '50',		cooldown_days: '3' },
-						'Easy Job':					{ xp: '50',		cooldown_days: '3' },
-						'Proving Grounds':			{ xp: '100',	cooldown_days: '7' },
+						quests: {
+							'Clearing the Road':		{ xp: '50',		cooldown_days: '3' },
+							'Easy Job':					{ xp: '50',		cooldown_days: '3' },
+							'Proving Grounds':			{ xp: '100',	cooldown_days: '7' },
+						},
+						bonuses: [
+							'+5 stamina OR +5 magicka',
+							'+1 resolve'
+						]
 					},
 					'Mages\' Guild': {
-						'Mightier than the Sword':	{ xp: '50',		cooldown_days: '3' },
-						'Poultice Shortage':		{ xp: '50',		cooldown_days: '3' },
-						'Keep the Stones Singing':	{ xp: '100',	cooldown_days: '7' },
+						quests: {
+							'Mightier than the Sword':	{ xp: '50',		cooldown_days: '3' },
+							'Poultice Shortage':		{ xp: '50',		cooldown_days: '3' },
+							'Keep the Stones Singing':	{ xp: '100',	cooldown_days: '7' },
+						},
+						bonuses: [
+							'+5 stamina OR +5 magicka',
+							'+1 lore'
+						]
 					},
 					'Thieves\' Guild': {
-						'Pickpocket':				{ xp: '50',		cooldown_days: '3' },
-						'Casing the Joint':			{ xp: '50',		cooldown_days: '3' },
-						'The Art of Blending In':	{ xp: '100',	cooldown_days: '7' },
+						quests: {
+							'Pickpocket':				{ xp: '50',		cooldown_days: '3' },
+							'Casing the Joint':			{ xp: '50',		cooldown_days: '3' },
+							'The Art of Blending In':	{ xp: '100',	cooldown_days: '7' },
+						},
+						bonuses: [
+							'+5 stamina OR +5 magicka',
+							'+1 security'
+						]
 					},
 					'Imperial Legion': {
-						'Sleeping on Duty':			{ xp: '50',		cooldown_days: '3' },
-						'Patrol':					{ xp: '100',	cooldown_days: '7' },
+						quests: {
+							'Sleeping on Duty':			{ xp: '50',		cooldown_days: '3' },
+							'Patrol':					{ xp: '100',	cooldown_days: '7' },
+						},
+						bonuses: [
+							'+5 stamina OR +5 magicka',
+							'+1 athletics'
+						]
 					},
 					'Imperial Cult': {
-						'Message of the Nine':		{ xp: '50',		cooldown_days: '3' },
-						'Rumor Patrol':				{ xp: '100',	cooldown_days: '7' },
+						quests: {
+							'Message of the Nine':		{ xp: '50',		cooldown_days: '3' },
+							'Rumor Patrol':				{ xp: '100',	cooldown_days: '7' },
+						},
+						bonuses: [
+							'+5 stamina OR +5 magicka',
+							'+1 faith'
+						]
 					},
 					'City of Kvatch': {
-						'Guard the City':			{ xp: '50',		cooldown_days: '3' },
-						'Patrol the Road':			{ xp: '100',	cooldown_days: '7' },
+						quests: {
+							'Guard the City':			{ xp: '50',		cooldown_days: '3' },
+							'Patrol the Road':			{ xp: '100',	cooldown_days: '7' },
+						},
+						bonuses: [
+							'+5 stamina OR +5 magicka',
+							'+1 speechcraft'
+						]
 					},
 					'Mythic Dawn': {
-						'A Worthy Offering':		{ xp: '50',		cooldown_days: '3' },
-						'Fan the Flames':			{ xp: '100',	cooldown_days: '7' },
+						quests: {
+							'A Worthy Offering':		{ xp: '50',		cooldown_days: '3' },
+							'Fan the Flames':			{ xp: '100',	cooldown_days: '7' },
+						},
+						bonuses: [
+							'+5 stamina OR +5 magicka',
+							'+1 potential'
+						]
 					},
 				},
 
@@ -3876,14 +3917,22 @@
 					let xpState = null;
 					try { if (xpRaw) xpState = JSON.parse(xpRaw); } catch (e) {}
 
-					const hasPlannerData = plannerState && typeof plannerState === 'object' && (
-						plannerState.race || plannerState.subrace || plannerState.birthsign || plannerState.background || plannerState.trait1 || plannerState.trait2 || plannerState.newJourneyCount
+					const hasPlannerData = plannerState && typeof plannerState === 'object' && (null
+						|| plannerState.race
+						|| plannerState.subrace
+						|| plannerState.birthsign
+						|| plannerState.background
+						|| plannerState.trait1
+						|| plannerState.trait2
+						|| plannerState.faction
+						|| plannerState.newJourneyCount
 
-						|| Object.keys(plannerState.skillLevels	|| {}).length
-						|| Object.keys(plannerState.crafting	|| {}).length
-						|| Object.keys(plannerState.attrLevels	|| {}).length
-						|| Object.keys(plannerState.gear		|| {}).length
-						|| Object.keys(plannerState.knownSpells	|| {}).length
+						|| Object.keys(plannerState.skillLevels			|| {}).length
+						|| Object.keys(plannerState.crafting			|| {}).length
+						|| Object.keys(plannerState.attrLevels			|| {}).length
+						|| Object.keys(plannerState.gear				|| {}).length
+						|| Object.keys(plannerState.knownSpells			|| {}).length
+						|| Object.keys(plannerState.factionBonusChoices	|| {}).length
 					);
 
 					const hasXpData		= xpState && typeof xpState === 'object' && Object.keys(xpState).length > 0;
@@ -4033,8 +4082,8 @@
 						}
 
 						// Build Planner
-						const PLANNER_DICT_FIELDS	= ['skillLevels', 'crafting', 'attrLevels', 'gear', 'knownSpells'];
-						const PLANNER_SCALAR_FIELDS	= ['race', 'subrace', 'birthsign', 'background', 'trait1', 'trait2'];
+						const PLANNER_DICT_FIELDS	= ['skillLevels', 'crafting', 'attrLevels', 'gear', 'knownSpells', 'factionBonusChoices'];
+						const PLANNER_SCALAR_FIELDS	= ['race', 'subrace', 'birthsign', 'background', 'trait1', 'trait2', 'faction'];
 						const PLANNER_NUMBER_FIELDS	= ['newJourneyCount'];
 						let cleanPlanner = null;
 						if (parsed.planner && typeof parsed.planner === 'object' && !Array.isArray(parsed.planner)) {
@@ -4203,25 +4252,28 @@
 
 		<script>
 			let FACTIONS = {};
+			let onSharedFactionChange = null;
 			function buildFactions(data) {
 				FACTIONS = {};
-				Object.entries(data || {}).forEach(([key, quests]) => {
+				Object.entries(data || {}).forEach(([key, faction]) => {
 					FACTIONS[key] = {
 						display:	key,
-						quests:		[]
+						quests:		[],
+						bonuses:	[]
 					};
 
-					Object.entries(quests || {}).forEach(([questName, q]) => {
+					Object.entries(faction.quests || {}).forEach(([questName, q]) => {
 						FACTIONS[key].quests.push({
 							name:		questName,
 							xp:			parseInt(q.xp,				10)	|| 0,
 							cooldown:	parseInt(q.cooldown_days,	10)	|| 1
 						});
 					});
+
+					FACTIONS[key].bonuses = (faction.bonuses || []).slice();
 				});
 			}
 
-			// Extracted from EnemyDatabase.csv - Bosses are excluded
 			let ENEMIES = [];
 			function buildEnemies(data) {
 				ENEMIES = Object.entries(data || {}).map(([name, r]) => ({
@@ -4276,7 +4328,7 @@
 
 			function initXpCalc() {
 				const XP_STORE_KEY = 'xpCalcState_v1';
-				const XP_FIELD_IDS = ['curLevel', 'desLevel', 'curXP', 'crisis', 'energy', 'wellfed', 'encDifficulty', 'biome', 'faction'];
+				const XP_FIELD_IDS = ['curLevel', 'desLevel', 'curXP', 'crisis', 'energy', 'wellfed', 'encDifficulty', 'biome'];
 
 				function loadXpState() {
 					try {
@@ -4307,14 +4359,6 @@
 					} catch (e) {}
 				}
 
-				const factionSel = document.getElementById('faction');
-				Object.entries(FACTIONS).forEach(([key, f]) => {
-					const opt = document.createElement('option');
-					opt.value		= key;
-					opt.textContent	= f.display;
-					factionSel.appendChild(opt);
-				});
-
 				const biomeSel = document.getElementById('biome');
 				XP.BIOMES.forEach(b => {
 					const opt = document.createElement('option');
@@ -4335,7 +4379,7 @@
 					const wf			= parseFloat(document.getElementById('wellfed').value)				|| 95;
 					const biome			= document.getElementById('biome').value;
 					const tierName		= document.getElementById('encDifficulty').value;
-					const factionKey	= document.getElementById('faction').value;
+					const factionKey	= document.getElementById('plFaction').value;
 					const useWeekly		= document.getElementById('weeklyXP').checked;
 
 					const matching		= getMatchingEnemies(biome);
@@ -4461,10 +4505,13 @@
 					saveXpState();
 				}
 
-				['curLevel', 'desLevel', 'curXP', 'crisis', 'energy', 'wellfed', 'encDifficulty', 'biome', 'faction', 'weeklyXP'].forEach(id => {
+				['curLevel', 'desLevel', 'curXP', 'crisis', 'energy', 'wellfed', 'encDifficulty', 'biome', 'weeklyXP'].forEach(id => {
 					document.getElementById(id).addEventListener('change', calculateAndSave);
 					document.getElementById(id).addEventListener('input', calculateAndSave);
 				});
+
+				document.getElementById('plFaction').addEventListener('change', calculate);
+				onSharedFactionChange = calculate;
 
 				calculate();
 			}
@@ -4475,18 +4522,20 @@
 			function initPlanner() {
 				const STORE_KEY = 'plannerState_v1';
 				let pState = {
-					race:				'',
-					subrace:			'',
-					birthsign:			'',
-					background:			'',
-					trait1:				'',
-					trait2:				'',
-					skillLevels:		{},
-					crafting:			{},
-					attrLevels:			{},
-					baseStats:			{},
-					gear:				{},
-					knownSpells:		{}
+					race:					'',
+					subrace:				'',
+					birthsign:				'',
+					background:				'',
+					trait1:					'',
+					trait2:					'',
+					faction:				'',
+					factionBonusChoices:	{},
+					skillLevels:			{},
+					crafting:				{},
+					attrLevels:				{},
+					baseStats:				{},
+					gear:					{},
+					knownSpells:			{}
 				};
 
 				function loadState() {
@@ -4504,11 +4553,12 @@
 
 				loadState();
 
-				if (!pState.skillLevels	|| typeof pState.skillLevels	!== 'object') pState.skillLevels	= {};
-				if (!pState.crafting	|| typeof pState.crafting		!== 'object') pState.crafting		= {};
-				if (!pState.baseStats	|| typeof pState.baseStats		!== 'object') pState.baseStats		= {};
-				if (!pState.gear		|| typeof pState.gear			!== 'object') pState.gear			= {};
-				if (!pState.knownSpells	|| typeof pState.knownSpells	!== 'object') pState.knownSpells	= {};
+				if (!pState.skillLevels			|| typeof pState.skillLevels			!== 'object') pState.skillLevels			= {};
+				if (!pState.crafting			|| typeof pState.crafting				!== 'object') pState.crafting				= {};
+				if (!pState.baseStats			|| typeof pState.baseStats				!== 'object') pState.baseStats				= {};
+				if (!pState.gear				|| typeof pState.gear					!== 'object') pState.gear					= {};
+				if (!pState.knownSpells			|| typeof pState.knownSpells			!== 'object') pState.knownSpells			= {};
+				if (!pState.factionBonusChoices	|| typeof pState.factionBonusChoices	!== 'object') pState.factionBonusChoices	= {};
 
 				const el = id => document.getElementById(id);
 
@@ -4547,12 +4597,80 @@
 				fillSelect(el('plTrait1'),		TRAIT_NAMES,		noneDisplay,	n => statBonusTooltipText(TRAITS[n]));
 				fillSelect(el('plTrait2'),		TRAIT_NAMES,		noneDisplay,	n => statBonusTooltipText(TRAITS[n]));
 
+				function fillFactionSelect() {
+					const sel = el('plFaction');
+					sel.innerHTML = html`
+						<option value="">- no faction -</option>
+						${Object.entries(FACTIONS).map(([key, f]) => html`
+							<option value="${escapeHtml(key)}">${escapeHtml(f.display)}</option>
+						`).join('')}
+					`;
+				}
+
+				function renderFactionBonusChoices() {
+					const container	= el('plFactionBonusChoices');
+					const faction	= pState.faction ? FACTIONS[pState.faction] : null;
+					const bonuses	= (faction && faction.bonuses) || [];
+
+					container.innerHTML = bonuses.map((line, idx) => {
+						const opts = factionBonusOptions(line);
+						if (opts.length <= 1) {
+							return html`
+								<div class="field faction-bonus-line">
+									<span class="tag tag-bonuses">${escapeHtml(line)}</span>
+								</div>
+							`;
+						}
+
+						const chosen	= selectedFactionBonusText(idx, line);
+						const optsHtml	= opts.map(o => html`
+							<option value="${escapeHtml(o)}" ${o === chosen ? 'selected' : ''}>${escapeHtml(o)}</option>
+						`).join('');
+
+						return html`
+							<div class="field faction-bonus-line">
+								<select class="pl-faction-bonus-select small" data-idx="${idx}">${optsHtml}</select>
+							</div>
+						`;
+					}).join('');
+
+					container.querySelectorAll('.pl-faction-bonus-select').forEach(sel => {
+						sel.addEventListener('change', () => {
+							const idx = sel.dataset.idx;
+							if (!pState.factionBonusChoices[pState.faction]) pState.factionBonusChoices[pState.faction] = {};
+							pState.factionBonusChoices[pState.faction][idx] = sel.value;
+							saveState();
+							renderAll();
+						});
+					});
+				}
+
+				fillFactionSelect();
+
 				el('plRace').value				= pState.race					|| '';
 				el('plBirthsign').value			= pState.birthsign				|| '';
 				el('plBackground').value		= pState.background				|| '';
 				el('plTrait1').value			= pState.trait1					|| '';
 				el('plTrait2').value			= pState.trait2					|| '';
+				el('plFaction').value			= pState.faction				|| '';
 				el('plNewJourneyCount').value	= String(pState.newJourneyCount	|| 0);
+
+				renderFactionBonusChoices();
+
+				el('plFaction').addEventListener('change', () => {
+					pState.faction = el('plFaction').value;
+					saveState();
+					renderFactionBonusChoices();
+					renderAll();
+
+					const xpDisplay = document.getElementById('xpFactionDisplay');
+					if (xpDisplay) xpDisplay.textContent = pState.faction || '- none selected -';
+					if (typeof onSharedFactionChange === 'function') onSharedFactionChange();
+				});
+
+				const xpDisplayInit = document.getElementById('xpFactionDisplay');
+				if (xpDisplayInit) xpDisplayInit.textContent = pState.faction || '- none selected -';
+				if (typeof onSharedFactionChange === 'function') onSharedFactionChange();
 
 				el('plNewJourneyCount').addEventListener('change', () => {
 					pState.newJourneyCount = parseInt(el('plNewJourneyCount').value, 10) || 0;
@@ -4719,6 +4837,55 @@
 					;
 				}
 
+				function canonicalStatName(name) {
+					const norm = normStatKey(name);
+					for (const k in STAT.ROWS) if (normStatKey(k) === norm) return k;
+					for (const k of SKILL_NAMES) if (normStatKey(k) === norm) return k;
+					return name;
+				}
+
+				function factionBonusOptions(line) {
+					return (line || '').split(/\s+or\s+/i).map(s => s.trim()).filter(Boolean);
+				}
+
+				function selectedFactionBonusText(idx, line) {
+					const opts = factionBonusOptions(line);
+					if (opts.length <= 1) return opts[0] || '';
+				
+					const chosen = pState.factionBonusChoices[pState.faction] && pState.factionBonusChoices[pState.faction][idx];
+					return opts.includes(chosen) ? chosen : opts[0];
+				}
+
+				function factionEffectTexts() {
+					const faction = pState.faction ? FACTIONS[pState.faction] : null;
+					if (!faction || !faction.bonuses) return [];
+				
+					return faction.bonuses.map((line, idx) => selectedFactionBonusText(idx, line));
+				}
+
+				function factionEffects() {
+					const a = [];
+					factionEffectTexts().forEach(text => {
+						const re = /([+-]\s*\d+)\s+([A-Za-z][A-Za-z ]*?)(?=,|\(|\/|;|$)/g;
+						let match;
+						while ((match = re.exec(text)) !== null) {
+							const value		= parseInt(match[1].replace(/\s+/g, ''), 10);
+							const name		= canonicalStatName(match[2].trim());
+							const targets	= STAT.ALIASES[name] || [name];
+							targets.forEach(t => a.push({ name: t, value }));
+						}
+					});
+
+					return a;
+				}
+
+				function factionStat(stat) {
+					return factionEffects()
+						.filter(a => a.name === stat)
+						.reduce((sum, a) => sum + a.value, 0)
+					;
+				}
+
 				function skillFinalLevelIdx(skill) {
 					const bgIdx = levelIndex(backgroundLevelFor(skill));
 					const chosenIdx = levelIndex(pState.skillLevels[skill] || noneDisplay);
@@ -4732,6 +4899,7 @@
 						+ subraceStat(attr)
 						+ birthsignStat(attr)
 						+ traitsStat(attr)
+						+ factionStat(attr)
 					;
 				}
 
@@ -4754,6 +4922,7 @@
 						+ birthsignStat(skill)
 						+ traitsStat(skill)
 						+ gearStat(skill)
+						+ factionStat(skill)
 						+ newJourneyStat(skill)
 					;
 				}
@@ -4924,7 +5093,15 @@
 				function bonusFor(keys) {
 					let total = 0;
 					keys.forEach(k => {
-						total += raceStat(k) + subraceStat(k) + birthsignStat(k) + traitsStat(k) + gearStat(k) + newJourneyStat(k);
+						total += 0
+							+ raceStat(k)
+							+ subraceStat(k)
+							+ birthsignStat(k)
+							+ traitsStat(k)
+							+ gearStat(k)
+							+ factionStat(k)
+							+ newJourneyStat(k)
+						;
 					});
 
 					return total;
@@ -5481,6 +5658,7 @@
 				}
 
 				const isLocked = !!selectEl.disabled;
+				const isSmall = selectEl.classList.contains('small');
 
 				const wrap = document.createElement('div');
 				wrap.className = 'csel-wrap' + (isLocked ? ' is-disabled' : '');
@@ -5489,7 +5667,7 @@
 
 				const btn = document.createElement(isLocked ? 'div' : 'button');
 				if (!isLocked) btn.type = 'button';
-				btn.className = 'csel-btn' + (isLocked ? ' csel-dummy' : '');
+				btn.className = 'csel-btn' + (isLocked ? ' csel-dummy' : '') + (isSmall ? ' csel-btn-small' : '');
 
 				const label = document.createElement('span');
 				label.className = 'csel-label';
@@ -5516,7 +5694,7 @@
 					label.textContent = opt ? opt.textContent : '';
 					btn.title = opt ? (opt.title || '') : '';
 
-					btn.className = 'csel-btn' + (isLocked ? ' csel-dummy' : '');
+					btn.className = 'csel-btn' + (isLocked ? ' csel-dummy' : '') + (isSmall ? ' csel-btn-small' : '');
 					const tierClass = opt ? tierClassOf(opt) : null;
 					if (tierClass) btn.classList.add(tierClass);
 				}
