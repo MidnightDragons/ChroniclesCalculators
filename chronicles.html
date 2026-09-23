@@ -3038,6 +3038,7 @@
 					});
 
 					bindCustomizePanelEvents(tbody, id => state.inventory.find(r => r.id === id));
+					initCustomSpinners();
 				}
 
 				/* ---------- Craft list UI ---------- */
@@ -3136,6 +3137,7 @@
 					});
 
 					bindCustomizePanelEvents(tbody, id => state.craftList.find(r => r.id === id));
+					initCustomSpinners();
 					renderResults();
 				}
 
@@ -3381,6 +3383,7 @@
 						});
 					});
 
+					initCustomSpinners();
 					renderResults();
 				}
 
