@@ -60,7 +60,7 @@
 
 						<div class="cz-include-toggles" id="sideIncludeXP">
 							<div class="field"><label class="cz-title">XP Includes</label></div>
-							<label class="cz-include-checkbox"><input type="checkbox" id="weeklyXP" checked>Weekly Bonus<span class="badge">+150 XP/week</span></label>
+							<label class="cz-include-checkbox"><input type="checkbox" id="weeklyXP" checked>Weekly Bonus<span class="badge">+300 XP/week</span></label>
 						</div>
 					</span>
 
@@ -2338,6 +2338,13 @@
 
 			const XP = {
 				THRESHOLDS: [
+					{ min: 18,	xp: 500 },
+					{ min: 17,	xp: 450 },
+					{ min: 15,	xp: 400 },
+					{ min: 10,	xp: 150 },
+					{ min: 0,	xp: 100 }
+				],
+				THRESHOLDS_OLD: [
 					{ min: 19,	xp: 1000 },
 					{ min: 18,	xp: 700 },
 					{ min: 17,	xp: 450 },
@@ -2357,7 +2364,9 @@
 					"Cave",			"Tundra",		"Forest",
 					"Plains",		"Urban",		"Ayleid",
 					"Dwemer",		"Oblivion",		"Aquatic"
-				]
+				],
+				WEEKLY:		300,
+				WEEKLY_OLD:	300
 			};
 		</script>
 
@@ -4387,7 +4396,6 @@
 					const modifier		= XP.DIFFICULTIES[tierName];
 
 					let xpLow = 0, xpAvg = 0, xpHigh = 0;
-
 					if (matching.length === 0) {
 						warningEl.style.display = '';
 						warningEl.textContent = `No enemies found for ${biome || "any biome"}. Showing 0 XP from encounters.`;
@@ -4410,7 +4418,7 @@
 
 					const faction		= factionKey	? FACTIONS[factionKey]			: null;
 					const questXPDay	= faction		? questXPPerDay(faction.quests)	: 0;
-					const weeklyXPDay	= useWeekly		? 150 / 7 : 0;
+					const weeklyXPDay	= useWeekly		? XP.WEEKLY / 7 : 0;
 
 					const xpPerDayLow	= xpFromEncLow	+ questXPDay + weeklyXPDay;
 					const xpPerDayAvg	= xpFromEncAvg	+ questXPDay + weeklyXPDay;
