@@ -60,7 +60,11 @@
 
 						<div class="cz-include-toggles" id="sideIncludeXP">
 							<div class="field"><label class="cz-title">XP Includes</label></div>
-							<label class="cz-include-checkbox"><input type="checkbox" id="weeklyXP" checked>Weekly Bonus<span class="badge">+300 XP/week</span></label>
+							<label class="cz-include-checkbox"><input type="checkbox" id="weeklyXP" checked>Weekly Bonus<span class="badge" id="weeklyAmount">+??? XP/week</span></label>
+						</div>
+						<div class="cz-include-toggles" id="sideIncludeXP">
+							<div class="field"><label class="cz-title">Miscellaneous</label></div>
+							<label class="cz-include-checkbox"><input type="checkbox" id="oldXP">Use Old XP</label>
 						</div>
 					</span>
 
@@ -2366,7 +2370,7 @@
 					"Dwemer",		"Oblivion",		"Aquatic"
 				],
 				WEEKLY:		300,
-				WEEKLY_OLD:	300
+				WEEKLY_OLD:	150
 			};
 		</script>
 
@@ -4293,18 +4297,19 @@
 				}));
 			}
 
-			function getXPForLevel(level) {
-				for (const t of XP.THRESHOLDS) {
+			function getXPForLevel(level, useOld) {
+				let thresholds = useOld ? XP.THRESHOLDS_OLD : XP.THRESHOLDS;
+				for (const t of thresholds) {
 					if (level >= t.min) return t.xp;
 				}
 
 				return 100;
 			}
 
-			function totalXPNeeded(from, to) {
+			function totalXPNeeded(from, to, useOld) {
 				let t = 0;
 				for (let l = from; l < to; l++) {
-					t += getXPForLevel(l + 1);
+					t += getXPForLevel(l + 1, useOld);
 				}
 
 				return t;
@@ -4352,7 +4357,8 @@
 							}
 						});
 
-						if (saved.weeklyXP !== undefined) document.getElementById('weeklyXP').checked = !! saved.weeklyXP;
+						if (saved.weeklyXP !== undefined)	document.getElementById('weeklyXP').checked	= !! saved.weeklyXP;
+						if (saved.oldXP !== undefined)		document.getElementById('oldXP').checked	= !! saved.oldXP;
 					} catch (e) {}
 				}
 
@@ -4363,7 +4369,8 @@
 							state[id] = document.getElementById(id).value;
 						});
 
-						state.weeklyXP = document.getElementById('weeklyXP').checked;
+						state.weeklyXP	= document.getElementById('weeklyXP').checked;
+						state.oldXP		= document.getElementById('oldXP').checked;
 						localStorage.setItem(XP_STORE_KEY, JSON.stringify(state));
 					} catch (e) {}
 				}
@@ -4390,6 +4397,7 @@
 					const tierName		= document.getElementById('encDifficulty').value;
 					const factionKey	= document.getElementById('plFaction').value;
 					const useWeekly		= document.getElementById('weeklyXP').checked;
+					const useOldXP		= document.getElementById('oldXP').checked;
 
 					const matching		= getMatchingEnemies(biome);
 					const warningEl		= document.getElementById('biomeWarning');
@@ -4418,13 +4426,13 @@
 
 					const faction		= factionKey	? FACTIONS[factionKey]			: null;
 					const questXPDay	= faction		? questXPPerDay(faction.quests)	: 0;
-					const weeklyXPDay	= useWeekly		? XP.WEEKLY / 7 : 0;
+					const weeklyXPDay	= useWeekly		? (useOldXP ? XP.WEEKLY_OLD : XP.WEEKLY) / 7 : 0;
 
 					const xpPerDayLow	= xpFromEncLow	+ questXPDay + weeklyXPDay;
 					const xpPerDayAvg	= xpFromEncAvg	+ questXPDay + weeklyXPDay;
 					const xpPerDayHigh	= xpFromEncHigh	+ questXPDay + weeklyXPDay;
 
-					const needed		= Math.max(0, totalXPNeeded(curLevel, desLevel) - curXP);
+					const needed		= Math.max(0, totalXPNeeded(curLevel, desLevel, useOldXP) - curXP);
 					const daysHigh		= xpPerDayLow	> 0 ? Math.ceil(needed / xpPerDayLow)	: Infinity;
 					const daysAvg		= xpPerDayAvg	> 0 ? Math.ceil(needed / xpPerDayAvg)	: Infinity;
 					const daysLow		= xpPerDayHigh	> 0 ? Math.ceil(needed / xpPerDayHigh)	: Infinity;
@@ -4476,6 +4484,10 @@
 					const fmtDays = d => d === Infinity ? '∞' : d.toLocaleString();
 					const fmtRange = (low, avg, high) => `${low.toLocaleString()} - ${avg.toLocaleString()} - ${high.toLocaleString()}`;
 
+					document.getElementById('weeklyAmount').innerHTML = html`
+						+${XP.WEEKLY} XP/week
+					`;
+
 					document.getElementById('xpResults').innerHTML = html`
 						<div class="metric">
 							<div class="metric-label">XP per encounter</div>
@@ -4513,7 +4525,7 @@
 					saveXpState();
 				}
 
-				['curLevel', 'desLevel', 'curXP', 'crisis', 'energy', 'wellfed', 'encDifficulty', 'biome', 'weeklyXP'].forEach(id => {
+				['curLevel', 'desLevel', 'curXP', 'crisis', 'energy', 'wellfed', 'encDifficulty', 'biome', 'weeklyXP', 'oldXP'].forEach(id => {
 					document.getElementById(id).addEventListener('change', calculateAndSave);
 					document.getElementById(id).addEventListener('input', calculateAndSave);
 				});
