@@ -120,6 +120,7 @@
 							<select id="invSelect"></select>
 							<input type="number" id="invQty" value="1" min="0">
 							<button id="invAddBtn">Add</button>
+							<button class="secondary small" id="importGameInvBtn">Import</button>
 						</div>
 						<div class="scrollbox">
 							<table id="invTable">
@@ -129,6 +130,21 @@
 							<div class="list-empty" id="invEmpty">EMPTY</div>
 						</div>
 					</span>
+				</div>
+
+				<!-- IMPORT GAME INVENTORY POPUP -->
+				<div id="importGameInvModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 1000; align-items: center; justify-content: center;">
+					<div class="panel" style="width: 90%; max-width: 500px;">
+						<span>
+							<h2>Inventory Import</h2>
+							<p style="margin: 4px 0 8px;">Use /getinv in-game and paste what you got in here.</p>
+							<textarea id="importGameInvTextarea" rows="12" style="width: 100%; box-sizing: border-box; font-family: monospace;"></textarea>
+							<div class="search-row" style="margin-top: 8px;">
+								<button id="importGameInvConfirmBtn">Import</button>
+								<button class="secondary small" id="importGameInvCancelBtn">Cancel</button>
+							</div>
+						</span>
+					</div>
 				</div>
 
 				<!-- DESIRED GEAR -->
@@ -662,133 +678,133 @@
 				},
 
 				modifications: {
-					'Keen':								{ categories: ['1H Weapons', '2H Weapons'],																				effect: '+1 Melee Accuracy',															cost: ['N/A'] },
-					'Seeking':							{ categories: ['Bows'],																									effect: '+1 Ranged Accuracy',															cost: ['N/A'] },
-					'Lightweight':						{ categories: ['Bows'],																									effect: '+2 Initiative',																cost: ['N/A'] },
-					'Razor Sharp':						{ categories: ['1H Weapons', '2H Weapons', 'Bows'],																		effect: '+2 Piercing Damage',															cost: ['N/A'] },
-					'Brutally Weighted':				{ categories: ['1H Weapons', '2H Weapons'],																				effect: '+2 Blunt Damage',																cost: ['N/A'] },
-					'Serrated Edge':					{ categories: ['1H Weapons', '2H Weapons'],																				effect: '+2 Slashing Damage',															cost: ['N/A'] },
-					'Amorphous':						{ categories: ['Staves'],																								effect: '+1 Melee Accuracy, +1 Ranged Accuracy',										cost: ['N/A'] },
-					'Finely Weighted':					{ categories: ['1H Weapons', '2H Weapons', 'Bows', 'Staves'],															effect: '+1 Physical Resistance, -1 Piercing/Blunt/Slashing Damage',					cost: ['N/A'] },
-					'Versatile Design: Flurry':			{ categories: ['1H Slashing Weapons', '2H Slashing Weapons'],															effect: 'Grants the Flurry technique without training',									cost: ['N/A'] },
-					'Versatile Design: Shield Rush':	{ categories: ['1H Blunt Weapons', '2H Blunt Weapons', 'Staves'],														effect: 'Grants the Shield Rush technique without training (usable without a shield)',	cost: ['N/A'] },
-					'Versatile Design: Lunge':			{ categories: ['1H Piercing Weapons', '1H Blunt Weapons', '2H Piercing Weapons', '2H Blunt Weapons'],					effect: 'Grants the Lunge technique without training',									cost: ['N/A'] },
-					'Versatile Design: Gash':			{ categories: ['1H Piercing Weapons', '2H Piercing Weapons'],															effect: 'Grants the Gash technique without training',									cost: ['N/A'] },
-					'Versatile Design: Bludgeon':		{ categories: ['1H Piercing Weapons', '1H Slashing Weapons', '2H Piercing Weapons', '2H Slashing Weapons', 'Staves'],	effect: 'Grants the Bludgeon technique without training',								cost: ['N/A'] },
-					'Precisely Forged':					{ categories: ['1H Weapons', '2H Weapons', 'Bows'],																		effect: '+1 Security',																	cost: ['N/A'] },
-					'Double Plated':					{ categories: ['Medium Armor', 'Heavy Armor', 'Shields'],																effect: '+1 Block',																		cost: ['N/A'] },
-					'Vitalguard':						{ categories: ['Light Armor', 'Medium Armor', 'Heavy Armor', 'Shields', 'Talismans'],									effect: '+1 Piercing Resistance',														cost: ['N/A'] },
-					'Jarring':							{ categories: ['Light Armor', 'Medium Armor', 'Heavy Armor', 'Shields', 'Talismans'],									effect: '+1 Blunt Resistance',															cost: ['N/A'] },
-					'Deflecting':						{ categories: ['Light Armor', 'Medium Armor', 'Heavy Armor', 'Shields', 'Talismans'],									effect: '+1 Slashing Resistance',														cost: ['N/A'] },
-					'Furred':							{ categories: ['Light Armor', 'Medium Armor', 'Heavy Armor', 'Robes'],													effect: '+1 Frost Resistance, -1 Fire Resistance',										cost: ['N/A'] },
-					'Nonflammable':						{ categories: ['Light Armor', 'Medium Armor', 'Heavy Armor', 'Robes'],													effect: '+1 Fire Resistance, -1 Frost Resistance',										cost: ['N/A'] },
-					'Alloy':							{ categories: ['Heavy Armor'],																							effect: '+2 Shock Resistance, -1 Physical Resistance',									cost: ['N/A'] },
-					'Nimble':							{ categories: ['Light Armor', 'Medium Armor', 'Robes'],																	effect: '+1 Dodge, +1 Initiative',														cost: ['N/A'] },
-					'Muffled':							{ categories: ['Light Armor', 'Medium Armor', 'Heavy Armor', 'Robes', 'Bows'],											effect: '+1 Sneak',																		cost: ['N/A'] },
-					'Flexible':							{ categories: ['Light Armor', 'Medium Armor', 'Heavy Armor', 'Robes'],													effect: '+1 Athletics, +1 Acrobatics',													cost: ['N/A'] },
-					'Fearsome':							{ categories: ['Rings', 'Amulets'],																						effect: '+1 Intimidation',																cost: ['1 Sapphire', '1 Emerald', '1 Ruby', '1 Diamond'] },
-					'Regal':							{ categories: ['Rings', 'Amulets'],																						effect: '+1 Speechcraft',																cost: ['1 Sapphire', '1 Emerald', '1 Ruby', '1 Diamond'] },
-					'Hardy':							{ categories: ['Shields', 'Talismans'],																					effect: '+1 Resilience',																cost: ['N/A'] },
-					'Deflective Wards':					{ categories: ['Talismans'],																							effect: '+1 Block',																		cost: ['N/A'] },
-					'Cold-Weather Stitching':			{ categories: ['Clothes'],																								effect: '+1 Frost Resistance',															cost: ['N/A'] },
-					'Warm-Weather Stitching':			{ categories: ['Clothes'],																								effect: '+1 Fire Resistance',															cost: ['N/A'] },
-					'Enduring':							{ categories: ['All Items Except Flasks'],																				effect: 'Multiplies Degradation Modifier by an additional 0.5',							cost: ['3 Diamond'] },
-					'Secret Labels':					{ categories: ['Amulets', 'Flasks'],																					effect: '+1 Lore',																		cost: ['N/A'] },
-					'Vigorous Lining':					{ categories: ['Flasks'],																								effect: '+1 Health anytime a flask is used on self',									cost: ['1 Ruby'	] },
-					'Refreshing Lining':				{ categories: ['Flasks'],																								effect: '+2 Stamina anytime a flask is used on self',									cost: ['1 Emerald'] },
-					'Magical Lining':					{ categories: ['Flasks'],																								effect: '+2 Magicka anytime a flask is used on self',									cost: ['1 Sapphire'] },
+					'Keen':								{ ids: [1],					categories: ['1H Weapons', '2H Weapons'],																			effect: '+1 Melee Accuracy',															cost: ['N/A'] },
+					'Seeking':							{ ids: [2],					categories: ['Bows'],																								effect: '+1 Ranged Accuracy',															cost: ['N/A'] },
+					'Lightweight':						{ ids: [3],					categories: ['Bows'],																								effect: '+2 Initiative',																cost: ['N/A'] },
+					'Razor Sharp':						{ ids: [4],					categories: ['1H Weapons', '2H Weapons', 'Bows'],																	effect: '+2 Piercing Damage',															cost: ['N/A'] },
+					'Brutally Weighted':				{ ids: [5],					categories: ['1H Weapons', '2H Weapons'],																			effect: '+2 Blunt Damage',																cost: ['N/A'] },
+					'Serrated Edge':					{ ids: [6],					categories: ['1H Weapons', '2H Weapons'],																			effect: '+2 Slashing Damage',															cost: ['N/A'] },
+					'Amorphous':						{ ids: [7],					categories: ['Staves'],																								effect: '+1 Melee Accuracy, +1 Ranged Accuracy',										cost: ['N/A'] },
+					'Finely Weighted':					{ ids: [8],					categories: ['1H Weapons', '2H Weapons', 'Bows', 'Staves'],															effect: '+1 Physical Resistance, -1 Piercing/Blunt/Slashing Damage',					cost: ['N/A'] },
+					'Versatile Design: Flurry':			{ ids: [9],					categories: ['1H Slashing Weapons', '2H Slashing Weapons'],															effect: 'Grants the Flurry technique without training',									cost: ['N/A'] },
+					'Versatile Design: Shield Rush':	{ ids: [10, 11],			categories: ['1H Blunt Weapons', '2H Blunt Weapons', 'Staves'],														effect: 'Grants the Shield Rush technique without training (usable without a shield)',	cost: ['N/A'] },
+					'Versatile Design: Lunge':			{ ids: [12, 13, 14, 15],	categories: ['1H Piercing Weapons', '1H Blunt Weapons', '2H Piercing Weapons', '2H Blunt Weapons'],					effect: 'Grants the Lunge technique without training',									cost: ['N/A'] },
+					'Versatile Design: Gash':			{ ids: [16],				categories: ['1H Piercing Weapons', '2H Piercing Weapons'],															effect: 'Grants the Gash technique without training',									cost: ['N/A'] },
+					'Versatile Design: Bludgeon':		{ ids: [17, 18, 19],		categories: ['1H Piercing Weapons', '1H Slashing Weapons', '2H Piercing Weapons', '2H Slashing Weapons', 'Staves'],	effect: 'Grants the Bludgeon technique without training',								cost: ['N/A'] },
+					'Precisely Forged':					{ ids: [20],				categories: ['1H Weapons', '2H Weapons', 'Bows'],																	effect: '+1 Security',																	cost: ['N/A'] },
+					'Double Plated':					{ ids: [21],				categories: ['Medium Armor', 'Heavy Armor', 'Shields'],																effect: '+1 Block',																		cost: ['N/A'] },
+					'Vitalguard':						{ ids: [22],				categories: ['Light Armor', 'Medium Armor', 'Heavy Armor', 'Shields', 'Talismans'],									effect: '+1 Piercing Resistance',														cost: ['N/A'] },
+					'Jarring':							{ ids: [23],				categories: ['Light Armor', 'Medium Armor', 'Heavy Armor', 'Shields', 'Talismans'],									effect: '+1 Blunt Resistance',															cost: ['N/A'] },
+					'Deflecting':						{ ids: [24],				categories: ['Light Armor', 'Medium Armor', 'Heavy Armor', 'Shields', 'Talismans'],									effect: '+1 Slashing Resistance',														cost: ['N/A'] },
+					'Furred':							{ ids: [25],				categories: ['Light Armor', 'Medium Armor', 'Heavy Armor', 'Robes'],												effect: '+1 Frost Resistance, -1 Fire Resistance',										cost: ['N/A'] },
+					'Nonflammable':						{ ids: [26],				categories: ['Light Armor', 'Medium Armor', 'Heavy Armor', 'Robes'],												effect: '+1 Fire Resistance, -1 Frost Resistance',										cost: ['N/A'] },
+					'Alloy':							{ ids: [27],				categories: ['Heavy Armor'],																						effect: '+2 Shock Resistance, -1 Physical Resistance',									cost: ['N/A'] },
+					'Nimble':							{ ids: [28],				categories: ['Light Armor', 'Medium Armor', 'Robes'],																effect: '+1 Dodge, +1 Initiative',														cost: ['N/A'] },
+					'Muffled':							{ ids: [29],				categories: ['Light Armor', 'Medium Armor', 'Heavy Armor', 'Robes', 'Bows'],										effect: '+1 Sneak',																		cost: ['N/A'] },
+					'Flexible':							{ ids: [30],				categories: ['Light Armor', 'Medium Armor', 'Heavy Armor', 'Robes'],												effect: '+1 Athletics, +1 Acrobatics',													cost: ['N/A'] },
+					'Fearsome':							{ ids: [31],				categories: ['Rings', 'Amulets'],																					effect: '+1 Intimidation',																cost: ['1 Sapphire', '1 Emerald', '1 Ruby', '1 Diamond'] },
+					'Regal':							{ ids: [32],				categories: ['Rings', 'Amulets'],																					effect: '+1 Speechcraft',																cost: ['1 Sapphire', '1 Emerald', '1 Ruby', '1 Diamond'] },
+					'Hardy':							{ ids: [33],				categories: ['Shields', 'Talismans'],																				effect: '+1 Resilience',																cost: ['N/A'] },
+					'Deflective Wards':					{ ids: [34],				categories: ['Talismans'],																							effect: '+1 Block',																		cost: ['N/A'] },
+					'Cold-Weather Stitching':			{ ids: [35],				categories: ['Clothes'],																							effect: '+1 Frost Resistance',															cost: ['N/A'] },
+					'Warm-Weather Stitching':			{ ids: [36],				categories: ['Clothes'],																							effect: '+1 Fire Resistance',															cost: ['N/A'] },
+					'Enduring':							{ ids: [37],				categories: ['All Items Except Flasks'],																			effect: 'Multiplies Degradation Modifier by an additional 0.5',							cost: ['3 Diamond'] },
+					'Secret Labels':					{ ids: [38],				categories: ['Amulets', 'Flasks'],																					effect: '+1 Lore',																		cost: ['N/A'] },
+					'Vigorous Lining':					{ ids: [39],				categories: ['Flasks'],																								effect: '+1 Health anytime a flask is used on self',									cost: ['1 Ruby'	] },
+					'Refreshing Lining':				{ ids: [40],				categories: ['Flasks'],																								effect: '+2 Stamina anytime a flask is used on self',									cost: ['1 Emerald'] },
+					'Magical Lining':					{ ids: [41],				categories: ['Flasks'],																								effect: '+2 Magicka anytime a flask is used on self',									cost: ['1 Sapphire'] },
 				},
 
 				enchantments: {
-					'Searing':				{ categories: CATEGORY_ALLWEAPONS,										cost: ['2 Filled Soul Gem',		'1 Ruby'],													effect: '+2 Fire Damage on hit (basic attacks)' },
-					'Chilling':				{ categories: CATEGORY_ALLWEAPONS,										cost: ['2 Filled Soul Gem',		'1 Sapphire'],												effect: '+2 Frost Damage on hit (basic attacks)' },
-					'Surging':				{ categories: CATEGORY_ALLWEAPONS,										cost: ['2 Filled Soul Gem',		'1 Emerald'],												effect: '+2 Shock Damage on hit (basic attacks)' },
-					'Damage Magicka':		{ categories: CATEGORY_ALLWEAPONS,										cost: ['4 Filled Soul Gem',		'2 Sapphire'],												effect: '-1d4 Magicka on hit (basic attacks, min 1)' },
-					'Damage Stamina':		{ categories: CATEGORY_ALLWEAPONS,										cost: ['4 Filled Soul Gem',		'2 Emerald'],												effect: '-1d4 Stamina on hit (basic attacks, min 1)' },
-					'Corrosion':			{ categories: CATEGORY_ALLWEAPONS,										cost: ['6 Filled Soul Gem',		'1 Ruby',	'1 Sapphire',	'1 Emerald'],					effect: '-1d4 Durability of target\'s items on hit (basic attacks, min 1)' },
-					'Dragon Shot':			{ categories: ['Bows'],													cost: ['6 Filled Soul Gem',		'1 Ruby',	'1 Sapphire',	'1 Emerald'],					effect: 'Grants Dragon Shot technique (Storm Shot, Fire instead of Shock)' },
-					'Blizzard Shot':		{ categories: ['Bows'],													cost: ['6 Filled Soul Gem',		'1 Ruby',	'1 Sapphire',	'1 Emerald'],					effect: 'Grants Blizzard Shot technique (Storm Shot, Frost instead of Shock)' },
-					'Storm Strike':			{ categories: ['1H Slashing Weapons', '2H Slashing Weapons'],			cost: ['6 Filled Soul Gem',		'1 Ruby',	'1 Sapphire',	'1 Emerald'],					effect: 'Grants Storm Strike technique (Dragon Strike, Shock instead of Fire)' },
-					'Blizzard Strike':		{ categories: ['1H Slashing Weapons', '2H Slashing Weapons'],			cost: ['6 Filled Soul Gem',		'1 Ruby',	'1 Sapphire',	'1 Emerald'],					effect: 'Grants Blizzard Strike technique (Dragon Strike, Frost instead of Fire)' },
-					'Dragon Thrust':		{ categories: ['1H Piercing Weapons', '2H Piercing Weapons'],			cost: ['6 Filled Soul Gem',		'1 Ruby',	'1 Sapphire',	'1 Emerald'],					effect: 'Grants Dragon Thrust technique (Storm Thrust, Fire instead of Shock)' },
-					'Blizzard Thrust':		{ categories: ['1H Piercing Weapons', '2H Piercing Weapons'],			cost: ['6 Filled Soul Gem',		'1 Ruby',	'1 Sapphire',	'1 Emerald'],					effect: 'Grants Blizzard Thrust technique (Storm Thrust, Frost instead of Shock)' },
-					'Dragon Crush':			{ categories: ['1H Blunt Weapons', '2H Blunt Weapons'],					cost: ['6 Filled Soul Gem',		'1 Ruby',	'1 Sapphire',	'1 Emerald'],					effect: 'Grants Dragon Crush technique (Blizzard Crush, Fire instead of Frost)' },
-					'Storm Crush':			{ categories: ['1H Blunt Weapons', '2H Blunt Weapons'],					cost: ['6 Filled Soul Gem',		'1 Ruby',	'1 Sapphire',	'1 Emerald'],					effect: 'Grants Storm Crush technique (Blizzard Crush, Shock instead of Frost)' },
-					'Attunement':			{ categories: ['Staves', 'Talismans'],									cost: ['2 Filled Soul Gem',		'1 Emerald'],												effect: '+1 All Spell Schools' },
-					'Empowerment':			{ categories: ['Staves', 'Talismans'],									cost: ['2 Filled Soul Gem',		'1 Ruby'],													effect: '+1 Spell Potency' },
-					'Aegis':				{ categories: ['Light Armor', 'Medium Armor', 'Heavy Armor', 'Robes'],	cost: ['6 Filled Soul Gem',		'1 Ruby',	'1 Sapphire',	'1 Emerald'],					effect: '+1 Magic Resistance, -1 Physical Resistance' },
-					'Fireshield':			{ categories: CATEGORY_ALLWEARABLES_NOCLOTHES,							cost: ['6 Filled Soul Gem',		'1 Ruby',	'1 Sapphire',	'1 Emerald'],					effect: '+2 Fire Resistance' },
-					'Frostshield':			{ categories: CATEGORY_ALLWEARABLES_NOCLOTHES,							cost: ['6 Filled Soul Gem',		'1 Ruby',	'1 Sapphire',	'1 Emerald'],					effect: '+2 Frost Resistance' },
-					'Shockshield':			{ categories: CATEGORY_ALLWEARABLES_NOCLOTHES,							cost: ['6 Filled Soul Gem',		'1 Ruby',	'1 Sapphire',	'1 Emerald'],					effect: '+2 Shock Resistance' },
-					'Fortify Health':		{ categories: ['Rings', 'Amulets'],										cost: ['6 Filled Soul Gem',		'1 Ruby',	'1 Sapphire',	'1 Emerald'],					effect: '+3 Health' },
-					'Fortify Stamina':		{ categories: ['Rings', 'Amulets'],										cost: ['6 Filled Soul Gem',		'1 Ruby',	'1 Sapphire',	'1 Emerald'],					effect: '+5 Stamina' },
-					'Fortify Magicka':		{ categories: ['Rings', 'Amulets'],										cost: ['6 Filled Soul Gem',		'1 Ruby',	'1 Sapphire',	'1 Emerald'],					effect: '+5 Magicka' },
-					'Magicka Regeneration':	{ categories: CATEGORY_ALLWEARABLES,									cost: ['10 Filled Soul Gem',	'2 Ruby',	'2 Sapphire',	'2 Emerald'],					effect: 'Once/turn: restore 2d4 Magicka, no action cost (combat only, 2x/combat)' },
-					'Stamina Regeneration':	{ categories: CATEGORY_ALLWEARABLES,									cost: ['10 Filled Soul Gem',	'2 Ruby',	'2 Sapphire',	'2 Emerald'],					effect: 'Once/turn: restore 2d4 Stamina, no action cost (combat only, 2x/combat)' },
-					'Warding':				{ categories: ['Shields', 'Talismans'],									cost: ['2 Filled Soul Gem',		'1 Sapphire'],												effect: '+1 Magic Resistance' },
-					'Persistency':			{ categories: ['Shields', 'Talismans'],									cost: ['2 Filled Soul Gem',		'1 Sapphire'],												effect: '+1 Resilience' },
-					'Slowing Wards':		{ categories: ['Talismans'],											cost: ['2 Filled Soul Gem',		'1 Sapphire'],												effect: '+1 Physical Resistance' },
-					'Fire Attunement':		{ categories: ['Talismans'],											cost: ['2 Filled Soul Gem',		'1 Ruby'],													effect: '+2 Fire Damage' },
-					'Frost Attunement':		{ categories: ['Talismans'],											cost: ['2 Filled Soul Gem',		'1 Sapphire'],												effect: '+2 Frost Damage' },
-					'Shock Attunement':		{ categories: ['Talismans'],											cost: ['2 Filled Soul Gem',		'1 Emerald'],												effect: '+2 Shock Damage' },
-					'Waterbreathing':		{ categories: CATEGORY_ABILITIES,										cost: ['10 Filled Soul Gem',	'1 Diamond',	'2 Ruby',	'2 Sapphire',	'2 Emerald'],	effect: '1/day Amphibious spell (in/out of combat)' },
-					'Feather':				{ categories: CATEGORY_ABILITIES,										cost: ['8 Filled Soul Gem',		'1 Diamond',	'1 Ruby',	'1 Sapphire',	'1 Emerald'],	effect: '1/day Feather spell (combat only)' },
-					'Anchoring':			{ categories: CATEGORY_ABILITIES,										cost: ['8 Filled Soul Gem',		'1 Diamond',	'1 Ruby',	'1 Sapphire',	'1 Emerald'],	effect: '1/day Anchor spell (combat only)' },
-					'Knock':				{ categories: CATEGORY_ABILITIES,										cost: ['8 Filled Soul Gem',		'1 Diamond',	'1 Ruby',	'1 Sapphire',	'1 Emerald'],	effect: '1/day Knock spell (in/out of combat)' },
-					'Voidgaze':				{ categories: CATEGORY_ABILITIES,										cost: ['8 Filled Soul Gem',		'1 Diamond',	'1 Ruby',	'1 Sapphire',	'1 Emerald'],	effect: '1/day Voidgaze spell (in/out of combat)' },
-					'Midnight Gaze':		{ categories: CATEGORY_ABILITIES,										cost: ['10 Filled Soul Gem',	'1 Diamond',	'2 Ruby',	'2 Sapphire',	'2 Emerald'],	effect: '1/day Eyes of Midnight spell (in/out of combat)' },
-					'Chameleon':			{ categories: CATEGORY_ABILITIES,										cost: ['8 Filled Soul Gem',		'1 Diamond',	'1 Ruby',	'1 Sapphire',	'1 Emerald'],	effect: '1/day Chameleon spell (in/out of combat)' },
-					'Torchlight':			{ categories: CATEGORY_ABILITIES,										cost: ['8 Filled Soul Gem',		'1 Diamond',	'1 Ruby',	'1 Sapphire',	'1 Emerald'],	effect: '1/day Torchlight spell (in/out of combat)' },
-					'Shroud':				{ categories: CATEGORY_ABILITIES,										cost: ['8 Filled Soul Gem',		'1 Diamond',	'1 Ruby',	'1 Sapphire',	'1 Emerald'],	effect: '1/day Shroud spell (combat only)' },
-					'Detect Life':			{ categories: CATEGORY_ABILITIES,										cost: ['8 Filled Soul Gem',		'1 Diamond',	'1 Ruby',	'1 Sapphire',	'1 Emerald'],	effect: '1/day Detect Life spell (in/out of combat)' },
-					'Fortify Strength':		{ categories: CATEGORY_ABILITIES,										cost: ['8 Filled Soul Gem',		'1 Diamond',	'1 Ruby',	'1 Sapphire',	'1 Emerald'],	effect: '1/day Fortify Strength spell (out of combat only)' },
-					'Fortify Agility':		{ categories: CATEGORY_ABILITIES,										cost: ['10 Filled Soul Gem',	'1 Diamond',	'2 Ruby',	'2 Sapphire',	'2 Emerald'],	effect: '1/day Fortify Agility spell (out of combat only)' },
-					'Fortify Endurance':	{ categories: CATEGORY_ABILITIES,										cost: ['8 Filled Soul Gem',		'1 Diamond',	'1 Ruby',	'1 Sapphire',	'1 Emerald'],	effect: '1/day Fortify Endurance spell (out of combat only)' },
-					'Fortify Intelligence':	{ categories: CATEGORY_ABILITIES,										cost: ['10 Filled Soul Gem',	'1 Diamond',	'2 Ruby',	'2 Sapphire',	'2 Emerald'],	effect: '1/day Fortify Intelligence spell (out of combat only)' },
-					'Fortify Willpower':	{ categories: CATEGORY_ABILITIES,										cost: ['8 Filled Soul Gem',		'1 Diamond',	'1 Ruby',	'1 Sapphire',	'1 Emerald'],	effect: '1/day Fortify Willpower spell (out of combat only)' },
-					'Fortify Personality':	{ categories: CATEGORY_ABILITIES,										cost: ['10 Filled Soul Gem',	'1 Diamond',	'2 Ruby',	'2 Sapphire',	'2 Emerald'],	effect: '1/day Fortify Personality spell (out of combat only)' },
-					'Fortify Luck':			{ categories: CATEGORY_ABILITIES,										cost: ['8 Filled Soul Gem',		'1 Diamond',	'1 Ruby',	'1 Sapphire',	'1 Emerald'],	effect: '1/day Fortify Luck spell (out of combat only)' },
-					'Blazing Spear':		{ categories: CATEGORY_ABILITIES,										cost: ['8 Filled Soul Gem',		'1 Diamond',	'1 Ruby',	'1 Sapphire',	'1 Emerald'],	effect: '1/day Blazing Spear spell (combat only)' },
-					'Hail Storm':			{ categories: CATEGORY_ABILITIES,										cost: ['8 Filled Soul Gem',		'1 Diamond',	'1 Ruby',	'1 Sapphire',	'1 Emerald'],	effect: '1/day Hail Storm spell (combat only)' },
-					'Lightning Bolt':		{ categories: CATEGORY_ABILITIES,										cost: ['8 Filled Soul Gem',		'1 Diamond',	'1 Ruby',	'1 Sapphire',	'1 Emerald'],	effect: '1/day Lightning Bolt spell (combat only)' },
-					'Fear':					{ categories: CATEGORY_ABILITIES,										cost: ['8 Filled Soul Gem',		'1 Diamond',	'1 Ruby',	'1 Sapphire',	'1 Emerald'],	effect: '1/day Fear spell (combat only)' },
-					'Hush':					{ categories: CATEGORY_ABILITIES,										cost: ['8 Filled Soul Gem',		'1 Diamond',	'1 Ruby',	'1 Sapphire',	'1 Emerald'],	effect: '1/day Hush spell (combat only)' },
-					'Beguiling Touch':		{ categories: CATEGORY_ABILITIES,										cost: ['8 Filled Soul Gem',		'1 Diamond',	'1 Ruby',	'1 Sapphire',	'1 Emerald'],	effect: '1/day Beguiling Touch spell (in/out of combat)' },
-					'Enthralling':			{ categories: CATEGORY_ABILITIES,										cost: ['10 Filled Soul Gem',	'1 Diamond',	'2 Ruby',	'2 Sapphire',	'2 Emerald'],	effect: '1/day Enthrall spell (in/out of combat)' },
+					'Searing':				{ ids: [1],		categories: CATEGORY_ALLWEAPONS,										cost: ['2 Filled Soul Gem',		'1 Ruby'],													effect: '+2 Fire Damage on hit (basic attacks)' },
+					'Chilling':				{ ids: [2],		categories: CATEGORY_ALLWEAPONS,										cost: ['2 Filled Soul Gem',		'1 Sapphire'],												effect: '+2 Frost Damage on hit (basic attacks)' },
+					'Surging':				{ ids: [3],		categories: CATEGORY_ALLWEAPONS,										cost: ['2 Filled Soul Gem',		'1 Emerald'],												effect: '+2 Shock Damage on hit (basic attacks)' },
+					'Damage Magicka':		{ ids: [4],		categories: CATEGORY_ALLWEAPONS,										cost: ['4 Filled Soul Gem',		'2 Sapphire'],												effect: '-1d4 Magicka on hit (basic attacks, min 1)' },
+					'Damage Stamina':		{ ids: [5],		categories: CATEGORY_ALLWEAPONS,										cost: ['4 Filled Soul Gem',		'2 Emerald'],												effect: '-1d4 Stamina on hit (basic attacks, min 1)' },
+					'Corrosion':			{ ids: [6],		categories: CATEGORY_ALLWEAPONS,										cost: ['6 Filled Soul Gem',		'1 Ruby',	'1 Sapphire',	'1 Emerald'],					effect: '-1d4 Durability of target\'s items on hit (basic attacks, min 1)' },
+					'Dragon Shot':			{ ids: [7],		categories: ['Bows'],													cost: ['6 Filled Soul Gem',		'1 Ruby',	'1 Sapphire',	'1 Emerald'],					effect: 'Grants Dragon Shot technique (Storm Shot, Fire instead of Shock)' },
+					'Blizzard Shot':		{ ids: [8],		categories: ['Bows'],													cost: ['6 Filled Soul Gem',		'1 Ruby',	'1 Sapphire',	'1 Emerald'],					effect: 'Grants Blizzard Shot technique (Storm Shot, Frost instead of Shock)' },
+					'Storm Strike':			{ ids: [9],		categories: ['1H Slashing Weapons', '2H Slashing Weapons'],				cost: ['6 Filled Soul Gem',		'1 Ruby',	'1 Sapphire',	'1 Emerald'],					effect: 'Grants Storm Strike technique (Dragon Strike, Shock instead of Fire)' },
+					'Blizzard Strike':		{ ids: [10],	categories: ['1H Slashing Weapons', '2H Slashing Weapons'],				cost: ['6 Filled Soul Gem',		'1 Ruby',	'1 Sapphire',	'1 Emerald'],					effect: 'Grants Blizzard Strike technique (Dragon Strike, Frost instead of Fire)' },
+					'Dragon Thrust':		{ ids: [11],	categories: ['1H Piercing Weapons', '2H Piercing Weapons'],				cost: ['6 Filled Soul Gem',		'1 Ruby',	'1 Sapphire',	'1 Emerald'],					effect: 'Grants Dragon Thrust technique (Storm Thrust, Fire instead of Shock)' },
+					'Blizzard Thrust':		{ ids: [12],	categories: ['1H Piercing Weapons', '2H Piercing Weapons'],				cost: ['6 Filled Soul Gem',		'1 Ruby',	'1 Sapphire',	'1 Emerald'],					effect: 'Grants Blizzard Thrust technique (Storm Thrust, Frost instead of Shock)' },
+					'Dragon Crush':			{ ids: [13],	categories: ['1H Blunt Weapons', '2H Blunt Weapons'],					cost: ['6 Filled Soul Gem',		'1 Ruby',	'1 Sapphire',	'1 Emerald'],					effect: 'Grants Dragon Crush technique (Blizzard Crush, Fire instead of Frost)' },
+					'Storm Crush':			{ ids: [14],	categories: ['1H Blunt Weapons', '2H Blunt Weapons'],					cost: ['6 Filled Soul Gem',		'1 Ruby',	'1 Sapphire',	'1 Emerald'],					effect: 'Grants Storm Crush technique (Blizzard Crush, Shock instead of Frost)' },
+					'Attunement':			{ ids: [15],	categories: ['Staves', 'Talismans'],									cost: ['2 Filled Soul Gem',		'1 Emerald'],												effect: '+1 All Spell Schools' },
+					'Empowerment':			{ ids: [16],	categories: ['Staves', 'Talismans'],									cost: ['2 Filled Soul Gem',		'1 Ruby'],													effect: '+1 Spell Potency' },
+					'Aegis':				{ ids: [17],	categories: ['Light Armor', 'Medium Armor', 'Heavy Armor', 'Robes'],	cost: ['6 Filled Soul Gem',		'1 Ruby',	'1 Sapphire',	'1 Emerald'],					effect: '+1 Magic Resistance, -1 Physical Resistance' },
+					'Fireshield':			{ ids: [18],	categories: CATEGORY_ALLWEARABLES_NOCLOTHES,							cost: ['6 Filled Soul Gem',		'1 Ruby',	'1 Sapphire',	'1 Emerald'],					effect: '+2 Fire Resistance' },
+					'Frostshield':			{ ids: [19],	categories: CATEGORY_ALLWEARABLES_NOCLOTHES,							cost: ['6 Filled Soul Gem',		'1 Ruby',	'1 Sapphire',	'1 Emerald'],					effect: '+2 Frost Resistance' },
+					'Shockshield':			{ ids: [20],	categories: CATEGORY_ALLWEARABLES_NOCLOTHES,							cost: ['6 Filled Soul Gem',		'1 Ruby',	'1 Sapphire',	'1 Emerald'],					effect: '+2 Shock Resistance' },
+					'Fortify Health':		{ ids: [21],	categories: ['Rings', 'Amulets'],										cost: ['6 Filled Soul Gem',		'1 Ruby',	'1 Sapphire',	'1 Emerald'],					effect: '+3 Health' },
+					'Fortify Stamina':		{ ids: [22],	categories: ['Rings', 'Amulets'],										cost: ['6 Filled Soul Gem',		'1 Ruby',	'1 Sapphire',	'1 Emerald'],					effect: '+5 Stamina' },
+					'Fortify Magicka':		{ ids: [23],	categories: ['Rings', 'Amulets'],										cost: ['6 Filled Soul Gem',		'1 Ruby',	'1 Sapphire',	'1 Emerald'],					effect: '+5 Magicka' },
+					'Magicka Regeneration':	{ ids: [25],	categories: CATEGORY_ALLWEARABLES,										cost: ['10 Filled Soul Gem',	'2 Ruby',	'2 Sapphire',	'2 Emerald'],					effect: 'Once/turn: restore 2d4 Magicka, no action cost (combat only, 2x/combat)' },
+					'Stamina Regeneration':	{ ids: [24],	categories: CATEGORY_ALLWEARABLES,										cost: ['10 Filled Soul Gem',	'2 Ruby',	'2 Sapphire',	'2 Emerald'],					effect: 'Once/turn: restore 2d4 Stamina, no action cost (combat only, 2x/combat)' },
+					'Warding':				{ ids: [26],	categories: ['Shields', 'Talismans'],									cost: ['2 Filled Soul Gem',		'1 Sapphire'],												effect: '+1 Magic Resistance' },
+					'Persistency':			{ ids: [27],	categories: ['Shields', 'Talismans'],									cost: ['2 Filled Soul Gem',		'1 Sapphire'],												effect: '+1 Resilience' },
+					'Slowing Wards':		{ ids: [28],	categories: ['Talismans'],												cost: ['2 Filled Soul Gem',		'1 Sapphire'],												effect: '+1 Physical Resistance' },
+					'Fire Attunement':		{ ids: [29],	categories: ['Talismans'],												cost: ['2 Filled Soul Gem',		'1 Ruby'],													effect: '+2 Fire Damage' },
+					'Frost Attunement':		{ ids: [30],	categories: ['Talismans'],												cost: ['2 Filled Soul Gem',		'1 Sapphire'],												effect: '+2 Frost Damage' },
+					'Shock Attunement':		{ ids: [31],	categories: ['Talismans'],												cost: ['2 Filled Soul Gem',		'1 Emerald'],												effect: '+2 Shock Damage' },
+					'Waterbreathing':		{ ids: [32],	categories: CATEGORY_ABILITIES,											cost: ['10 Filled Soul Gem',	'1 Diamond',	'2 Ruby',	'2 Sapphire',	'2 Emerald'],	effect: '1/day Amphibious spell (in/out of combat)' },
+					'Feather':				{ ids: [33],	categories: CATEGORY_ABILITIES,											cost: ['8 Filled Soul Gem',		'1 Diamond',	'1 Ruby',	'1 Sapphire',	'1 Emerald'],	effect: '1/day Feather spell (combat only)' },
+					'Anchoring':			{ ids: [34],	categories: CATEGORY_ABILITIES,											cost: ['8 Filled Soul Gem',		'1 Diamond',	'1 Ruby',	'1 Sapphire',	'1 Emerald'],	effect: '1/day Anchor spell (combat only)' },
+					'Knock':				{ ids: [35],	categories: CATEGORY_ABILITIES,											cost: ['8 Filled Soul Gem',		'1 Diamond',	'1 Ruby',	'1 Sapphire',	'1 Emerald'],	effect: '1/day Knock spell (in/out of combat)' },
+					'Voidgaze':				{ ids: [36],	categories: CATEGORY_ABILITIES,											cost: ['8 Filled Soul Gem',		'1 Diamond',	'1 Ruby',	'1 Sapphire',	'1 Emerald'],	effect: '1/day Voidgaze spell (in/out of combat)' },
+					'Midnight Gaze':		{ ids: [37],	categories: CATEGORY_ABILITIES,											cost: ['10 Filled Soul Gem',	'1 Diamond',	'2 Ruby',	'2 Sapphire',	'2 Emerald'],	effect: '1/day Eyes of Midnight spell (in/out of combat)' },
+					'Chameleon':			{ ids: [38],	categories: CATEGORY_ABILITIES,											cost: ['8 Filled Soul Gem',		'1 Diamond',	'1 Ruby',	'1 Sapphire',	'1 Emerald'],	effect: '1/day Chameleon spell (in/out of combat)' },
+					'Torchlight':			{ ids: [39],	categories: CATEGORY_ABILITIES,											cost: ['8 Filled Soul Gem',		'1 Diamond',	'1 Ruby',	'1 Sapphire',	'1 Emerald'],	effect: '1/day Torchlight spell (in/out of combat)' },
+					'Shroud':				{ ids: [40],	categories: CATEGORY_ABILITIES,											cost: ['8 Filled Soul Gem',		'1 Diamond',	'1 Ruby',	'1 Sapphire',	'1 Emerald'],	effect: '1/day Shroud spell (combat only)' },
+					'Detect Life':			{ ids: [41],	categories: CATEGORY_ABILITIES,											cost: ['8 Filled Soul Gem',		'1 Diamond',	'1 Ruby',	'1 Sapphire',	'1 Emerald'],	effect: '1/day Detect Life spell (in/out of combat)' },
+					'Fortify Strength':		{ ids: [42],	categories: CATEGORY_ABILITIES,											cost: ['8 Filled Soul Gem',		'1 Diamond',	'1 Ruby',	'1 Sapphire',	'1 Emerald'],	effect: '1/day Fortify Strength spell (out of combat only)' },
+					'Fortify Agility':		{ ids: [43],	categories: CATEGORY_ABILITIES,											cost: ['10 Filled Soul Gem',	'1 Diamond',	'2 Ruby',	'2 Sapphire',	'2 Emerald'],	effect: '1/day Fortify Agility spell (out of combat only)' },
+					'Fortify Endurance':	{ ids: [44],	categories: CATEGORY_ABILITIES,											cost: ['8 Filled Soul Gem',		'1 Diamond',	'1 Ruby',	'1 Sapphire',	'1 Emerald'],	effect: '1/day Fortify Endurance spell (out of combat only)' },
+					'Fortify Intelligence':	{ ids: [45],	categories: CATEGORY_ABILITIES,											cost: ['10 Filled Soul Gem',	'1 Diamond',	'2 Ruby',	'2 Sapphire',	'2 Emerald'],	effect: '1/day Fortify Intelligence spell (out of combat only)' },
+					'Fortify Willpower':	{ ids: [46],	categories: CATEGORY_ABILITIES,											cost: ['8 Filled Soul Gem',		'1 Diamond',	'1 Ruby',	'1 Sapphire',	'1 Emerald'],	effect: '1/day Fortify Willpower spell (out of combat only)' },
+					'Fortify Personality':	{ ids: [47],	categories: CATEGORY_ABILITIES,											cost: ['10 Filled Soul Gem',	'1 Diamond',	'2 Ruby',	'2 Sapphire',	'2 Emerald'],	effect: '1/day Fortify Personality spell (out of combat only)' },
+					'Fortify Luck':			{ ids: [48],	categories: CATEGORY_ABILITIES,											cost: ['8 Filled Soul Gem',		'1 Diamond',	'1 Ruby',	'1 Sapphire',	'1 Emerald'],	effect: '1/day Fortify Luck spell (out of combat only)' },
+					'Blazing Spear':		{ ids: [49],	categories: CATEGORY_ABILITIES,											cost: ['8 Filled Soul Gem',		'1 Diamond',	'1 Ruby',	'1 Sapphire',	'1 Emerald'],	effect: '1/day Blazing Spear spell (combat only)' },
+					'Hail Storm':			{ ids: [50],	categories: CATEGORY_ABILITIES,											cost: ['8 Filled Soul Gem',		'1 Diamond',	'1 Ruby',	'1 Sapphire',	'1 Emerald'],	effect: '1/day Hail Storm spell (combat only)' },
+					'Lightning Bolt':		{ ids: [51],	categories: CATEGORY_ABILITIES,											cost: ['8 Filled Soul Gem',		'1 Diamond',	'1 Ruby',	'1 Sapphire',	'1 Emerald'],	effect: '1/day Lightning Bolt spell (combat only)' },
+					'Fear':					{ ids: [52],	categories: CATEGORY_ABILITIES,											cost: ['8 Filled Soul Gem',		'1 Diamond',	'1 Ruby',	'1 Sapphire',	'1 Emerald'],	effect: '1/day Fear spell (combat only)' },
+					'Hush':					{ ids: [53],	categories: CATEGORY_ABILITIES,											cost: ['8 Filled Soul Gem',		'1 Diamond',	'1 Ruby',	'1 Sapphire',	'1 Emerald'],	effect: '1/day Hush spell (combat only)' },
+					'Beguiling Touch':		{ ids: [54],	categories: CATEGORY_ABILITIES,											cost: ['8 Filled Soul Gem',		'1 Diamond',	'1 Ruby',	'1 Sapphire',	'1 Emerald'],	effect: '1/day Beguiling Touch spell (in/out of combat)' },
+					'Enthralling':			{ ids: [55],	categories: CATEGORY_ABILITIES,											cost: ['10 Filled Soul Gem',	'1 Diamond',	'2 Ruby',	'2 Sapphire',	'2 Emerald'],	effect: '1/day Enthrall spell (in/out of combat)' },
 				},
 
 				legendary: {
-					'Absorb Health':	{ categories: CATEGORY_ALLWEAPONS,	cost: LEGENDARY_COST,	effect: 'Absorb 2d4 health (true damage) once/turn, targets Defense, min 2' },
-					'Absorb Stamina':	{ categories: CATEGORY_ALLWEAPONS,	cost: LEGENDARY_COST,	effect: 'Absorb 4d4 stamina (true damage) once/turn, targets Defense, min 4' },
-					'Absorb Magicka':	{ categories: CATEGORY_ALLWEAPONS,	cost: LEGENDARY_COST,	effect: 'Absorb 4d4 magicka (true damage) once/turn, targets Defense, min 4' },
-					'Vampiric':			{ categories: CATEGORY_ALLWEAPONS,	cost: LEGENDARY_COST,	effect: 'Chance to inflict Bleeding once/turn, targets Defense' },
-					'Crippling':		{ categories: CATEGORY_ALLWEAPONS,	cost: LEGENDARY_COST,	effect: 'Chance to inflict Crippled once/turn, targets Defense' },
-					'Dazing':			{ categories: CATEGORY_ALLWEAPONS,	cost: LEGENDARY_COST,	effect: 'Chance to inflict Dazed once/turn, targets Defense' },
-					'Staggering':		{ categories: CATEGORY_ALLWEAPONS,	cost: LEGENDARY_COST,	effect: 'Chance to inflict Staggered once/turn, targets Defense' },
-					'Burning':			{ categories: CATEGORY_ALLWEAPONS,	cost: LEGENDARY_COST,	effect: 'Chance to inflict Burning once/turn, targets Defense' },
-					'Freezing':			{ categories: CATEGORY_ALLWEAPONS,	cost: LEGENDARY_COST,	effect: 'Chance to inflict Freezing once/turn, targets Defense' },
-					'Shocking':			{ categories: CATEGORY_ALLWEAPONS,	cost: LEGENDARY_COST,	effect: 'Chance to inflict Shocked once/turn, targets Defense' },
-					'Menacing':			{ categories: CATEGORY_ALLWEAPONS,	cost: LEGENDARY_COST,	effect: 'Chance to inflict Afraid once/turn, targets Resolve' },
-					'Burdening':		{ categories: CATEGORY_ALLWEAPONS,	cost: LEGENDARY_COST,	effect: 'Chance to inflict Burden once/turn, targets Defense' },
-					'Sundering':		{ categories: CATEGORY_ALLWEAPONS,	cost: LEGENDARY_COST,	effect: 'Chance to inflict Sundered once/turn, targets Defense' },
-					'Corroding':		{ categories: CATEGORY_ALLWEAPONS,	cost: LEGENDARY_COST,	effect: 'Chance to inflict Corroded once/turn, targets Defense' },
-					'Beguiling':		{ categories: CATEGORY_ALLWEAPONS,	cost: LEGENDARY_COST,	effect: 'Very low chance to inflict Charmed once/turn, targets Resolve' },
-					'Paralyzing':		{ categories: CATEGORY_ALLWEAPONS,	cost: LEGENDARY_COST,	effect: 'Very low chance to inflict Paralyzed once/turn, targets Defense' },
-					'Terrifying':		{ categories: CATEGORY_ALLWEAPONS,	cost: LEGENDARY_COST,	effect: 'Very low chance to inflict Terrified once/turn, targets Resolve' },
-					'Silencing':		{ categories: CATEGORY_ALLWEAPONS,	cost: LEGENDARY_COST,	effect: 'Very low chance to inflict Silenced once/turn, targets Resolve' },
-					'Feather':			{ categories: CATEGORY_EVERYTHING,	cost: LEGENDARY_COST,	effect: 'Apply Feather to self once/turn; may remove Burden and Staggered from self once/turn' },
-					'Immovable':		{ categories: CATEGORY_EVERYTHING,	cost: LEGENDARY_COST,	effect: 'Apply Anchored to self once/turn; may remove Burden and Staggered from self once/turn' },
-					'Mindward':			{ categories: CATEGORY_EVERYTHING,	cost: LEGENDARY_COST,	effect: '+5 Psychic Resistance; may remove Charmed and Rage from self once/turn' },
-					'Inspiring':		{ categories: CATEGORY_EVERYTHING,	cost: LEGENDARY_COST,	effect: '+5 Psychic Resistance; may remove Afraid and Terrified from self once/turn' },
-					'Regenerating':		{ categories: CATEGORY_EVERYTHING,	cost: LEGENDARY_COST,	effect: 'Recover 2d4 health once/turn, min 2 (combat only)' },
-					'Rejuvenating':		{ categories: CATEGORY_EVERYTHING,	cost: LEGENDARY_COST,	effect: 'Recover 4d4 stamina or magicka once/turn, min 4 (combat only)' },
-					'Fireforged':		{ categories: CATEGORY_EVERYTHING,	cost: LEGENDARY_COST,	effect: '+5 Fire Resistance; may remove Burned from self once/turn' },
-					'Frostforged':		{ categories: CATEGORY_EVERYTHING,	cost: LEGENDARY_COST,	effect: '+5 Frost Resistance; may remove Freezing from self once/turn' },
-					'Stormforged':		{ categories: CATEGORY_EVERYTHING,	cost: LEGENDARY_COST,	effect: '+5 Shock Resistance; may remove Shocked from self once/turn' },
-					'Arrowbane':		{ categories: CATEGORY_EVERYTHING,	cost: LEGENDARY_COST,	effect: '+5 Piercing Resistance; may remove Crippled from self once/turn' },
-					'Swordbane':		{ categories: CATEGORY_EVERYTHING,	cost: LEGENDARY_COST,	effect: '+5 Slashing Resistance; may remove Bleeding from self once/turn' },
-					'Hammerbane':		{ categories: CATEGORY_EVERYTHING,	cost: LEGENDARY_COST,	effect: '+5 Blunt Resistance; may remove Dazed from self once/turn' },
-					'Strange Lining':	{ categories: ['Flasks'],			cost: LEGENDARY_COST,	effect: '1 random effect (positive or negative) on each elixir flask use' },
+					'Absorb Health':	{ ids: [1],		categories: CATEGORY_ALLWEAPONS,	cost: LEGENDARY_COST,	effect: 'Absorb 2d4 health (true damage) once/turn, targets Defense, min 2' },
+					'Absorb Stamina':	{ ids: [2],		categories: CATEGORY_ALLWEAPONS,	cost: LEGENDARY_COST,	effect: 'Absorb 4d4 stamina (true damage) once/turn, targets Defense, min 4' },
+					'Absorb Magicka':	{ ids: [3],		categories: CATEGORY_ALLWEAPONS,	cost: LEGENDARY_COST,	effect: 'Absorb 4d4 magicka (true damage) once/turn, targets Defense, min 4' },
+					'Vampiric':			{ ids: [4],		categories: CATEGORY_ALLWEAPONS,	cost: LEGENDARY_COST,	effect: 'Chance to inflict Bleeding once/turn, targets Defense' },
+					'Crippling':		{ ids: [5],		categories: CATEGORY_ALLWEAPONS,	cost: LEGENDARY_COST,	effect: 'Chance to inflict Crippled once/turn, targets Defense' },
+					'Dazing':			{ ids: [6],		categories: CATEGORY_ALLWEAPONS,	cost: LEGENDARY_COST,	effect: 'Chance to inflict Dazed once/turn, targets Defense' },
+					'Staggering':		{ ids: [7],		categories: CATEGORY_ALLWEAPONS,	cost: LEGENDARY_COST,	effect: 'Chance to inflict Staggered once/turn, targets Defense' },
+					'Burning':			{ ids: [8],		categories: CATEGORY_ALLWEAPONS,	cost: LEGENDARY_COST,	effect: 'Chance to inflict Burning once/turn, targets Defense' },
+					'Freezing':			{ ids: [9],		categories: CATEGORY_ALLWEAPONS,	cost: LEGENDARY_COST,	effect: 'Chance to inflict Freezing once/turn, targets Defense' },
+					'Shocking':			{ ids: [10],	categories: CATEGORY_ALLWEAPONS,	cost: LEGENDARY_COST,	effect: 'Chance to inflict Shocked once/turn, targets Defense' },
+					'Menacing':			{ ids: [11],	categories: CATEGORY_ALLWEAPONS,	cost: LEGENDARY_COST,	effect: 'Chance to inflict Afraid once/turn, targets Resolve' },
+					'Burdening':		{ ids: [12],	categories: CATEGORY_ALLWEAPONS,	cost: LEGENDARY_COST,	effect: 'Chance to inflict Burden once/turn, targets Defense' },
+					'Sundering':		{ ids: [13],	categories: CATEGORY_ALLWEAPONS,	cost: LEGENDARY_COST,	effect: 'Chance to inflict Sundered once/turn, targets Defense' },
+					'Corroding':		{ ids: [14],	categories: CATEGORY_ALLWEAPONS,	cost: LEGENDARY_COST,	effect: 'Chance to inflict Corroded once/turn, targets Defense' },
+					'Beguiling':		{ ids: [15],	categories: CATEGORY_ALLWEAPONS,	cost: LEGENDARY_COST,	effect: 'Very low chance to inflict Charmed once/turn, targets Resolve' },
+					'Paralyzing':		{ ids: [16],	categories: CATEGORY_ALLWEAPONS,	cost: LEGENDARY_COST,	effect: 'Very low chance to inflict Paralyzed once/turn, targets Defense' },
+					'Terrifying':		{ ids: [17],	categories: CATEGORY_ALLWEAPONS,	cost: LEGENDARY_COST,	effect: 'Very low chance to inflict Terrified once/turn, targets Resolve' },
+					'Silencing':		{ ids: [18],	categories: CATEGORY_ALLWEAPONS,	cost: LEGENDARY_COST,	effect: 'Very low chance to inflict Silenced once/turn, targets Resolve' },
+					'Feather':			{ ids: [19],	categories: CATEGORY_EVERYTHING,	cost: LEGENDARY_COST,	effect: 'Apply Feather to self once/turn; may remove Burden and Staggered from self once/turn' },
+					'Immovable':		{ ids: [20],	categories: CATEGORY_EVERYTHING,	cost: LEGENDARY_COST,	effect: 'Apply Anchored to self once/turn; may remove Burden and Staggered from self once/turn' },
+					'Mindward':			{ ids: [21],	categories: CATEGORY_EVERYTHING,	cost: LEGENDARY_COST,	effect: '+5 Psychic Resistance; may remove Charmed and Rage from self once/turn' },
+					'Inspiring':		{ ids: [22],	categories: CATEGORY_EVERYTHING,	cost: LEGENDARY_COST,	effect: '+5 Psychic Resistance; may remove Afraid and Terrified from self once/turn' },
+					'Regenerating':		{ ids: [23],	categories: CATEGORY_EVERYTHING,	cost: LEGENDARY_COST,	effect: 'Recover 2d4 health once/turn, min 2 (combat only)' },
+					'Rejuvenating':		{ ids: [24],	categories: CATEGORY_EVERYTHING,	cost: LEGENDARY_COST,	effect: 'Recover 4d4 stamina or magicka once/turn, min 4 (combat only)' },
+					'Fireforged':		{ ids: [25],	categories: CATEGORY_EVERYTHING,	cost: LEGENDARY_COST,	effect: '+5 Fire Resistance; may remove Burned from self once/turn' },
+					'Frostforged':		{ ids: [26],	categories: CATEGORY_EVERYTHING,	cost: LEGENDARY_COST,	effect: '+5 Frost Resistance; may remove Freezing from self once/turn' },
+					'Stormforged':		{ ids: [27],	categories: CATEGORY_EVERYTHING,	cost: LEGENDARY_COST,	effect: '+5 Shock Resistance; may remove Shocked from self once/turn' },
+					'Arrowbane':		{ ids: [28],	categories: CATEGORY_EVERYTHING,	cost: LEGENDARY_COST,	effect: '+5 Piercing Resistance; may remove Crippled from self once/turn' },
+					'Swordbane':		{ ids: [29],	categories: CATEGORY_EVERYTHING,	cost: LEGENDARY_COST,	effect: '+5 Slashing Resistance; may remove Bleeding from self once/turn' },
+					'Hammerbane':		{ ids: [30],	categories: CATEGORY_EVERYTHING,	cost: LEGENDARY_COST,	effect: '+5 Blunt Resistance; may remove Dazed from self once/turn' },
+					'Strange Lining':	{ ids: [31],	categories: ['Flasks'],				cost: LEGENDARY_COST,	effect: '1 random effect (positive or negative) on each elixir flask use' },
 				},
 
 				enemies: {
@@ -2516,6 +2532,7 @@
 				Object.entries(data || {}).forEach(([name, r]) => {
 					db[name] = {
 						name:		name,
+						ids:		Array.isArray(r.ids) ? r.ids.slice() : [],
 						categories:	expandCategories((r.categories||[]).join(', ')),
 						effect:		(r.effect||'').trim(),
 						cost:		parseIngredients((r.cost||[]).join(', '))
@@ -4232,6 +4249,102 @@
 					};
 
 					reader.readAsText(file);
+				});
+
+				document.getElementById('importGameInvBtn').addEventListener('click', () => {
+					document.getElementById('importGameInvTextarea').value = '';
+					document.getElementById('importGameInvModal').style.display = 'flex';
+				});
+
+				document.getElementById('importGameInvCancelBtn').addEventListener('click', () => {
+					document.getElementById('importGameInvModal').style.display = 'none';
+				});
+
+				document.getElementById('importGameInvConfirmBtn').addEventListener('click', () => {
+					const raw = document.getElementById('importGameInvTextarea').value.trim();
+					if (!raw) {
+						alert('Paste your inventory JSON first.');
+						return;
+					}
+
+					let parsed;
+					try {
+						parsed = JSON.parse(raw);
+					} catch (err) {
+						alert('Invalid inventory JSON');
+						return;
+					}
+
+					if (!Array.isArray(parsed)) {
+						alert('Invalid inventory JSON');
+						return;
+					}
+
+					function buildIdLookup(dataObj) {
+						const lookup = {};
+						Object.values(dataObj).forEach(entry => {
+							(entry.ids || []).forEach(id => { lookup[id] = entry.name; });
+						});
+
+						return lookup;
+					}
+
+					function idsToNames(raw, dataObj) {
+						const lookup = buildIdLookup(dataObj);
+						if (typeof raw !== 'string') return [];
+
+						const text = raw.trim();
+						if (!text || text === '0' || text.toUpperCase() === 'N/A') return [];
+					
+						return text.split(/[_/|,;]+/)
+							.map(p => parseInt(p.trim(), 10))
+							.filter(id => Number.isFinite(id) && id > 0)
+							.map(id => lookup[id])
+							.filter(Boolean)
+						;
+					}
+
+					let skipped = 0;
+					const byName = {};
+					parsed.forEach(row => {
+						const name = row && row.id;
+						const qty = row && row.amount;
+						if ((typeof name !== 'string' || !(MATERIALS[name] || ITEMS[name])) || (typeof qty !== 'number' || !(qty > 0))) {
+							skipped++;
+							return;
+						}
+
+						const item					= ITEMS[name] || null;
+						const candidateMods			= idsToNames(row.modifications, MODIFICATIONS);
+						const candidateEnchants		= idsToNames(row.enchantments, ENCHANTMENTS);
+						const candidateLegendary	= idsToNames(row.legendary, LEGENDARY_EFFECTS)[0] || null;
+
+						const c = item ?
+							cleanCustomForItem(item, {mods: candidateMods, enchants: candidateEnchants, legendary: candidateLegendary}) :
+							{mods: [], enchants: [], legendary: null}
+						;
+
+						if (byName[name]) byName[name].qty += Math.floor(qty);
+						else byName[name] = {name, qty: Math.floor(qty), mods: c.mods, enchants: c.enchants, legendary: c.legendary};
+					});
+
+					const cleanInventory = Object.values(byName);
+					if (!cleanInventory.length) {
+						alert('No recognizable items found!');
+						return;
+					}
+
+					if (!confirm(
+						`Found ${cleanInventory.length} recognized item(s)` +
+						`This will REPLACE your current inventory entirely. Continue?`
+					)) return;
+
+					state.inventory = cleanInventory.map(row => ({id: genId(), ...row}));
+					saveState();
+					renderInventory();
+
+					document.getElementById('importGameInvModal').style.display = 'none';
+					alert('Inventory imported!');
 				});
 
 				/* ---------- Init ---------- */
