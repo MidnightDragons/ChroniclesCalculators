@@ -280,6 +280,7 @@ chro-logo {
 }
 .page-btn-outline {
 	background-color: var(--panel2-chro);
+	image-rendering: pixelated;
 	pointer-events: none;
 	position: absolute;
 	z-index: 2;
