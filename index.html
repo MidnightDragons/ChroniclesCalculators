@@ -4150,32 +4150,14 @@
 							return;
 						}
 
-						const merge = confirm(
-							`Found: ${cleanInventory.length} inventory item(s), ${cleanCraftList.length} craft list item(s), ` +
-							`${cleanRepairList.length} repair list item(s), ${cleanFavorites.length} Desired Gear item(s)` +
-							`${cleanPlanner ? ', Build Planner data' : ''}${cleanXpCalc ? ', XP Calculator data' : ''}.\n\n` +
-							`Click OK to MERGE with what you currently have, or Cancel to REPLACE everything entirely.\n\n` +
-							`The page will reload after import to apply everything.`
-						);
-
 						const keptPlannerFavorites = state.favorites.filter(f => f.fromPlanner);
-						if (!merge) {
-							state.inventory		= [];
-							state.craftList		= [];
-							state.repairList	= [];
-							state.favorites		= keptPlannerFavorites.slice();
-						}
+						state.inventory		= [];
+						state.craftList		= [];
+						state.repairList	= [];
+						state.favorites		= keptPlannerFavorites.slice();
 
 						cleanInventory.forEach(row => {
-							const existing = merge ? state.inventory.find(r =>
-								r.name === row.name
-								&& JSON.stringify(r.mods) === JSON.stringify(row.mods)
-								&& JSON.stringify(r.enchants) === JSON.stringify(row.enchants)
-								&& r.legendary === row.legendary
-							) : null;
-
-							if (existing) existing.qty += row.qty;
-							else state.inventory.push({id: genId(), ...row});
+							state.inventory.push({id: genId(), ...row});
 						});
 
 						cleanCraftList.forEach(row => {
@@ -4185,14 +4167,12 @@
 						cleanRepairList.forEach(row => {
 							const invRow = state.inventory.find(inv => inv.name === row.name && inv.qty > 0);
 							if (!invRow) return;
-
-							const existing = merge ? state.repairList.find(r => r.invId === invRow.id) : null;
-							if (existing) existing.qty += row.qty;
-							else state.repairList.push({id: genId(), invId: invRow.id, qty: row.qty});
+	
+							state.repairList.push({id: genId(), invId: invRow.id, qty: row.qty});
 						});
 
 						if (Object.keys(cleanCostToggles).length) {
-							state.costToggles = merge ? {...state.costToggles, ...cleanCostToggles} : {...cleanCostToggles};
+							state.costToggles = {...cleanCostToggles};
 						}
 
 						cleanFavorites.forEach(f => {
@@ -4212,35 +4192,16 @@
 								let current = {};
 								try { current = JSON.parse(localStorage.getItem('plannerState_v1') || '{}') || {}; } catch (err) {}
 
-								let finalPlanner = merge ? {...current} : {...cleanPlanner};
-								if (merge) {
-									PLANNER_SCALAR_FIELDS.forEach(k => { if (cleanPlanner[k]) finalPlanner[k] = cleanPlanner[k]; });
-									PLANNER_DICT_FIELDS.forEach(k => { finalPlanner[k] = {...(current[k] || {}), ...cleanPlanner[k]}; });
-									PLANNER_NUMBER_FIELDS.forEach(k => { if (cleanPlanner[k]) finalPlanner[k] = cleanPlanner[k]; });
-								}
-
+								let finalPlanner = {...cleanPlanner};
 								finalPlanner.baseStats = current.baseStats || {};
-
 								localStorage.setItem('plannerState_v1', JSON.stringify(finalPlanner));
 							} catch (err) {}
 						}
 
-						if (cleanXpCalc) {
-							try {
-								let finalXp = cleanXpCalc;
-								if (merge) {
-									let current = {};
-									try { current = JSON.parse(localStorage.getItem('xpCalcState_v1') || '{}') || {}; } catch (err) {}
-									finalXp = {...current, ...cleanXpCalc};
-								}
-
-								localStorage.setItem('xpCalcState_v1', JSON.stringify(finalXp));
-							} catch (err) {}
-						}
+						if (cleanXpCalc) try { localStorage.setItem('xpCalcState_v1', JSON.stringify(cleanXpCalc)); } catch (err) {}
 
 						if (cleanStyleMode) try { localStorage.setItem('developerStyleMode', cleanStyleMode); } catch (err) {}
 
-						alert('Import complete - reloading to apply everything.');
 						location.reload();
 					};
 
@@ -4330,17 +4291,11 @@
 						return;
 					}
 
-					if (!confirm(
-						`Found ${cleanInventory.length} recognized item(s)` +
-						`This will REPLACE your current inventory entirely. Continue?`
-					)) return;
-
 					state.inventory = cleanInventory.map(row => ({id: genId(), ...row}));
 					saveState();
 					renderInventory();
 
 					document.getElementById('importGameInvModal').style.display = 'none';
-					alert('Inventory imported!');
 				});
 
 				/* ---------- Init ---------- */
@@ -5605,7 +5560,7 @@
 
 					if (window.__craftCalcLoadGear) {
 						window.__craftCalcLoadGear(gearItems);
-						if (doAlert) alert('Synced ' + gearItems.length + ' gear item(s) into the Crafting Cost Calculator craft list.');
+//						if (doAlert) alert('Synced ' + gearItems.length + ' gear item(s) into the Crafting Cost Calculator craft list.');
 					} else {
 						if (doAlert) alert('The Crafting Calculator isn\'t ready yet. Try again in a moment.');
 					}
