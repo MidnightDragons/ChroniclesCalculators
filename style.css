@@ -118,19 +118,19 @@ html {
 
 /* ---------- Images ---------- */
 img.bg-image {
-	display: none;
+	content: var(--img-bg);
 	z-index: -999;
+	width: 0;
+	height: 0;
 	position: fixed;
 	top: 0;
 	left: 0;
 }
 .chronicles img.bg-image {
-	content: var(--img-bg);
 	overscroll-behavior: contain;
 	overflow: auto scroll;
 	width: 100vw;
 	height: auto;
-	display: block;
 	object-fit: cover;
 	object-position: 50% 50%;
 	--wix-img-max-width: max(4088px, 100%);
