@@ -4191,14 +4191,6 @@
 							else state.repairList.push({id: genId(), invId: invRow.id, qty: row.qty});
 						});
 
-						Object.entries(cleanCustomizations).forEach(([n, c]) => {
-							state.customizations[n] = c;
-						});
-
-						Object.entries(cleanInvCustomizations).forEach(([n, c]) => {
-							state.invCustomizations[n] = c;
-						});
-
 						if (Object.keys(cleanCostToggles).length) {
 							state.costToggles = merge ? {...state.costToggles, ...cleanCostToggles} : {...cleanCostToggles};
 						}
