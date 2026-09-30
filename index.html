@@ -5,6 +5,38 @@
 		<title>Elder Scrolls: Chronicles - Calculators</title>
 		<link rel="icon" href="favicon.ico">
 		<link rel="stylesheet" href="style.css">
+		<script>
+			function toast(msg, ms = 3000) {
+				let el = document.getElementById('toast');
+				if (!el) {
+					el = document.createElement('div');
+					el.id = 'toast';
+					el.setAttribute('role', 'status');
+					document.body.appendChild(el);
+				}
+
+				const fancy = document.body.classList.contains('chronicles') ? '<div class="page-btn-outline x"></div><div class="page-btn-outline y"></div>' : '';
+				el.innerHTML = fancy + '<span></span>';
+				el.lastChild.textContent = msg;
+
+				void el.offsetWidth;
+				el.classList.add('show');
+				clearTimeout(toast._t);
+				toast._t = setTimeout(() => el.classList.remove('show'), ms);
+			}
+		
+			window.addEventListener('load', () => {
+				try {
+					const m = sessionStorage.getItem('pendingToast');
+					if (m) {
+						sessionStorage.removeItem('pendingToast');
+						setTimeout(() => toast(m), 300);
+					}
+				} catch (e) {}
+			});
+
+//			window.addEventListener('load', () => { setTimeout(() => toast('Test TEST test'), 500); });
+		</script>
 	</head>
 
 	<body>
@@ -13,9 +45,9 @@
 
 		<!-- PAGE TAB BUTTONS -->
 		<div class="page-tabs">
-			<button class="page-tab" data-page="page-planner">Build Planner</button>
-			<button class="page-tab" data-page="page-craft">Crafting Cost Calculator</button>
-			<button class="page-tab" data-page="page-xp">Experience Calculator</button>
+			<button class="page-tab fancy-outline" data-page="page-planner">Build Planner</button>
+			<button class="page-tab fancy-outline" data-page="page-craft">Crafting Cost Calculator</button>
+			<button class="page-tab fancy-outline" data-page="page-xp">Experience Calculator</button>
 		</div>
 
 		<!-- HEADER -->
@@ -2436,7 +2468,7 @@
 			});
 
 			function refreshPageButtons() {
-				document.querySelectorAll('.page-tab').forEach(btn => {
+				document.querySelectorAll('.fancy-outline').forEach(btn => {
 					let fancyHTML = '';
 					if (localStorage.getItem('developerStyleMode') == 'chronicles') {
 						fancyHTML = html`
@@ -3973,7 +4005,7 @@
 					const hasAnything	= state.inventory.length || state.craftList.length || state.repairList.length || state.favorites.length || hasPlannerData || hasXpData;
 
 					if (!hasAnything) {
-						alert('Nothing to export yet - add some items first.');
+						toast('Nothing to export yet - add some items first.');
 						return;
 					}
 
@@ -4026,13 +4058,13 @@
 						try {
 							parsed = JSON.parse(reader.result);
 						} catch(err) {
-							alert('File is not valid JSON.');
+							toast('File is not valid JSON.');
 							e.target.value='';
 							return;
 						}
 
 						if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
-							alert('File doesn\'t look like a proper export.');
+							toast('File doesn\'t look like a proper export.');
 							e.target.value='';
 							return;
 						}
@@ -4145,7 +4177,7 @@
 						;
 
 						if (!totalCount) {
-							alert('No recognizable data found in that file.');
+							toast('No recognizable data found in that file.');
 							e.target.value='';
 							return;
 						}
@@ -4202,6 +4234,7 @@
 
 						if (cleanStyleMode) try { localStorage.setItem('developerStyleMode', cleanStyleMode); } catch (err) {}
 
+						sessionStorage.setItem('pendingToast', 'Import complete!');
 						location.reload();
 					};
 
@@ -4220,7 +4253,7 @@
 				document.getElementById('importGameInvConfirmBtn').addEventListener('click', () => {
 					const raw = document.getElementById('importGameInvTextarea').value.trim();
 					if (!raw) {
-						alert('Paste your inventory JSON first.');
+						toast('Paste your inventory JSON first.');
 						return;
 					}
 
@@ -4228,12 +4261,12 @@
 					try {
 						parsed = JSON.parse(raw);
 					} catch (err) {
-						alert('Invalid inventory JSON');
+						toast('Invalid inventory JSON');
 						return;
 					}
 
 					if (!Array.isArray(parsed)) {
-						alert('Invalid inventory JSON');
+						toast('Invalid inventory JSON');
 						return;
 					}
 
@@ -4287,10 +4320,11 @@
 
 					const cleanInventory = Object.values(byName);
 					if (!cleanInventory.length) {
-						alert('No recognizable items found!');
+						toast('No recognizable items found!');
 						return;
 					}
 
+					toast('Successfully imported!');
 					state.inventory = cleanInventory.map(row => ({id: genId(), ...row}));
 					saveState();
 					renderInventory();
@@ -5554,15 +5588,15 @@
 					;
 
 					if (!gearItems.length) {
-						if (doAlert) alert('No gear picked yet in the Build Planner.');
+						if (doAlert) toast('No gear picked yet in the Build Planner.');
 						return;
 					}
 
 					if (window.__craftCalcLoadGear) {
 						window.__craftCalcLoadGear(gearItems);
-//						if (doAlert) alert('Synced ' + gearItems.length + ' gear item(s) into the Crafting Cost Calculator craft list.');
+						if (doAlert) toast('Successfully synced ' + gearItems.length + ' gear item(s).');
 					} else {
-						if (doAlert) alert('The Crafting Calculator isn\'t ready yet. Try again in a moment.');
+						if (doAlert) toast('The Crafting Calculator isn\'t ready yet. Try again in a moment.');
 					}
 				}
 

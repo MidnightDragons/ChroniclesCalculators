@@ -328,6 +328,45 @@ chro-logo {
 	display: block;
 }
 
+/* ---------- Toasts ---------- */
+#toast {
+	position: fixed;
+	left: 50%;
+	bottom: 24px;
+	transform: translateX(-50%) translateY(10px);
+	z-index: 2000;
+	max-width: min(90vw, 480px);
+	padding: 10px 18px;
+	border-radius: 6px;
+	border: 1px solid var(--border);
+	background: var(--panel2);
+	color: var(--text);
+	font-family: var(--font-default);
+	text-align: center;
+	opacity: 0;
+	pointer-events: none;
+	transition: opacity 0.3s ease, transform 0.3s ease;
+}
+#toast .page-btn-outline {
+	background-color: var(--panel2);
+}
+.chronicles #toast .page-btn-outline {
+	background-color: var(--panel2-chro);
+}
+.chronicles #toast {
+	background: var(--panel2-chro);
+	border-color: var(--panel2-chro);
+	color: var(--text-chro);
+	font-family: var(--font-button-chro);
+	font-size: 1.1rem;
+	box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+	border-radius: 0;
+}
+#toast.show {
+	transform: translateX(-50%) translateY(0);
+	opacity: 1;
+}
+
 /* ---------- Layout Grids ---------- */
 .grid {
 	display: grid;
